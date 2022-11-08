@@ -38,9 +38,9 @@ app.layout = html.Div([
               [Input('url', 'pathname')])
 def render_page_content(pathname):
     if pathname in ["/", "/page-1/1"]:
-        return Dataview.layout
-    elif pathname == "/page-1/2":
         return Dataimport.layout
+    elif pathname == "/page-1/2":
+        return Dataview.layout
     elif pathname == "/page-2/1":
         return Configuration.layout
     elif pathname == "/page-3/1":
