@@ -1,0 +1,26 @@
+.fa-chevron-right {
+  transition: transform 0.2s ease-in-out 0s;
+}
+
+/* rotate the chevron when the open class is applied */
+li.open .fa-chevron-right {
+  transform: rotate(90deg);
+}
+
+.nav li {
+  font-size: 18px;
+}
+
+.page-link {
+  font-size: 16px;
+  color: black;
+}
+
+.page-link:hover {
+  background-color: #f0f0f0;
+}
+
+.page-link:active {
+  background-color: #d6d4d4;
+  color: black;
+}
