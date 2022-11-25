@@ -40,3 +40,11 @@ def partition_ocel(ocel, clustered_df):
         sub_ocels.append(new_log)
     
     return sub_ocels
+
+def get_cluster_summary(clustered_df):
+
+    summary_df = pd.DataFrame(columns=['Cluster ID', 'Number of Process Executions'])
+    summary_df['Cluster ID'] = clustered_df['cluster'].unique() 
+    summary_df['Number of Process Executions'] = clustered_df['cluster'].map(clustered_df['cluster'].value_counts())
+
+    return summary_df
