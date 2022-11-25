@@ -37,7 +37,7 @@ def on_button_click(clustered_ocel, n):
             clustered_ocel_obj = pickle.loads(codecs.decode(sub_ocel.encode(), "base64"))
             # discover and save petri nets
             process_discovery.process_discovery_ocel_to_img(clustered_ocel_obj, "oc_petri_net_cluster_" + str(i))
-        return "Process Models successfully discovered.", i
+        return "Process Models successfully discovered.", i+1
     else:
         return dash.no_update
 
@@ -58,5 +58,6 @@ def on_discovery(num_models):
         imgs = []
         for i in range(0,num_models):
             test_base64 = base64.b64encode(open('imgs/oc_petri_net_cluster_' + str(i) + '.png', 'rb').read()).decode('ascii')
+            imgs.append(html.H4("Cluster " + str(i+1)))
             imgs.append(html.Img(src='data:image/png;base64,{}'.format(test_base64), style={'height':'70%', 'width':'70%'}))
         return imgs

@@ -2,6 +2,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
+import dash
 from app import app
 from dash.exceptions import PreventUpdate
 from functions import process_executions, feature_extraction, graph_embedding, clustering
@@ -45,7 +46,7 @@ layout = dbc.Container([
         html.Div(id='feature-sucess'),
         html.Br(),
         dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
-        html.Div(id='clustering-sucess'),
+        html.Div(id='clustering-success'),
         html.Br(),
         html.Div(id='process-execution-graph'),
 ])
@@ -58,9 +59,10 @@ def on_click(selected_event_features, selected_execution_features, n_clicks):
         feature_set_event = selected_event_features
         # set selected execution features
         feature_set_extraction = selected_execution_features
+        return feature_set_event, feature_set_extraction, "Features successfully set."
     else:
         raise PreventUpdate
-    return feature_set_event, feature_set_extraction, "Features successfully set."
+    
 
 # perform clustering and return dataframe with process execution ids and cluster labels
 @app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children")], [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data")], Input("start-clustering", "n_clicks"))
@@ -80,10 +82,11 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, n_c
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # partition ocel into clustered ocels
         sub_ocels = clustering.partition_ocel(ocel_log, clustered_df)
-        # proceed here with encoding/ storing of sub ocels
+        # encoding/ storing of sub ocels
+        sub_ocels_encoded = [codecs.encode(pickle.dumps(ocel), "base64").decode() for ocel in sub_ocels]
     else:
         raise PreventUpdate
-    return sub_ocels, "Clustering successfully performed."
+    return sub_ocels_encoded, "Clustering successfully performed."
 
 @app.callback([Output("process-executions-summary", "children"), Output("executions_dropdown", "options")], [Input("execution-store", "data")])
 def on_extraction(executions):
