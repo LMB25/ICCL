@@ -42,7 +42,7 @@ clustered_ocel_store = dcc.Store('clustered-ocels', storage_type='local')
 # Define the index page layout
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    nav, side, file_store, ocel_obj, ocel_params, ocel_executions,
+    nav, side, file_store, ocel_obj, ocel_params, ocel_executions, clustered_ocel_store,
     html.Div(id='page-content', children=[], style=CONTENT_STYLE), 
 ])
 
