@@ -1,8 +1,10 @@
 # Import necessary libraries 
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
-import base64, io
-from functions import dataimport
+#from dash_extensions.enrich import ServersideOutput
+import dash_bootstrap_components as dbc
+
+
 
 # Connect to main app.py file
 from app import app
@@ -26,10 +28,21 @@ CONTENT_STYLE = {
     "padding": "2rem 1rem",
 }
 
+# Define Store object for OCEL object
+ocel_obj = dcc.Store(id='ocel_obj', storage_type='local')
+# Define Store object for directory files
+file_store = dcc.Store(id='folder-selection', storage_type='local')
+# Define Store object for OCEL params
+ocel_params = dcc.Store(id='param-store', storage_type='local')
+# Define Store object for Process Executions
+ocel_executions = dcc.Store(id='execution-store', storage_type='local')
+# Define Store object for clustered OCELs
+clustered_ocel_store = dcc.Store('clustered-ocels', storage_type='local')
+
 # Define the index page layout
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    nav, side,
+    nav, side, file_store, ocel_obj, ocel_params, ocel_executions,
     html.Div(id='page-content', children=[], style=CONTENT_STYLE), 
 ])
 
@@ -58,6 +71,10 @@ def render_page_content(pathname):
     )
 
 
+
 # Run the app on localhost:8050
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, use_reloader = True)
+
+
+

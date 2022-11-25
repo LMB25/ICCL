@@ -24,3 +24,8 @@ li.open .fa-chevron-right {
   background-color: #d6d4d4;
   color: black;
 }
+
+th {
+  font-size: 0.975rem;
+  text-transform: none;
+}

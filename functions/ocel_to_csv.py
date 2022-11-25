@@ -1,27 +1,7 @@
 import pandas as pd
-from ocpa.objects.log.importer.csv import factory as ocel_import_factory_csv
-from ocpa.objects.log.importer.ocel import factory as ocel_import_factory
-from ocpa.objects.log.converter.versions import jsonocel_to_csv
-
-# load ocel from csv format
-def load_ocel_csv(path, parameters):
-    ocel_file = ocel_import_factory_csv.apply(file_path=path, parameters = parameters)
-    return ocel_file
-
-# load ocel from jsnocel or xmlocel format
-def load_ocel_json_xml(path):
-    if path.endswith("jsonocel"):
-        ocel_file = ocel_import_factory.apply(path)
-    elif path.endswith("xmlocel"):
-        ocel_file = ocel_import_factory.apply(path)
-    else:
-        error_msg = "not a valid extension"
-        return error_msg
-    return ocel_file
 
 
-
-def ocel_to_df_params(ocel, return_obj_df=False, parameters=None):
+def apply(ocel, return_obj_df=True, parameters=None):
     if parameters is None:
         parameters = {}
     if 'return_obj_df' in parameters:
@@ -75,29 +55,4 @@ def ocel_to_df_params(ocel, return_obj_df=False, parameters=None):
 
     if return_obj_df or (return_obj_df is None and len(obj_df.columns) > 1):
         return eve_df, obj_df
-    return eve_df, []
-
-
-# convert ocel to df
-def ocel_to_df(ocel, return_obj_df=False, parameters=None):
-    eve_df = jsonocel_to_csv.apply(ocel)
     return eve_df
-
-# get summary of ocel
-def get_summary(ocel, ocel_df):
-    object_types = ocel.object_types
-    num_events = len(ocel_df)
-    num_activities = len(ocel_df['event_activity'].unique())
-    activity_count = ocel_df['event_activity'].value_counts().to_dict()
-    object_types_occurences = dict.fromkeys(object_types, 0)
-
-    num_obj = 0
-    for obj in object_types:
-        df_obj = ocel_df[[obj]]
-        df_obj = df_obj.explode(obj)
-        df_obj = df_obj.dropna()
-        num_df_obj = len(df_obj[obj].unique())
-        object_types_occurences[obj] += num_df_obj
-        num_obj += num_df_obj
-
-    return object_types, num_events, num_activities, num_obj, activity_count, object_types_occurences
