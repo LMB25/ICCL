@@ -74,7 +74,7 @@ layout = dbc.Container([
         html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-csv'),
         html.Br(),
         dbc.Row([
-            dbc.Button("Upload", id="upload-button", className="me-2", n_clicks=0),
+            dbc.Button("Upload", id="upload-button", className="me-2", n_clicks=0, disabled=True),
                 ]), 
         html.Div("OCEL successfully uploaded.", style={'display':'none'}, id='success-upload-ocel'),
         html.Br(),
@@ -141,9 +141,18 @@ def on_upload_csv(obj_name, val_name, act_name, time_name, sep, filename, n):
                 "act_name":act_name,
                 "time_name":time_name,
                 "sep":sep}
-        return params, {'style':'block'}
+        return params, {'display':'block'}
     else:
-        return {}, {'style':'none'}
+        return {}, {'display':'none'}
+
+# enable upload button
+@app.callback(Output("upload-button", "disabled"), [Input("csv-params", "data"), Input("file-dropdown", "value")], prevent_initial_call = True)
+def on_file_selection(csv_params_parsed, selected_file):
+    if selected_file != None: 
+        if (csv_params_parsed != None) or (selected_file.endswith("csv") == False):
+            return False
+    else:
+        return True
 
 # load and store ocel, extract and store parameters, uncover 'success' div
 @app.callback([Output("ocel_obj", "data"), Output("param-store", "data"), Output("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data")], [Input("upload-button",  "n_clicks")])
@@ -172,7 +181,7 @@ def on_upload_ocel_path(selected_file, selected_dir, csv_params, n):
         # encode ocel
         encoded_ocel = codecs.encode(pickle.dumps(ocel_log), "base64").decode()
 
-        return encoded_ocel, dict_params, ocel_process_executions_list, {'style':'block'}
+        return encoded_ocel, dict_params, ocel_process_executions_list, {'display':'block'}
 
 # load head of ocel df
 @app.callback(Output("ocel-table", "children"), State("path", "value"), [Input("ocel_obj", "data"), Input("file-dropdown", "value")], prevent_initial_call = True)
