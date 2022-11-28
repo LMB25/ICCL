@@ -45,6 +45,11 @@ layout = dbc.Container([
         dbc.Row([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0)]),
         html.Div(id='feature-sucess'),
         html.Br(),
+        dbc.Row([
+            dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['Graph2Vec', 'Feather-G'], 'Feather-G',id='graph-embedding-dropdown'))]),
+            dbc.Col([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift'],'Mean-Shift',id='clustering-method-dropdown'))])
+        ]),
+        html.Br(),
         dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
         html.Div(id='clustering-success'),
         html.Br(),
@@ -67,8 +72,8 @@ def on_click(selected_event_features, selected_execution_features, n_clicks):
     
 
 # perform clustering and return dataframe with process execution ids and cluster labels
-@app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data")], Input("start-clustering", "n_clicks"))
-def on_click(ocel_log, selected_event_features, selected_execution_features, n_clicks):
+@app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-dropdown", "value")], Input("start-clustering", "n_clicks"))
+def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, n_clicks):
     if n_clicks > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
@@ -77,7 +82,10 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, n_c
         # remap nodes of feature graphs
         feature_nx_graphs = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
-        embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
+        if embedding_method == 'Graph2Vec':
+            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
+        elif embedding_method == 'Feather-G':
+            embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
         # cluster embedding
         labels = clustering.perform_MeanShift(embedding)
         # create Dataframe with process execution id and cluster labels

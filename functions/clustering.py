@@ -1,5 +1,5 @@
 from sklearn.cluster import DBSCAN 
-from sklearn.cluster import MeanShift
+from sklearn.cluster import MeanShift, KMeans
 import numpy as np
 import pandas as pd
 from ocpa.algo.util.filtering.log import case_filtering
@@ -17,6 +17,11 @@ def perform_MeanShift(X):
 
     return clustering.labels_
 
+def perform_KMeans(X, n=2):
+    clustering = KMeans(n_clusters=n).fit(X)
+
+    return clustering.labels_
+
 def create_clustered_df(process_executions, labels):
     clustered_df = pd.DataFrame(columns=['id', 'cluster'])
     num_process_executions = len(process_executions)
@@ -28,7 +33,7 @@ def create_clustered_df(process_executions, labels):
 def partition_ocel(ocel, clustered_df):
     sub_ocels = [] 
 
-    for cluster in clustered_df['cluster'].unique():
+    for cluster in np.sort(clustered_df['cluster'].unique()):   #sort because .unique() otherwise sorts after first occurences
         cluster_df = clustered_df[clustered_df['cluster'] == cluster]
         cluster_process_ex = list(cluster_df.index.values)
         # get corresponding event ids
@@ -44,7 +49,8 @@ def partition_ocel(ocel, clustered_df):
 def get_cluster_summary(clustered_df):
 
     summary_df = pd.DataFrame(columns=['Cluster ID', 'Number of Process Executions'])
-    summary_df['Cluster ID'] = clustered_df['cluster'].unique() 
-    summary_df['Number of Process Executions'] = clustered_df['cluster'].map(clustered_df['cluster'].value_counts())
+    summary_df['Cluster ID'] = np.sort(clustered_df['cluster'].unique())    #sort cluster df ascending
+    summary_df['Number of Process Executions'] = clustered_df['cluster'].value_counts().sort_index()    #sort by index (by cluster) to match with summary_df
+    #summary_df['Number of Process Executions'] = clustered_df['cluster'].map(clustered_df['cluster'].value_counts())   #returns the number of process executions in first cluster for all clusters in summary
 
     return summary_df
