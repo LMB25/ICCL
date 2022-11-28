@@ -2,6 +2,10 @@ import pandas as pd
 from ocpa.objects.log.importer.csv import factory as ocel_import_factory_csv
 from ocpa.objects.log.importer.ocel import factory as ocel_import_factory
 from ocpa.objects.log.converter.versions import jsonocel_to_csv
+import os, base64
+
+# to intermediately store the uploaded ocel file from the drag and drop field
+UPLOAD_DIRECTORY = "assets"
 
 # load ocel from csv format
 def load_ocel_csv(path, parameters):
@@ -19,6 +23,16 @@ def load_ocel_json_xml(path):
         return error_msg
     return ocel_file
 
+def load_ocel_drag_drop(content):
+    content_type, content_string = content.split(",")
+    
+    decoded = base64.b64decode(content_string)
+    
+    with open(os.path.join(UPLOAD_DIRECTORY, "temp.jsonocel"), "wb") as fp:
+        fp.write(decoded)
+    ocel = ocel_import_factory.apply(os.path.join(UPLOAD_DIRECTORY, "temp.jsonocel"))
+    
+    return ocel
 
 
 def ocel_to_df_params(ocel, return_obj_df=False, parameters=None):

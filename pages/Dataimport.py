@@ -60,6 +60,10 @@ csv_import = html.Div([
 layout = dbc.Container([
         html.Center(html.H1("Import Data")),
         html.Hr(),
+        dcc.Upload(id="drag-drop-field", children=html.Div(["Drag and Drop or ", html.A("Select Files")]),
+                   style={"width": "100%", "height": "60px", "lineHeight": "60px", "borderWidth": "1px", "borderStyle": "dashed", "borderRadius": "5px", "textAlign": "center", "margin": "10px",}
+                   ),
+        html.Hr(),
         dbc.Row([
             dbc.Col(html.P("Insert Path to OCEL")), 
             dbc.Col(dbc.Input(id="path", value=os.path.dirname(os.path.realpath(__file__)), type="text", persistence = False)),
@@ -146,25 +150,30 @@ def on_upload_csv(obj_name, val_name, act_name, time_name, sep, filename, n):
         return {}, {'display':'none'}
 
 # enable upload button
-@app.callback(Output("upload-button", "disabled"), [Input("csv-params", "data"), Input("file-dropdown", "value")], prevent_initial_call = True)
-def on_file_selection(csv_params_parsed, selected_file):
+@app.callback(Output("upload-button", "disabled"), [Input("csv-params", "data"), Input("file-dropdown", "value"), Input("drag-drop-field", "contents")], prevent_initial_call = True)
+def on_file_selection(csv_params_parsed, selected_file, drag_drop_content):
     if selected_file != None: 
         if (csv_params_parsed != None) or (selected_file.endswith("csv") == False):
             return False
+    elif drag_drop_content is not None:
+        return False 
     else:
         return True
 
 # load and store ocel, extract and store parameters, uncover 'success' div
-@app.callback([Output("ocel_obj", "data"), Output("param-store", "data"), Output("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data")], [Input("upload-button",  "n_clicks")])
-def on_upload_ocel_path(selected_file, selected_dir, csv_params, n):
-    if selected_file is None:
+@app.callback([Output("ocel_obj", "data"), Output("param-store", "data"), Output("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),], [Input("upload-button",  "n_clicks")])
+def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_content, drag_drop_filename, n):
+    if selected_file is None and drag_drop_content is None:
         raise PreventUpdate
     else:
         # use different load function w.r.t file extension
-        if selected_file.endswith("csv"):
+        if selected_file!=None and selected_file.endswith("csv"):
             ocel_log = dataimport.load_ocel_csv(os.path.join(selected_dir, selected_file), csv_params)
         else:
-            ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file))
+            if drag_drop_content!=None and "jsonocel" in drag_drop_filename:
+                ocel_log = dataimport.load_ocel_drag_drop(drag_drop_content)
+            else:
+                ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file))
 
         # remove any existing discovered nets, if exist
         [f.unlink() for f in Path("/imgs").glob("*") if f.is_file()] 
