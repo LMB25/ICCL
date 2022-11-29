@@ -47,7 +47,8 @@ layout = dbc.Container([
         html.Br(),
         dbc.Row([
             dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['Graph2Vec', 'Feather-G'], 'Feather-G',id='graph-embedding-dropdown'))]),
-            dbc.Col([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift'],'Mean-Shift',id='clustering-method-dropdown'))])
+            dbc.Col([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
+            dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
         ]),
         html.Br(),
         dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
@@ -69,11 +70,20 @@ def on_click(selected_event_features, selected_execution_features, n_clicks):
         return feature_set_event, feature_set_extraction, "Features successfully set."
     else:
         raise PreventUpdate
-    
+
+# update disability status of number of clusters slider
+@app.callback(Output('num-clusters-slider', 'disabled'), Input('clustering-method-dropdown', 'value'))
+def on_change_clustering_method(clustering_method):
+    if clustering_method in ['K-Means', 'Hierarchical']:
+        return False 
+    else:
+        return True
 
 # perform clustering and return dataframe with process execution ids and cluster labels
-@app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-dropdown", "value")], Input("start-clustering", "n_clicks"))
-def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, n_clicks):
+@app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
+                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-dropdown", "value"), State('clustering-method-dropdown', 'value'), State('num-clusters-slider', 'value')], 
+                Input("start-clustering", "n_clicks"))
+def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, clustering_method, num_clusters, n_clicks):
     if n_clicks > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
@@ -87,7 +97,12 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, emb
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
         # cluster embedding
-        labels = clustering.perform_MeanShift(embedding)
+        if clustering_method == 'Mean-Shift':
+            labels = clustering.perform_MeanShift(embedding)
+        elif clustering_method == 'K-Means':
+            labels = clustering.perform_KMeans(embedding, num_clusters)
+        elif clustering_method == 'Hierarchical':
+            labels = clustering.perform_HierarchicalClustering(embedding, num_clusters)
         # create Dataframe with process execution id and cluster labels
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # get summary of clusters

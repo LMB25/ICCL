@@ -1,5 +1,5 @@
 from sklearn.cluster import DBSCAN 
-from sklearn.cluster import MeanShift, KMeans
+from sklearn.cluster import MeanShift, KMeans, AgglomerativeClustering
 import numpy as np
 import pandas as pd
 from ocpa.algo.util.filtering.log import case_filtering
@@ -17,10 +17,16 @@ def perform_MeanShift(X):
 
     return clustering.labels_
 
-def perform_KMeans(X, n=2):
-    clustering = KMeans(n_clusters=n).fit(X)
+def perform_KMeans(X, n_clusters):
+    clustering = KMeans(n_clusters).fit(X)
 
     return clustering.labels_
+
+def perform_HierarchicalClustering(X, n_clusters):
+    hierarchical_cluster = AgglomerativeClustering(n_clusters=n_clusters, affinity='euclidean', linkage='ward')
+    labels = hierarchical_cluster.fit_predict(X)
+    
+    return labels
 
 def create_clustered_df(process_executions, labels):
     clustered_df = pd.DataFrame(columns=['id', 'cluster'])
