@@ -26,6 +26,8 @@ feature_options_extraction = ['EXECUTION_NUM_OF_EVENTS', 'EXECUTION_NUM_OF_END_E
 event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', options=[{'label': i, 'value': i} for i in feature_options_event], multi=True, value=feature_options_event)
 # extraction based feature selection dropdown
 extraction_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-extraction', options=[{'label': i, 'value': i} for i in feature_options_extraction], multi=True, value=feature_options_extraction)
+# graph embedding selection dropdown
+embedding_method_dropdown = dcc.Dropdown(id='embedding-method-selection', options=['Graph2Vec', 'FeatherGraph'], multi=False, value='Graph2Vec')
 
 # Define the page layout
 layout = dbc.Container([
@@ -45,7 +47,12 @@ layout = dbc.Container([
         dbc.Row([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0)]),
         html.Div(id='feature-sucess'),
         html.Br(),
-        dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
+        dbc.Row([
+            dbc.Col([html.Div("Select Graph Embedding Method:")]),
+            dbc.Col([embedding_method_dropdown]),
+        ]),
+        html.Br(),
+        dbc.Row([dbc.Button("Start Embedding and Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
         html.Div(id='clustering-success'),
         html.Br(),
         html.Div(id="cluster-summary-component"),
@@ -64,11 +71,11 @@ def on_click(selected_event_features, selected_execution_features, n_clicks):
         return feature_set_event, feature_set_extraction, "Features successfully set."
     else:
         raise PreventUpdate
-    
+
 
 # perform clustering and return dataframe with process execution ids and cluster labels
-@app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data")], Input("start-clustering", "n_clicks"))
-def on_click(ocel_log, selected_event_features, selected_execution_features, n_clicks):
+@app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("embedding-method-selection", "value")], Input("start-clustering", "n_clicks"))
+def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, n_clicks):
     if n_clicks > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
@@ -77,7 +84,10 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, n_c
         # remap nodes of feature graphs
         feature_nx_graphs = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
-        embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
+        if embedding_method == 'Graph2Vec':
+            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
+        elif embedding_method == 'FeatherGraph':
+            embedding = graph_embedding.perform_feathergraph(feature_nx_graphs)
         # cluster embedding
         labels = clustering.perform_MeanShift(embedding)
         # create Dataframe with process execution id and cluster labels

@@ -1,5 +1,5 @@
 import networkx as nx
-from karateclub.graph_embedding import graph2vec
+from karateclub.graph_embedding import graph2vec, feathergraph
 from karateclub import DeepWalk, Walklets
 import node2vec 
 
@@ -30,6 +30,13 @@ def feature_graphs_to_nx_graphs(feature_graphs):
 
 def perform_graph2vec(graph_list, attributed):
     model = graph2vec.Graph2Vec(attributed=attributed)
+    model.fit(graph_list)
+    X = model.get_embedding()
+
+    return X
+
+def perform_feathergraph(graph_list):
+    model = feathergraph.FeatherGraph()
     model.fit(graph_list)
     X = model.get_embedding()
 

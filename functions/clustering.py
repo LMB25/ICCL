@@ -44,7 +44,9 @@ def partition_ocel(ocel, clustered_df):
 def get_cluster_summary(clustered_df):
 
     summary_df = pd.DataFrame(columns=['Cluster ID', 'Number of Process Executions'])
-    summary_df['Cluster ID'] = clustered_df['cluster'].unique() 
-    summary_df['Number of Process Executions'] = clustered_df['cluster'].map(clustered_df['cluster'].value_counts())
-
+    cluster_ids = clustered_df['cluster'].value_counts(dropna=False).keys().tolist()
+    cluster_counts = clustered_df['cluster'].value_counts(dropna=False).tolist()
+    summary_df['Cluster ID'] = cluster_ids
+    summary_df['Number of Process Executions'] = cluster_counts
+    
     return summary_df
