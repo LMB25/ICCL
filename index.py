@@ -1,7 +1,6 @@
 # Import necessary libraries 
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
-#from dash_extensions.enrich import ServersideOutput
 import dash_bootstrap_components as dbc
 
 
@@ -29,7 +28,7 @@ CONTENT_STYLE = {
 }
 
 # Define Store object for OCEL object
-ocel_obj = dcc.Store(id='ocel_obj', storage_type='local')
+ocel_obj = dcc.Store(id='ocel_obj')
 # Define Store object for directory files
 file_store = dcc.Store(id='folder-selection', storage_type='local')
 # Define Store object for OCEL params

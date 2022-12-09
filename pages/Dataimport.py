@@ -5,13 +5,14 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from app import app
 from dash.dependencies import Input, Output, State
+from dash_extensions.enrich import Dash, Trigger, ServersideOutput
 from dash.exceptions import PreventUpdate
 import os
 import pickle
 import codecs
 from pathlib import Path
 import ast
-
+import time
 
 from functions import dataimport, process_executions
 
@@ -70,6 +71,10 @@ layout = dbc.Container([
         ]),
         html.Br(),
         dbc.Row([
+            dbc.Button("Search", id="enable-path", className="me-2", n_clicks=0, disabled=False),
+                ]),
+        html.Br(),
+        dbc.Row([
             dbc.Col(html.P("Select OCEL File, allowed extensions: jsonocel, xmlocel, csv")), 
             dbc.Col(file_dropdown)
         ]),
@@ -88,33 +93,37 @@ layout = dbc.Container([
     ])
 
 # callback for path-files store
-@app.callback(Output("folder-selection", "data"), [Input("path", "value")], prevent_initial_call=True)
-def on_get_filepath(value):
-    if value is None:
-        raise PreventUpdate
-    else:
-        ext = ["jsonocel", "xmlocel", "csv"]
-        files = []
-        # list files that have one of the extensions
-        for filename in os.listdir(value):
-            if filename.endswith(tuple(ext)):
-                files.append(filename)
-        # convert to df
-        df = pd.DataFrame(files, columns=['files'])
-        # convert to dictionary
-        dict_df = df.to_dict()
-    return dict_df
+@app.callback(Output("folder-selection", "data"), [State("path", "value")], [Input("enable-path", "n_clicks")], prevent_initial_call=True)
+def on_get_filepath(value, n):
+    if n > 0:
+        if value is None:
+            raise PreventUpdate
+        else:
+            ext = ["jsonocel", "xmlocel", "csv"]
+            files = []
+            # list files that have one of the extensions
+            for filename in os.listdir(value):
+                if filename.endswith(tuple(ext)):
+                    files.append(filename)
+            # convert to df
+            df = pd.DataFrame(files, columns=['files'])
+            # convert to dictionary
+            dict_df = df.to_dict()
+        return dict_df
 
 # load filenames into dropdown
-@app.callback(Output("file-dropdown", "options"), Input("folder-selection", "data"))
+@app.callback(Output("file-dropdown", "options"), Input("folder-selection", "data"), prevent_initial_call=True)
 def on_selection_folder(files):
-    filenames = []
-    file_dict = files['files']
-    for enumeration in file_dict.keys():
-        filenames.append(file_dict[enumeration])
-    df = pd.DataFrame(filenames, columns=['files'])
-    options=[{'label':file, 'value':file} for file in df['files'].unique()]
-    return options
+    if files is None:
+        raise PreventUpdate
+    else:
+        filenames = []
+        file_dict = files['files']
+        for enumeration in file_dict.keys():
+            filenames.append(file_dict[enumeration])
+        df = pd.DataFrame(filenames, columns=['files'])
+        options=[{'label':file, 'value':file} for file in df['files'].unique()]
+        return options
 
 # load csv parameters into store
 @app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("val_names", "value"), State("act_name", "value"), State("time_name", "value"), State("sep", "value"), State("file-dropdown", "value")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
@@ -161,8 +170,9 @@ def on_file_selection(csv_params_parsed, selected_file, drag_drop_content):
         return True
 
 # load and store ocel, extract and store parameters, uncover 'success' div
-@app.callback([Output("ocel_obj", "data"), Output("param-store", "data"), Output("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),], [Input("upload-button",  "n_clicks")])
+@app.callback([ServersideOutput("ocel_obj", "data"), Output("param-store", "data"), Output("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),], [Trigger("upload-button",  "n_clicks")], memoize=True)
 def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_content, drag_drop_filename, n):
+    time.sleep(1)
     if selected_file is None and drag_drop_content is None:
         raise PreventUpdate
     else:

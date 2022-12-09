@@ -9,8 +9,6 @@ import base64
 import dash
 import pickle, codecs
 
-# number of clicks store
-models_store = dcc.Store(id='discovered-models', storage_type='local')
 # store for number of discovered models
 models_num = dcc.Store(id='discovered-models-num', storage_type='local')
 # conformance measure dropdown
@@ -21,7 +19,7 @@ conformance_dropdown = dcc.Dropdown(id='conformance-measure-cluster', options=['
 layout = dbc.Container([
     dbc.Col([
         html.Center(html.H1("Process Discovery Clustered OCEL")),
-        models_store, models_num,
+        models_num,
         html.Hr(),
         dbc.Row([
             dbc.Col([html.Div("Select Conformance Measure:")], align='center'),
@@ -52,19 +50,12 @@ def on_button_click(clustered_ocel, n):
         return dash.no_update
 
 
-# count number of clicks
-@app.callback(Output("discovered-models", "data"), State("discovered-models", "data"), Input("start-pm_cluster", "n_clicks"))
-def on_click(data, n_clicks):
-    if n_clicks == 0:
-        raise PreventUpdate
-    data = data or {'clicks': 0}
-    data['clicks'] = data['clicks'] + 1
-    return data
-
 # display discovered sub-petri-nets
-@app.callback(Output("pm-models-display", "children"), Input("discovered-models-num", "data"), prevent_initial_call=True)
-def on_discovery(num_models):
-    if num_models != None:
+@app.callback(Output("pm-models-display", "children"), [State("discovered-models-num", "data")], Input("pm-models", "children"), prevent_initial_call=True)
+def on_discovery(num_models, success_div):
+    if success_div is None:
+        raise PreventUpdate 
+    else:
         imgs = []
         for i in range(0,num_models):
             test_base64 = base64.b64encode(open('imgs/oc_petri_net_cluster_' + str(i) + '.png', 'rb').read()).decode('ascii')

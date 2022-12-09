@@ -3,8 +3,10 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import dash
+import time
 from app import app
 from dash.exceptions import PreventUpdate
+from dash_extensions.enrich import Dash, Trigger, ServersideOutput
 from functions import process_executions, feature_extraction, graph_embedding, clustering
 from components import nxgraph_figure
 import pickle
@@ -80,10 +82,11 @@ def on_change_clustering_method(clustering_method):
         return True
 
 # perform clustering and return dataframe with process execution ids and cluster labels
-@app.callback([Output("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
+@app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
                 [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-dropdown", "value"), State('clustering-method-dropdown', 'value'), State('num-clusters-slider', 'value')], 
-                Input("start-clustering", "n_clicks"))
+                Trigger("start-clustering", "n_clicks"), memoize=True)
 def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, clustering_method, num_clusters, n_clicks):
+    time.sleep(1)
     if n_clicks > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))

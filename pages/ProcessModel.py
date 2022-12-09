@@ -9,9 +9,6 @@ import base64
 import dash
 import pickle, codecs
 
-# discovered model store
-model_store = dcc.Store(id='discovered-model', storage_type='local')
-
 # conformance measure dropdown
 conformance_dropdown = dcc.Dropdown(id='conformance-measure', options=['Fitness', 'Precision'], multi=False, value='Fitness')
 
@@ -20,7 +17,6 @@ layout = dbc.Container([
     dbc.Col([
         html.Center(html.H1("Process Discovery Original OCEL")),
         html.Hr(),
-        model_store,
         dbc.Row([
             dbc.Col([html.Div("Select Conformance Measure:")], align='center'),
             dbc.Col([conformance_dropdown], align='center'),
@@ -68,21 +64,11 @@ def on_button_click(ocel_obj, n):
         return dash.no_update
 
 
-@app.callback(Output("discovered-model", "data"), State("discovered-model", "data"), Input("start-pm", "n_clicks"))
-def on_click(data, n_clicks):
-    # count clicks
-    if n_clicks==0:
+@app.callback(Output("pm-model-display", "children"), [Input("pm-model", "children")], prevent_initial_call=True)
+def on_discovery(success_div):
+    # if process discovery successfull, convert png to html image
+    if success_div is None:
         raise PreventUpdate
-    data = data or {'clicks': 0}
-    data['clicks'] = data['clicks'] + 1
-    return data
-    
-
-@app.callback(Output("pm-model-display", "children"), [Input("discovered-model", "data")], prevent_initial_call=True)
-def on_button_click(data):
-    data = data or {}
-    clicks = data.get('clicks', 0)
-    # if button is clicked, convert png to html image
-    if clicks > 0:
+    else:
         test_base64 = base64.b64encode(open('imgs/oc_petri_net.png', 'rb').read()).decode('ascii')
         return html.Img(src='data:image/png;base64,{}'.format(test_base64), style={'height':'70%', 'width':'70%'})
