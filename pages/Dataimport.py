@@ -170,7 +170,7 @@ def on_file_selection(csv_params_parsed, selected_file, drag_drop_content):
         return True
 
 # load and store ocel, extract and store parameters, uncover 'success' div
-@app.callback([ServersideOutput("ocel_obj", "data"), Output("param-store", "data"), Output("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),], [Trigger("upload-button",  "n_clicks")], memoize=True)
+@app.callback([ServersideOutput("ocel_obj", "data"), Output("param-store", "data"), ServersideOutput("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),], [Trigger("upload-button",  "n_clicks")], memoize=True)
 def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_content, drag_drop_filename, n):
     time.sleep(1)
     if selected_file is None and drag_drop_content is None:

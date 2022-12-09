@@ -27,7 +27,7 @@ layout = dbc.Container([
         html.Div(id="ocel-summary-text")
         ]),
     dbc.Row([
-        html.H4("Full OCEL"),
+        html.H4("OCEL (limited to 1000 records)"),
         html.Hr(),
     ]),
     dbc.Row([
@@ -44,6 +44,9 @@ def on_upload_ocel_full(ocel_log):
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # convert ocel object to dataframe and return as DataTable
         ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
+        # cut ocel if too large
+        if len(ocel_df) > 1000:
+            ocel_df = ocel_df.head(1000)
         return dbc.Table.from_dataframe(ocel_df, striped=True, bordered=True, hover=True)
 
 
