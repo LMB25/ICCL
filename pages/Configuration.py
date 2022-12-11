@@ -7,7 +7,7 @@ import time
 from app import app
 from dash.exceptions import PreventUpdate
 from dash_extensions.enrich import Dash, Trigger, ServersideOutput
-from functions import process_executions, feature_extraction, graph_embedding, clustering
+from functions import process_executions, feature_extraction, graph_embedding, clustering, dataimport
 from components import nxgraph_figure
 import pickle
 import codecs
@@ -111,7 +111,8 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, emb
         # get summary of clusters
         cluster_summary_df = clustering.get_cluster_summary(clustered_df)
         # partition ocel into clustered ocels
-        sub_ocels = clustering.partition_ocel(ocel_log, clustered_df)
+        ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
+        sub_ocels = clustering.partition_ocel(ocel_log, ocel_df, clustered_df)
         # encoding/ storing of sub ocels
         sub_ocels_encoded = [codecs.encode(pickle.dumps(ocel), "base64").decode() for ocel in sub_ocels]
     else:

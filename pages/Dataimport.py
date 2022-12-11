@@ -73,6 +73,7 @@ layout = dbc.Container([
         dbc.Row([
             dbc.Button("Search", id="enable-path", className="me-2", n_clicks=0, disabled=False),
                 ]),
+        html.Div("Path successfully searched.", style={'display':'none'}, id='folder-search-result'),
         html.Br(),
         dbc.Row([
             dbc.Col(html.P("Select OCEL File, allowed extensions: jsonocel, xmlocel, csv")), 
@@ -93,7 +94,7 @@ layout = dbc.Container([
     ])
 
 # callback for path-files store
-@app.callback(Output("folder-selection", "data"), [State("path", "value")], [Input("enable-path", "n_clicks")], prevent_initial_call=True)
+@app.callback([Output("folder-selection", "data"), Output("folder-search-result", "style")], [State("path", "value")], [Input("enable-path", "n_clicks")], prevent_initial_call=True)
 def on_get_filepath(value, n):
     if n > 0:
         if value is None:
@@ -109,7 +110,9 @@ def on_get_filepath(value, n):
             df = pd.DataFrame(files, columns=['files'])
             # convert to dictionary
             dict_df = df.to_dict()
-        return dict_df
+        return dict_df, {'display':'block'}
+    else:
+        raise PreventUpdate
 
 # load filenames into dropdown
 @app.callback(Output("file-dropdown", "options"), Input("folder-selection", "data"), prevent_initial_call=True)
