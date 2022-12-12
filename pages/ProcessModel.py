@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app
 from functions import process_discovery, conformance_checking
+import dash_interactive_graphviz
 import base64
 import dash
 import pickle, codecs
@@ -52,23 +53,19 @@ def on_button_click(ocel_obj, conformance_meas, n):
         return dash.no_update
 
 
-@app.callback(Output("pm-model", "children"), State("ocel_obj", "data"), [Input("start-pm", "n_clicks")])
+@app.callback([Output("pm-model", "children"), Output("pm-model-display", "children")], State("ocel_obj", "data"), [Input("start-pm", "n_clicks")])
 def on_button_click(ocel_obj, n):
     if n > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_obj.encode(), "base64"))
-        # discover and save petri net
-        process_discovery.process_discovery_ocel_to_img(ocel_log, "oc_petri_net")
-        return "Process Model successfully discovered."
+        # discover petri net
+        #process_discovery.process_discovery_ocel_to_img(ocel_log, "oc_petri_net")
+        ocpn = process_discovery.process_discovery_ocel_to_ocpn(ocel_log)
+        # convert ocpn to gviz str
+        gviz_ocpn = process_discovery.ocpn_to_gviz(ocpn)
+        # create interactive dash gviz object
+        ocpn_vis = dash_interactive_graphviz.DashInteractiveGraphviz(id="ocpn-original-ocel",dot_source=str(gviz_ocpn))
+        return "Process Model successfully discovered.", ocpn_vis
     else:
         return dash.no_update
 
-
-@app.callback(Output("pm-model-display", "children"), [Input("pm-model", "children")], prevent_initial_call=True)
-def on_discovery(success_div):
-    # if process discovery successfull, convert png to html image
-    if success_div is None:
-        raise PreventUpdate
-    else:
-        test_base64 = base64.b64encode(open('imgs/oc_petri_net.png', 'rb').read()).decode('ascii')
-        return html.Img(src='data:image/png;base64,{}'.format(test_base64), style={'height':'70%', 'width':'70%'})

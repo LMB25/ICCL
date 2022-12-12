@@ -8,12 +8,14 @@ from functions import process_discovery, conformance_checking
 import base64
 import dash
 import pickle, codecs
+import dash_interactive_graphviz
 
 # store for number of discovered models
 models_num = dcc.Store(id='discovered-models-num', storage_type='local')
 # conformance measure dropdown
 conformance_dropdown = dcc.Dropdown(id='conformance-measure-cluster', options=['Fitness', 'Precision'], multi=False, value='Fitness')
-
+# cluster dropdown
+cluster_dropdown = dcc.Dropdown(id='cluster-selection', options=[], multi=False, disabled=True)
 
 # Define the page layout
 layout = dbc.Container([
@@ -32,36 +34,53 @@ layout = dbc.Container([
         dbc.Row([
             dbc.Button("Show Process Models", color="warning", className="me-1", id='start-pm_cluster', n_clicks=0),
         ]),
-        html.Div(id='pm-models'),
-        html.Div(id='pm-models-display')
-    ])
+        html.Br(),
+        dbc.Row([
+            dbc.Col([html.Div("Select Cluster: ")], align='center'),
+            dbc.Col([cluster_dropdown], align='center')
+            ]),
+        html.Div(
+            [
+                dash_interactive_graphviz.DashInteractiveGraphviz(id="ocpn-clustered-ocel")
+            ]
+            ),
+    ]),
 ])
 
-@app.callback([Output("pm-models", "children"), Output("discovered-models-num", "data")], State("clustered-ocels", "data"), [Input("start-pm_cluster", "n_clicks")])
-def on_button_click(clustered_ocel, n):
+@app.callback(Output("cluster-selection", "options"), [State("clustered-ocels", "data")], [Input("cluster-selection", "disabled")], prevent_initial_call=True)
+def on_clustering(clustered_ocel, btn_status):
+    if btn_status == False:
+        if clustered_ocel is None:
+            raise PreventUpdate
+        else:
+            num_clusters = len(clustered_ocel)
+            cluster_options=[{'label':i, 'value':i} for i in range(0, num_clusters)]
+            return cluster_options
+    else:
+        raise PreventUpdate
+
+@app.callback(Output("cluster-selection", "disabled"), [Input("start-pm_cluster", "n_clicks")], prevent_initial_call=True)
+def on_button_click(n):
     if n > 0:
-        # load ocel
-        for i, sub_ocel in enumerate(clustered_ocel):
-            clustered_ocel_obj = pickle.loads(codecs.decode(sub_ocel.encode(), "base64"))
-            # discover and save petri nets
-            process_discovery.process_discovery_ocel_to_img(clustered_ocel_obj, "oc_petri_net_cluster_" + str(i))
-        return "Process Models successfully discovered.", i+1
+        return False 
+    else:
+        return True 
+
+@app.callback(Output("ocpn-clustered-ocel", "dot_source"), [State("clustered-ocels", "data")], [Input("cluster-selection", "value")], prevent_initial_call=True)
+def on_selection(clustered_ocel, selected_cluster):
+    if selected_cluster != None:
+
+        selected_cluster_ocel = clustered_ocel[int(selected_cluster)]
+        clustered_ocel_obj = pickle.loads(codecs.decode(selected_cluster_ocel.encode(), "base64"))
+        # discover petri nets
+        ocpn = process_discovery.process_discovery_ocel_to_ocpn(clustered_ocel_obj)
+        # graph source
+        graphviz_src = process_discovery.ocpn_to_gviz(ocpn)
+
+        return graphviz_src
     else:
         return dash.no_update
 
-
-# display discovered sub-petri-nets
-@app.callback(Output("pm-models-display", "children"), [State("discovered-models-num", "data")], Input("pm-models", "children"), prevent_initial_call=True)
-def on_discovery(num_models, success_div):
-    if success_div is None:
-        raise PreventUpdate 
-    else:
-        imgs = []
-        for i in range(0,num_models):
-            test_base64 = base64.b64encode(open('imgs/oc_petri_net_cluster_' + str(i) + '.png', 'rb').read()).decode('ascii')
-            imgs.append(html.H4("Cluster " + str(i)))
-            imgs.append(html.Img(src='data:image/png;base64,{}'.format(test_base64), style={'height':'70%', 'width':'70%'}))
-        return imgs
 
 @app.callback(Output("conformance-result-cluster", "children"), [State("clustered-ocels", "data"), State("conformance-measure-cluster", "value")], [Input("calc-conformance-cluster", "n_clicks")])
 def on_button_click(clustered_ocels, conformance_meas, n):
