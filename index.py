@@ -36,7 +36,7 @@ ocel_params = dcc.Store(id='param-store', storage_type='local')
 # Define Store object for Process Executions
 ocel_executions = dcc.Store(id='execution-store')
 # Define Store object for clustered OCELs
-clustered_ocel_store = dcc.Store('clustered-ocels')
+clustered_ocel_store = dcc.Store(id='clustered-ocels')
 
 # Define the index page layout
 app.layout = html.Div([

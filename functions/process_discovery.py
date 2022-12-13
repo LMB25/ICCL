@@ -14,3 +14,6 @@ def ocpn_to_gviz(ocpn):
     gviz_ocpn = ocpn_vis_factory.apply(ocpn)
     gviz_str = str(gviz_ocpn)
     return gviz_str
+
+def save_ocpn(ocpn, filepath, filename, extension):
+    ocpn_vis_factory.save(ocpn_vis_factory.apply(ocpn), filepath + "/" + filename + "." + extension)

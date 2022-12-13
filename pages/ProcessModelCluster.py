@@ -8,6 +8,7 @@ from functions import process_discovery, conformance_checking
 import base64
 import dash
 import pickle, codecs
+import os
 import dash_interactive_graphviz
 
 # store for number of discovered models
@@ -32,13 +33,28 @@ layout = dbc.Container([
         ]),
         html.Hr(),
         dbc.Row([
-            dbc.Button("Show Process Models", color="warning", className="me-1", id='start-pm_cluster', n_clicks=0),
+            dbc.Button("Start Process Discovery", color="warning", className="me-1", id='start-pm_cluster', n_clicks=0),
         ]),
-        html.Br(),
+        html.Div(id='discovery-success-cluster'),
+        html.Hr(),
         dbc.Row([
             dbc.Col([html.Div("Select Cluster: ")], align='center'),
             dbc.Col([cluster_dropdown], align='center')
             ]),
+        html.Div([
+            html.Hr(),
+            dbc.Row([html.H5("Save Petri Net")]),
+            dbc.Row([
+                dbc.Col([html.Div("Filepath: ")], align='center'),
+                dbc.Col([dbc.Input(id="path-save-clustered-model", value=os.path.dirname(os.path.realpath(__file__)))], width=5),
+                dbc.Col([html.Div("Filename: ")], align='center'),
+                dbc.Col([dbc.Input(id='filename-clustered-model', placeholder='cluster_model')], width=3),
+                dbc.Col([dcc.Dropdown(id='img-format-cluster', options=['png', 'svg'], multi=False, value='png')], align='center'),
+                dbc.Col([dbc.Button("Save", id="save-img-clustered-model", className="me-2", n_clicks=0)]),
+            ]), 
+            ], id='download-model-clustered', style={'display': 'none'}),
+        html.Div("Petri Net successfully saved.", id='download-success-cluster', style={'display':'none'}),
+        html.Hr(),
         html.Div(
             [
                 dash_interactive_graphviz.DashInteractiveGraphviz(id="ocpn-clustered-ocel")
@@ -59,14 +75,14 @@ def on_clustering(clustered_ocel, btn_status):
     else:
         raise PreventUpdate
 
-@app.callback(Output("cluster-selection", "disabled"), [Input("start-pm_cluster", "n_clicks")], prevent_initial_call=True)
+@app.callback([Output("cluster-selection", "disabled"), Output("discovery-success-cluster", "children")], [Input("start-pm_cluster", "n_clicks")], prevent_initial_call=True)
 def on_button_click(n):
     if n > 0:
-        return False 
+        return False, ["Process Models successfully discovered."]
     else:
         return True 
 
-@app.callback(Output("ocpn-clustered-ocel", "dot_source"), [State("clustered-ocels", "data")], [Input("cluster-selection", "value")], prevent_initial_call=True)
+@app.callback([Output("download-model-clustered", "style"), Output("ocpn-clustered-ocel", "dot_source")], [State("clustered-ocels", "data")], [Input("cluster-selection", "value")], prevent_initial_call=True)
 def on_selection(clustered_ocel, selected_cluster):
     if selected_cluster != None:
 
@@ -77,9 +93,23 @@ def on_selection(clustered_ocel, selected_cluster):
         # graph source
         graphviz_src = process_discovery.ocpn_to_gviz(ocpn)
 
-        return graphviz_src
+        return {'display':'block'}, graphviz_src
     else:
         return dash.no_update
+
+# to-do: don't load and discover again -> store discovered ocpn beforehand
+@app.callback(Output("download-success-cluster", "style"), [State("cluster-selection", "value"), State("clustered-ocels", "data"), State("path-save-clustered-model", "value"), State("filename-clustered-model", "value"), State("img-format-cluster", "value")], Input("save-img-clustered-model", "n_clicks"), prevent_initial_call=True)
+def on_download_click(selected_cluster, clustered_ocel, path, filename, format, n):
+    if n > 0:
+        selected_cluster_ocel = clustered_ocel[int(selected_cluster)]
+        clustered_ocel_obj = pickle.loads(codecs.decode(selected_cluster_ocel.encode(), "base64"))
+        # discover petri net
+        ocpn = process_discovery.process_discovery_ocel_to_ocpn(clustered_ocel_obj)
+        # save petri net
+        process_discovery.save_ocpn(ocpn, path, filename, format)
+        return {'display':'block'}
+    else:
+        dash.no_update
 
 
 @app.callback(Output("conformance-result-cluster", "children"), [State("clustered-ocels", "data"), State("conformance-measure-cluster", "value")], [Input("calc-conformance-cluster", "n_clicks")])
