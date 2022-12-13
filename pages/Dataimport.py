@@ -13,6 +13,7 @@ import codecs
 from pathlib import Path
 import ast
 import time
+import base64, io
 
 from functions import dataimport, process_executions
 
@@ -129,9 +130,9 @@ def on_selection_folder(files):
         return options
 
 # load csv parameters into store
-@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("val_names", "value"), State("act_name", "value"), State("time_name", "value"), State("sep", "value"), State("file-dropdown", "value")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
-def on_upload_csv(obj_name, val_name, act_name, time_name, sep, filename, n):
-    if filename.endswith("csv"):
+@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("val_names", "value"), State("act_name", "value"), State("time_name", "value"), State("sep", "value"), State("file-dropdown", "value"), State("drag-drop-field", "filename")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
+def on_upload_csv(obj_name, val_name, act_name, time_name, sep, filename, drag_drop_filename, n):
+    if (filename != None and filename.endswith("csv")) or drag_drop_filename.endswith("csv"):
         if obj_name is None:
             obj_name = []
         elif obj_name.startswith("["):
@@ -182,8 +183,10 @@ def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_conte
         # use different load function w.r.t file extension
         if selected_file!=None and selected_file.endswith("csv"):
             ocel_log = dataimport.load_ocel_csv(os.path.join(selected_dir, selected_file), csv_params)
+        elif drag_drop_filename!=None and drag_drop_filename.endswith("csv"):
+            ocel_log = dataimport.load_ocel_csv_drag_droph(drag_drop_content, csv_params)
         else:
-            if drag_drop_content!=None and "jsonocel" in drag_drop_filename:
+            if drag_drop_content!=None and drag_drop_filename.endswith("jsonocel"):
                 ocel_log = dataimport.load_ocel_drag_drop(drag_drop_content)
             else:
                 ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file))
@@ -206,8 +209,8 @@ def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_conte
         return encoded_ocel, dict_params, ocel_process_executions_list, {'display':'block'}
 
 # load head of ocel df
-@app.callback(Output("ocel-table", "children"), State("path", "value"), [Input("ocel_obj", "data"), Input("file-dropdown", "value")], prevent_initial_call = True)
-def on_upload_ocel_head(selected_dir, ocel_log, filename):
+@app.callback(Output("ocel-table", "children"), State("path", "value"), [Input("ocel_obj", "data"), Input("file-dropdown", "value"), Input("drag-drop-field", "filename"), State("drag-drop-field", "contents")], prevent_initial_call = True)
+def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, drag_drop_contents):
     triggered_id = ctx.triggered_id
     # if selected file is csv, read csv and display head
     if triggered_id == 'file-dropdown':
@@ -219,6 +222,20 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename):
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
         else:
             return ocel_table
+        
+     # if selected file (uploaded with the drag-drop-field) is csv, read csv and display head
+    if triggered_id == 'drag-drop-field':
+        if drag_drop_filename is None:
+            raise PreventUpdate
+        elif drag_drop_filename.endswith("csv"):
+            content_type, content_string = drag_drop_contents.split(',')
+            decoded = base64.b64decode(content_string)
+            ocel_df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            ocel_df_head = ocel_df.head(10)
+            return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
+        else:
+            return ocel_table    
+    
     # if file is already uploaded as ocel, load ocel object, transform to df and display head
     elif triggered_id == 'ocel_obj':
         if ocel_log != None:
@@ -228,10 +245,16 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename):
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
 
 # uncover csv parameter form, if selected file has csv extension
-@app.callback(Output("csv-import", "style"), Input("file-dropdown", "value"), prevent_initial_call = True)
-def on_selection_file(filename):
+@app.callback(Output("csv-import", "style"), [Input("file-dropdown", "value"), Input("drag-drop-field", "filename")], prevent_initial_call = True)
+def on_selection_file(filename, drag_drop_filename):
     if filename != None:
         if filename.endswith("csv"):
+            return {'display':'block'}
+        else:
+            return {'display':'none'}
+        
+    elif drag_drop_filename != None:
+        if drag_drop_filename.endswith("csv"):
             return {'display':'block'}
         else:
             return {'display':'none'}
