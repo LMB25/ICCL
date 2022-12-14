@@ -28,15 +28,15 @@ CONTENT_STYLE = {
 }
 
 # Define Store object for OCEL object
-ocel_obj = dcc.Store(id='ocel_obj')
+ocel_obj = dcc.Store(id='ocel_obj', storage_type='local')
 # Define Store object for directory files
 file_store = dcc.Store(id='folder-selection', storage_type='local')
 # Define Store object for OCEL params
 ocel_params = dcc.Store(id='param-store', storage_type='local')
 # Define Store object for Process Executions
-ocel_executions = dcc.Store(id='execution-store')
+ocel_executions = dcc.Store(id='execution-store', storage_type='local')
 # Define Store object for clustered OCELs
-clustered_ocel_store = dcc.Store(id='clustered-ocels')
+clustered_ocel_store = dcc.Store(id='clustered-ocels', storage_type='local')
 
 # Define the index page layout
 app.layout = html.Div([

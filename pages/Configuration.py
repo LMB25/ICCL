@@ -136,7 +136,9 @@ def on_extraction(ocel_log, execution_id):
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # get graph object of process execution
         ocel_executions_graph = process_executions.get_process_execution_graph(ocel_log, int(execution_id) - 1)
+        
         # convert nx graph to dash figure 
-        fig = nxgraph_figure.create_graph_figure(ocel_executions_graph)
-
-        return dcc.Graph(id='pe-graph',figure=fig)
+        cyto = nxgraph_figure.create_interactive_graph(ocel_executions_graph, ocel_log)
+        #fig = nxgraph_figure.create_graph_figure(ocel_executions_graph, ocel_log)
+        return  cyto
+        #return dcc.Graph(id='pe-graph',figure=fig)

@@ -2,13 +2,17 @@ from dash import html
 import dash_bootstrap_components as dbc
 import networkx as nx
 import plotly.graph_objects as go
+from ocpa.algo.predictive_monitoring.event_based_features.extraction_functions import event_activity
+import dash_cytoscape as cyto
 
 
-def create_graph_figure(G):
-    pos = nx.layout.spring_layout(G)
+
+
+def create_graph_figure(G, ocel):
+    pos = nx.layout.spectral_layout(G)#spring_layout(G)
     for node in G.nodes:
         G.nodes[node]['pos'] = list(pos[node])
-
+        
     edge_trace = go.Scatter(
     x=[],
     y=[],
@@ -25,13 +29,21 @@ def create_graph_figure(G):
     x=[],
     y=[],
     text=[],
-    mode='markers',
+    textposition="top center",
+    mode='markers+text',
     hoverinfo='text',
     marker=dict(line=dict(width=2)))
+    
     for node in G.nodes():
         x, y = G.nodes[node]['pos']
         node_trace['x'] += tuple([x])
         node_trace['y'] += tuple([y])
+        
+    node_text = []
+    for node in G.nodes:
+        node_text.append(ocel.get_value(node, "event_activity"))
+
+    node_trace.text = node_text
 
 
     fig = go.Figure(data=[edge_trace, node_trace],
@@ -46,3 +58,32 @@ def create_graph_figure(G):
                 )
 
     return fig
+
+def create_interactive_graph(G, ocel):
+    pos = nx.layout.spectral_layout(G,scale=200)
+    for node in G.nodes:
+        G.nodes[node]['pos'] = list(pos[node])
+    
+    nodes = [
+        {
+            'data': {'id': node, 'label': ocel.get_value(node, "event_activity")},
+            'position': {'x': 5 * G.nodes[node]['pos'][0], 'y': G.nodes[node]['pos'][1]}
+        }
+        for node in G.nodes()
+    ]
+
+    edges = [
+        {'data': {'source': edge[0], 'target': edge[1]}}
+        for edge in G.edges()
+    ]
+
+    elements = nodes + edges
+    
+    return cyto.Cytoscape(
+        id='cytoscape-layout-1',
+        elements=elements,
+        style={'width': '100%', 'height': '350px'},
+        layout={
+            'name': 'preset'
+        }
+    )
