@@ -2,6 +2,7 @@ dash==2.7.0
 dash_bootstrap_components==1.1.0
 dash_extensions==0.1.8
 dash_interactive_graphviz==0.3.0
+dash-cytoscape
 karateclub==1.3.3
 networkx==2.6.3
 node2vec==0.4.6
