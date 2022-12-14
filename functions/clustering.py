@@ -1,10 +1,26 @@
 from sklearn.cluster import DBSCAN 
 from sklearn.cluster import MeanShift, KMeans, AgglomerativeClustering
+from sklearn.metrics import silhouette_score
 import numpy as np
 import pandas as pd
 from ocpa.algo.util.filtering.log import case_filtering
 from ocpa.objects.log.util import misc as log_util
 
+
+def perform_silhouette_analysis(X, max_clusters, method):
+    silhouette = []
+    for i in range(2,max_clusters+1):
+        if method == 'K-Means':
+            kmeans = KMeans(n_clusters = i)
+            kmeans.fit(X)
+            labels = kmeans.labels_
+            silhouette.append(silhouette_score(X, labels))
+        elif method == 'Hierarchical':
+            hierarchical_cluster = AgglomerativeClustering(n_clusters=i, affinity='euclidean', linkage='ward')
+            labels = hierarchical_cluster.fit_predict(X)
+            silhouette.append(silhouette_score(X, labels))
+
+    return silhouette 
 
 def perform_DBSCAN(X):
     labels = DBSCAN(eps=0.75, min_samples=8).fit_predict(X)

@@ -8,7 +8,7 @@ from app import app
 from dash.exceptions import PreventUpdate
 from dash_extensions.enrich import Dash, Trigger, ServersideOutput
 from functions import process_executions, feature_extraction, graph_embedding, clustering, dataimport
-from components import nxgraph_figure
+from components import nxgraph_figure, silhouette_figure
 import pickle
 import codecs
 
@@ -53,6 +53,16 @@ layout = dbc.Container([
             dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
         ]),
         html.Br(),
+        dbc.Row([ 
+                dbc.Col([html.H5("Silhouette Analysis")]),
+                dbc.Col([html.Div("Select maximal number of clusters: ")]),
+                dbc.Col([dbc.Input(id='max-clusters', placeholder='7')], align='center', width=1),
+                html.Br(),
+                dbc.Col([dbc.Button("Apply Silhouette Analysis", className="me-2", id='start-silhouette', n_clicks=0, disabled=True)], align='center'),
+                ],
+                style={'display':'block'}, id='silhouette-div'),
+        html.Br(),
+        html.Div(id='silhouette-plot'),
         dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
         html.Div(id='clustering-success'),
         html.Br(),
@@ -73,13 +83,36 @@ def on_click(selected_event_features, selected_execution_features, n_clicks):
     else:
         raise PreventUpdate
 
-# update disability status of number of clusters slider
-@app.callback(Output('num-clusters-slider', 'disabled'), Input('clustering-method-dropdown', 'value'))
+# update disability status of number of clusters slider, show option to apply silhouette analysis, if kmeans or hierarchical is selected
+@app.callback([Output('num-clusters-slider', 'disabled'), Output('start-silhouette', 'disabled')], Input('clustering-method-dropdown', 'value'))
 def on_change_clustering_method(clustering_method):
     if clustering_method in ['K-Means', 'Hierarchical']:
-        return False 
+        disabled = False
+        return False, disabled
     else:
-        return True
+        return True, True
+
+# show silhouette plot if button clicked
+@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State('clustering-method-dropdown', 'value'), State("graph-embedding-dropdown", "value"), State("max-clusters", "value") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
+def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_features, clustering_method, embedding_method, max_clusters, n):
+    if n > 0 and ocel_log != None:
+        # load ocel
+        ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
+        # extract features, get feature graphs
+        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, selected_execution_features, 'graph')
+        # remap nodes of feature graphs
+        feature_nx_graphs = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
+        # embedd feature graphs
+        if embedding_method == 'Graph2Vec':
+            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
+        elif embedding_method == 'Feather-G':
+            embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
+        # calculate inertia for different k 
+        max_clusters = int(max_clusters)
+        silhouette = clustering.perform_silhouette_analysis(embedding, max_clusters, clustering_method)
+        fig = silhouette_figure.create_silhouette_figure(silhouette, max_clusters, clustering_method)
+
+        return dcc.Graph(id='silhouette-graph',figure=fig)
 
 # perform clustering and return dataframe with process execution ids and cluster labels
 @app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
