@@ -49,8 +49,11 @@ layout = dbc.Container([
         html.Br(),
         dbc.Row([
             dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['Graph2Vec', 'Feather-G'], 'Feather-G',id='graph-embedding-dropdown'))]),
-            dbc.Col([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
-            dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
+            dbc.Col([
+                dbc.Row([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
+                dbc.Row([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
+            ])
+            
         ]),
         html.Br(),
         dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),

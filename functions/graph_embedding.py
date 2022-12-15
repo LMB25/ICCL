@@ -29,7 +29,7 @@ def feature_graphs_to_nx_graphs(feature_graphs):
     return graph_list
 
 def perform_graph2vec(graph_list, attributed):
-    model = graph2vec.Graph2Vec(attributed=attributed)
+    model = graph2vec.Graph2Vec(attributed=attributed, wl_iterations=20)
     model.fit(graph_list)
     X = model.get_embedding()
 
