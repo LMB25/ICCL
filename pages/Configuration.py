@@ -19,15 +19,15 @@ event_store = dcc.Store('event-feature-set', storage_type='local')
 
 
 # options for event based feature selection
-feature_options_event = ['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_FLOW_TIME']
+feature_options_event = ['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_FLOW_TIME', 'EVENT_ACTIVITY']
 # options for extraction based feature selection
 feature_options_extraction = ['EXECUTION_NUM_OF_EVENTS', 'EXECUTION_NUM_OF_END_EVENTS', 'EXECUTION_THROUGHPUT', 'EXECUTION_NUM_OBJECT', 'EXECUTION_UNIQUE_ACTIVITIES', 
                               'EXECUTION_NUM_OF_STARTING_EVENTS', 'EXECUTION_LAST_EVENT_TIME_BEFORE']
                         
 # event based feature selection dropdown
-event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', options=[{'label': i, 'value': i} for i in feature_options_event], multi=True, value=feature_options_event)
+event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', options=[{'label': i, 'value': i} for i in feature_options_event], multi=True, value=[])#feature_options_event)
 # extraction based feature selection dropdown
-extraction_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-extraction', options=[{'label': i, 'value': i} for i in feature_options_extraction], multi=True, value=feature_options_extraction)
+extraction_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-extraction', options=[{'label': i, 'value': i} for i in feature_options_extraction], multi=True, value=[])#feature_options_extraction)
 
 # Define the page layout
 layout = dbc.Container([
@@ -48,7 +48,7 @@ layout = dbc.Container([
         html.Div(id='feature-sucess'),
         html.Br(),
         dbc.Row([
-            dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['Graph2Vec', 'Feather-G'], 'Feather-G',id='graph-embedding-dropdown'))]),
+            dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['AttributedGraph2Vec','Graph2Vec', 'Feather-G'], 'AttributedGraph2Vec',id='graph-embedding-dropdown'))]),
             dbc.Col([
                 dbc.Row([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
                 dbc.Row([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
@@ -96,9 +96,11 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, emb
         # extract features, get feature graphs
         feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, selected_execution_features, 'graph')
         # remap nodes of feature graphs
-        feature_nx_graphs = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
+        feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
-        if embedding_method == 'Graph2Vec':
+        if embedding_method == 'AttributedGraph2Vec':
+            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list)
+        elif embedding_method == 'Graph2Vec':
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
