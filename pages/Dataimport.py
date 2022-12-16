@@ -93,6 +93,7 @@ layout = dbc.Container([
             ], id='ocel-table')
     ])
 
+
 # callback for path-files store
 @app.callback([Output("folder-selection", "data"), Output("folder-search-result", "style")], [State("path", "value")], [Input("enable-path", "n_clicks")], prevent_initial_call=True)
 def on_get_filepath(value, n):
