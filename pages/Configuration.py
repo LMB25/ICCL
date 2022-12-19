@@ -49,8 +49,11 @@ layout = dbc.Container([
         html.Br(),
         dbc.Row([
             dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['AttributedGraph2Vec','Graph2Vec', 'Feather-G'], 'AttributedGraph2Vec',id='graph-embedding-dropdown'))]),
-            dbc.Col([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
-            dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
+            dbc.Col([
+                dbc.Row([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
+                dbc.Row([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
+            ])
+            
         ]),
         html.Br(),
         dbc.Row([ 
@@ -176,4 +179,4 @@ def on_extraction(ocel_log, execution_id):
         cyto = nxgraph_figure.create_interactive_graph(ocel_executions_graph, ocel_log)
         #fig = nxgraph_figure.create_graph_figure(ocel_executions_graph, ocel_log)
         return  cyto
-
+        #return dcc.Graph(id='pe-graph',figure=fig)

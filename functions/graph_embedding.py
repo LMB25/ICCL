@@ -1,6 +1,6 @@
 import networkx as nx
 from karateclub.graph_embedding import graph2vec, feathergraph
-from karateclub import DeepWalk, Walklets, TENE
+from karateclub import DeepWalk, Walklets, TENE, FeatherNode
 import node2vec 
 import numpy as np
 
@@ -31,17 +31,24 @@ def feature_graphs_to_nx_graphs(feature_graphs):
     return graph_list, attr_matrix_list
 
 def perform_attrgraph2vec(graph_list, attr_matrix_list):
+    X_graphs = []
     for graph, attr_matrix in zip(graph_list, attr_matrix_list):
-        model = TENE()
+        #model = TENE(dimensions=100)
+        model = FeatherNode()
         model.fit(graph, attr_matrix)
         X = model.get_embedding()
+        X_graphs.append(X.mean(axis=0))
         
         #for each node add the mean of the node embedding (stored in X) as the feature attribute in the original graph
-        for i, attr in enumerate(X):
-            feature_value = np.mean(attr)
-            graph.nodes[i]["feature"] = str(feature_value)[0:3]
-                
-    return perform_graph2vec(graph_list, attributed=True) 
+        # for i, attr in enumerate(X):
+        #     feature_value = np.mean(attr)
+        #     graph.nodes[i]["feature"] = str(feature_value)[0:3]
+             
+    X_graphs = np.array(X_graphs)         
+       
+    print(attr_matrix)   
+       
+    return X_graphs#perform_graph2vec(graph_list, attributed=True) 
 
 def perform_graph2vec(graph_list, attributed):
     model = graph2vec.Graph2Vec(attributed=attributed, wl_iterations=50)

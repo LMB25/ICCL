@@ -6,6 +6,8 @@ from ocpa.algo.predictive_monitoring.event_based_features.extraction_functions i
 import dash_cytoscape as cyto
 
 
+
+
 def create_graph_figure(G, ocel):
     pos = nx.layout.spectral_layout(G)#spring_layout(G)
     for node in G.nodes:

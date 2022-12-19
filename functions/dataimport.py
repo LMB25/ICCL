@@ -7,9 +7,20 @@ import os, base64
 # to intermediately store the uploaded ocel file from the drag and drop field
 UPLOAD_DIRECTORY = "assets"
 
-# load ocel from csv format
+# load ocel from csv format (given a path)
 def load_ocel_csv(path, parameters):
     ocel_file = ocel_import_factory_csv.apply(file_path=path, parameters = parameters)
+    return ocel_file
+
+# load ocel from csv format (given the file content itself)
+def load_ocel_csv_drag_droph(content, parameters):
+    content_type, content_string = content.split(",")
+    
+    decoded = base64.b64decode(content_string)
+    
+    with open(os.path.join(UPLOAD_DIRECTORY, "temp.csv"), "wb") as fp:
+        fp.write(decoded)    
+    ocel_file = ocel_import_factory_csv.apply(file_path=os.path.join(UPLOAD_DIRECTORY, "temp.csv"), parameters = parameters)
     return ocel_file
 
 # load ocel from jsnocel or xmlocel format
