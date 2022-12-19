@@ -104,13 +104,15 @@ def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_fea
         # extract features, get feature graphs
         feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, selected_execution_features, 'graph')
         # remap nodes of feature graphs
-        feature_nx_graphs, _ = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
+        feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
         if embedding_method == 'Graph2Vec':
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
-        # calculate inertia for different k 
+        elif embedding_method == 'AttributedGraph2Vec':
+            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list)
+        # calculate silhouette score for different k 
         max_clusters = int(max_clusters)
         silhouette = clustering.perform_silhouette_analysis(embedding, max_clusters, clustering_method)
         fig = silhouette_figure.create_silhouette_figure(silhouette, max_clusters, clustering_method)
