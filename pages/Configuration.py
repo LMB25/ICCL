@@ -104,7 +104,7 @@ def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_fea
         # extract features, get feature graphs
         feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, selected_execution_features, 'graph')
         # remap nodes of feature graphs
-        feature_nx_graphs = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
+        feature_nx_graphs, _ = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
         if embedding_method == 'Graph2Vec':
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
