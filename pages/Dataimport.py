@@ -26,9 +26,10 @@ ocel_table = dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, hov
 # create Dropdown for files
 file_dropdown = dcc.Dropdown(id='file-dropdown')
 
-# Define Store object for csv parameters
-csv_store = dcc.Store(id='csv-params', storage_type='local')
+# create store for csv params
+csv_params = dcc.Store(id='csv-params', storage_type='local')
 
+'''
 # csv import parameters form
 csv_import = html.Div([
         csv_store,
@@ -57,6 +58,28 @@ csv_import = html.Div([
         dbc.Row([
             dbc.Button("Parse csv Parameters", color="warning", id="parse-csv", className="me-2", n_clicks=0)
         ])], id='csv-import', style={'display': 'none'})
+'''
+csv_import = html.Div([
+        csv_params,
+        html.H5("Please specify the necessary parameters for OCEL csv import"),
+        dbc.Row([
+            dbc.Col(html.P("Select event activity column: ")),
+            dbc.Col(dcc.Dropdown(id='act_name'))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Select timestamp column: ")),
+            dbc.Col(dcc.Dropdown(id='time_name'))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Enter object names: ")),
+            dbc.Col(dcc.Dropdown(id='obj_names', multi=True))
+        ]),
+        html.Br(),
+        dbc.Row([
+            dbc.Button("Parse csv Parameters", color="warning", id="parse-csv", className="me-2", n_clicks=0)
+        ])], id='csv-import', style={'display': 'none'})
+
+
 
 # Define the page layout
 layout = dbc.Container([
@@ -131,31 +154,12 @@ def on_selection_folder(files):
         return options
 
 # load csv parameters into store
-@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("val_names", "value"), State("act_name", "value"), State("time_name", "value"), State("sep", "value"), State("file-dropdown", "value"), State("drag-drop-field", "filename")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
-def on_upload_csv(obj_name, val_name, act_name, time_name, sep, filename, drag_drop_filename, n):
+@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("act_name", "value"), State("time_name", "value"), State("file-dropdown", "value"), State("drag-drop-field", "filename")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
+def on_upload_csv(obj_name, act_name, time_name, filename, drag_drop_filename, n):
     if (filename != None and filename.endswith("csv")) or drag_drop_filename.endswith("csv"):
-        if obj_name is None:
-            obj_name = []
-        elif obj_name.startswith("["):
-            # convert string into list
-            obj_name = ast.literal_eval(obj_name)
-        else:
-            obj_name = list(obj_name)
-        if val_name is None:
-            val_name = []
-        elif val_name.startswith("["):
-            # convert string into list
-            val_name = ast.literal_eval(val_name)
-        else:
-            val_name = list(val_name)
-        if act_name is None:
-            act_name = "event_activity"
-        if time_name is None:
-            time_name = "event_timestamp"
-        if sep is None:
-            sep = ","
+        sep = ","
         params = {"obj_names":obj_name,
-                "val_names":val_name,
+                "val_names":[],
                 "act_name":act_name,
                 "time_name":time_name,
                 "sep":sep}
@@ -246,17 +250,29 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, dr
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
 
 # uncover csv parameter form, if selected file has csv extension
-@app.callback(Output("csv-import", "style"), [Input("file-dropdown", "value"), Input("drag-drop-field", "filename")], prevent_initial_call = True)
-def on_selection_file(filename, drag_drop_filename):
+@app.callback([Output("csv-import", "style"), Output("obj_names", "options"), Output("act_name", "options"), Output("time_name", "options"), Output("obj_names", "value"), Output("act_name", "value"), Output("time_name", "value")], [Input("file-dropdown", "value"), Input("drag-drop-field", "filename")], [State("drag-drop-field", "contents"), State("path", "value")], prevent_initial_call = True)
+def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected_dir):
     if filename != None:
         if filename.endswith("csv"):
-            return {'display':'block'}
+            ocel_csv = pd.read_csv(os.path.join(selected_dir, filename), nrows=5)
+            column_names = ocel_csv.columns
+            obj_names_options = column_names
+            act_names_options = column_names
+            time_names_options = column_names
+            return {'display':'block'}, obj_names_options, act_names_options, time_names_options, None, column_names[0], column_names[0]
         else:
             return {'display':'none'}
         
     elif drag_drop_filename != None:
         if drag_drop_filename.endswith("csv"):
-            return {'display':'block'}
+            content_type, content_string = drag_drop_contents.split(',')
+            decoded = base64.b64decode(content_string)
+            ocel_csv = pd.read_csv(io.StringIO(decoded.decode('utf-8')), nrows=5)
+            column_names = ocel_csv.columns
+            obj_names_options = column_names
+            act_names_options = column_names
+            time_names_options = column_names
+            return {'display':'block'}, obj_names_options, act_names_options, time_names_options, None, column_names[0], column_names[0]
         else:
             return {'display':'none'}
     else:
