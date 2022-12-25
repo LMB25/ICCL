@@ -30,13 +30,14 @@ def feature_graphs_to_nx_graphs(feature_graphs):
     
     return graph_list, attr_matrix_list
 
-def perform_attrgraph2vec(graph_list, attr_matrix_list):
+def perform_attrgraph2vec(graph_list, attr_matrix_list, embedding_params):
     X_graphs = []
     for graph, attr_matrix in zip(graph_list, attr_matrix_list):
         #model = TENE(dimensions=100)
-        model = FeatherNode()
+        model = FeatherNode(reduction_dimensions=embedding_params['svd_dimensions'], svd_iterations=embedding_params['svd_iterations'], theta_max=embedding_params['theta_max'], eval_points=embedding_params['eval_points'], order=embedding_params['order'])
         model.fit(graph, attr_matrix)
         X = model.get_embedding()
+        
         X_graphs.append(X.mean(axis=0))
         
         #for each node add the mean of the node embedding (stored in X) as the feature attribute in the original graph
@@ -45,20 +46,20 @@ def perform_attrgraph2vec(graph_list, attr_matrix_list):
         #     graph.nodes[i]["feature"] = str(feature_value)[0:3]
              
     X_graphs = np.array(X_graphs)         
-       
-    print(attr_matrix)   
+         
+    print(X_graphs)
        
     return X_graphs#perform_graph2vec(graph_list, attributed=True) 
 
-def perform_graph2vec(graph_list, attributed):
-    model = graph2vec.Graph2Vec(attributed=attributed, wl_iterations=50)
+def perform_graph2vec(graph_list, attributed, embedding_params):
+    model = graph2vec.Graph2Vec(attributed=attributed, wl_iterations=embedding_params['wl_iterations'], dimensions=embedding_params['dimensions'],epochs=embedding_params['epochs'],learning_rate=embedding_params['learning_rate'], min_count=1)
     model.fit(graph_list)
     X = model.get_embedding()
 
     return X
 
 def perform_feather_g(graph_list):
-    model = feathergraph.FeatherGraph()
+    model = feathergraph.FeatherGraph(order=5, eval_points=25, theta_max=2.5)
     model.fit(graph_list)
     X = model.get_embedding()
 

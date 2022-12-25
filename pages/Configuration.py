@@ -16,6 +16,8 @@ import codecs
 execution_store = dcc.Store('execution-feature-set', storage_type='local')
 # event feature set store
 event_store = dcc.Store('event-feature-set', storage_type='local')
+# graph embedding parameters store
+embedding_params_store = dcc.Store('embedding-parameters', storage_type='local')
 
 
 # options for event based feature selection
@@ -29,9 +31,62 @@ event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', opt
 # extraction based feature selection dropdown
 extraction_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-extraction', options=[{'label': i, 'value': i} for i in feature_options_extraction], multi=True, value=[])#feature_options_extraction)
 
+
+# create form for attributed graph embedding parameters
+embedding_params_form_attributed = html.Div([
+        html.H5("Modify Graph Embedding Parameters:"),
+        dbc.Row([
+            dbc.Col(html.P("SVD Reduction Dimensions: ")),
+            dbc.Col(dbc.Input(id='svd-dimensions', value=64))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("SVD Iterations: ")),
+            dbc.Col(dbc.Input(id='svd-iterations', value=20))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Maximal evaluation point: ")),
+            dbc.Col(dbc.Input(id='theta-max', value=2.5))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Number of characteristic function evaluation points: ")),
+            dbc.Col(dbc.Input(id='eval-points', value=25))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Scale - number of adjacency matrix powers: ")),
+            dbc.Col(dbc.Input(id='order', value=5))
+        ]),
+        html.Br(),
+        ], id='embedding-params-div-attributedgraph2vec', style={'display': 'none'})
+
+# create form for Graph2Vec embedding parameters
+embedding_params_form_graph2vec = html.Div([
+        html.H5("Modify Graph Embedding Parameters:"),
+        dbc.Row([
+            dbc.Col(html.P("WL iterations: ")),
+            dbc.Col(dbc.Input(id='wl-iterations', value=50))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Dimensions: ")),
+            dbc.Col(dbc.Input(id='graph2vec-dim', value=128))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Epochs: ")),
+            dbc.Col(dbc.Input(id='epochs', value=10))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Learning Rate: ")),
+            dbc.Col(dbc.Input(id='learning-rate', value=0.025))
+        ]),
+        html.Br(),
+        ], id='embedding-params-div-graph2vec', style={'display': 'none'})
+
+# create empty div for embedding param form
+embedding_param_form = html.Div([embedding_params_form_attributed, embedding_params_form_graph2vec], id='embedding-params-div', style={'display': 'block'})
+
+
 # Define the page layout
 layout = dbc.Container([
-        execution_store, event_store, 
+        execution_store, event_store, embedding_params_store,
         html.Center(html.H1("Clustering")),
         html.Hr(),
         dbc.Row([
@@ -57,6 +112,10 @@ layout = dbc.Container([
         ]),
         html.Br(),
         dbc.Row([ 
+                dbc.Col([embedding_param_form]),
+                dbc.Col([dbc.Button("Parse Embedding Parameters", color="warning", id="parse-embedding-params", className="me-2", n_clicks=0)]),
+                html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-embedding-params'),
+                html.Br(),
                 dbc.Col([html.H5("Silhouette Analysis")]),
                 dbc.Col([html.Div("Select maximal number of clusters: ")]),
                 dbc.Col([dbc.Input(id='max-clusters', placeholder='7')], align='center', width=1),
@@ -64,6 +123,7 @@ layout = dbc.Container([
                 dbc.Col([dbc.Button("Apply Silhouette Analysis", className="me-2", id='start-silhouette', n_clicks=0, disabled=True)], align='center'),
                 ],
                 style={'display':'block'}, id='silhouette-div'),
+
         html.Br(),
         html.Div(id='silhouette-plot'),
         dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
@@ -95,9 +155,34 @@ def on_change_clustering_method(clustering_method):
     else:
         return True, True
 
+# show parameter form for selected graph embedding method
+@app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style")], Input("graph-embedding-dropdown", "value"))
+def on_embedding_selection(embedding_method):
+    if embedding_method == 'Graph2Vec':
+        return {'display':'block'}, {'display':'none'}
+    elif embedding_method == 'AttributedGraph2Vec':
+        return {'display':'none'}, {'display':'block'}
+    else:
+        return {'display':'none'}, {'display':'none'}
+
+# save graph embedding parameter settings
+@app.callback([Output("embedding-parameters", "data"), Output("success-parse-embedding-params", "style")], [State("svd-dimensions", "value"), State("svd-iterations", "value"), State("theta-max", "value"), State("eval-points", "value"), State("order", "value"),
+                State("wl-iterations", "value"), State("graph2vec-dim", "value"), State("epochs", "value"), State("learning-rate", "value"), State("graph-embedding-dropdown", "value")], Input("parse-embedding-params", "n_clicks"), prevent_initial_call=True)
+def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points, order, wl_iterations, dimensions, epochs, learning_rate, embedding_method, n_click):
+    if n_click > 0:
+        if embedding_method =='AttributedGraph2Vec':
+            embedding_params_dict = {"svd_dimensions":svd_dimension, "svd_iterations":svd_iterations, "theta_max":theta_max, "eval_points":eval_points, "order":order}
+            return embedding_params_dict, {'display':'block'}
+        elif embedding_method == 'Graph2Vec':
+            embedding_params_dict = {"wl_iterations":wl_iterations, "dimensions":dimensions, "epochs":epochs, "learning_rate":learning_rate}
+            return embedding_params_dict, {'display':'block'}
+    else:
+        dash.no_update
+
+
 # show silhouette plot if button clicked
-@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State('clustering-method-dropdown', 'value'), State("graph-embedding-dropdown", "value"), State("max-clusters", "value") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
-def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_features, clustering_method, embedding_method, max_clusters, n):
+@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State('clustering-method-dropdown', 'value'), State("graph-embedding-dropdown", "value"), State("max-clusters", "value"), State("embedding-parameters", "data") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
+def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_features, clustering_method, embedding_method, max_clusters, embedding_params_dict, n):
     if n > 0 and ocel_log != None:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
@@ -107,11 +192,11 @@ def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_fea
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
         if embedding_method == 'Graph2Vec':
-            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
+            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
         elif embedding_method == 'AttributedGraph2Vec':
-            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list)
+            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         # calculate silhouette score for different k 
         max_clusters = int(max_clusters)
         silhouette = clustering.perform_silhouette_analysis(embedding, max_clusters, clustering_method)
@@ -121,9 +206,9 @@ def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_fea
 
 # perform clustering and return dataframe with process execution ids and cluster labels
 @app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
-                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-dropdown", "value"), State('clustering-method-dropdown', 'value'), State('num-clusters-slider', 'value')], 
+                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-dropdown", "value"), State('clustering-method-dropdown', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data")], 
                 Trigger("start-clustering", "n_clicks"), memoize=True)
-def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, clustering_method, num_clusters, n_clicks):
+def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, n_clicks):
     time.sleep(1)
     if n_clicks > 0:
         # load ocel
@@ -134,9 +219,9 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, emb
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
         if embedding_method == 'AttributedGraph2Vec':
-            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list)
+            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         elif embedding_method == 'Graph2Vec':
-            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False)
+            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
         # cluster embedding

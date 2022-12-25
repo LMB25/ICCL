@@ -29,36 +29,7 @@ file_dropdown = dcc.Dropdown(id='file-dropdown')
 # create store for csv params
 csv_params = dcc.Store(id='csv-params', storage_type='local')
 
-'''
-# csv import parameters form
-csv_import = html.Div([
-        csv_store,
-        html.H5("Please specify the necessary parameters for OCEL csv import"),
-        dbc.Row([
-            dbc.Col(html.P("Enter object names: ")),
-            dbc.Col(dbc.Input(id='obj_names', placeholder='["application", "offer"]'))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Enter attribute names: ")),
-            dbc.Col(dbc.Input(id='val_names', placeholder='[]'))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Enter column name of event's activity: ")),
-            dbc.Col(dbc.Input(id='act_name', placeholder='event_activity'))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Enter column name of event's timestamp: ")),
-            dbc.Col(dbc.Input(id='time_name', placeholder='event_timestamp'))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Enter seperator: ")),
-            dbc.Col(dbc.Input(id='sep', placeholder=','))
-        ]),
-        html.Br(),
-        dbc.Row([
-            dbc.Button("Parse csv Parameters", color="warning", id="parse-csv", className="me-2", n_clicks=0)
-        ])], id='csv-import', style={'display': 'none'})
-'''
+# create form for csv parameter input
 csv_import = html.Div([
         csv_params,
         html.H5("Please specify the necessary parameters for OCEL csv import"),
@@ -273,7 +244,7 @@ def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected
             time_names_options = column_names
             return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, column_names[0], None, column_names[0], column_names[0]
         else:
-            return {'display':'none'}
+            return {'display':'none'}, [], [], [], [], None, None, None, None
         
     elif drag_drop_filename != None:
         if drag_drop_filename.endswith("csv"):
@@ -288,6 +259,6 @@ def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected
             time_names_options = column_names
             return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, column_names[0], None, column_names[0], column_names[0]
         else:
-            return {'display':'none'}
+            return {'display':'none'}, [], [], [], [], None, None, None, None
     else:
         dash.no_update
