@@ -3,13 +3,31 @@ from ocpa.objects.log.importer.csv import factory as ocel_import_factory_csv
 from ocpa.objects.log.importer.ocel import factory as ocel_import_factory
 from ocpa.objects.log.converter.versions import jsonocel_to_csv
 import os, base64
+from ast import literal_eval
+import math
+from ocpa.objects.log.ocel import OCEL
+from ocpa.objects.log.variants.table import Table
+from ocpa.objects.log.variants.graph import EventGraph
+import ocpa.objects.log.importer.csv.versions.to_obj as csv_to_ocel
+import ocpa.objects.log.variants.util.table as table_utils
+from typing import Dict
 
 # to intermediately store the uploaded ocel file from the drag and drop field
 UPLOAD_DIRECTORY = "assets"
 
+# remove prefix from csv OCEL
+def remove_prefix_csv(df):
+    columns = df.columns
+    new_columns = []
+    for column in columns:
+        suffix = column.rsplit(':', 1)[-1]
+        new_columns.append(suffix)
+    df.columns = new_columns
+    return df
+
 # load ocel from csv format (given a path)
 def load_ocel_csv(path, parameters):
-    ocel_file = ocel_import_factory_csv.apply(file_path=path, parameters = parameters)
+    ocel_file = ocel_import_factory_csv.apply(file_path=path, variant="to_ocel", parameters = parameters)
     return ocel_file
 
 # load ocel from csv format (given the file content itself)
@@ -42,6 +60,70 @@ def load_ocel_drag_drop(content):
     with open(os.path.join(UPLOAD_DIRECTORY, "temp.jsonocel"), "wb") as fp:
         fp.write(decoded)
     ocel = ocel_import_factory.apply(os.path.join(UPLOAD_DIRECTORY, "temp.jsonocel"))
+    
+    return ocel
+
+# preprocess df of OCEL csv
+def preprocess_csv(df, parameters=None):
+    if parameters is None:
+        raise ValueError("Specify parsing parameters")
+    obj_cols = parameters['obj_names']
+
+    def _eval(x):
+        if x == 'set()':
+            return []
+        elif type(x) == float and math.isnan(x):
+            return []
+        else:
+            return literal_eval(x)
+
+    if obj_cols:
+        for c in obj_cols:
+            df[c] = df[c].apply(_eval)
+
+    df['activity'] = df[parameters['act_name']]
+    if not parameters['act_name'] == 'activity':
+        del df[parameters['act_name']]
+    df['timestamp'] = df[parameters['time_name']]
+    if not parameters['time_name'] == 'timestamp':
+        del df[parameters['time_name']]
+    if "start_timestamp" in parameters:
+        df['start_timestamp'] = df[parameters['start_timestamp']]
+        del df[parameters['start_timestamp']]
+    else:
+        df['start_timestamp'] = df['timestamp']
+    #### change to ocpa version
+    df['event_id'] = df[parameters['id_name']].values
+    #df = df.drop(columns=[parameters['id_name']])
+
+
+    rename_dict = {}
+    for col in [x for x in df.columns if not x.startswith("event_")]:
+        if col not in obj_cols:
+            rename_dict[col] = 'event_' + col
+    df.rename(columns=rename_dict, inplace=True)
+
+    df['event_timestamp'] = pd.to_datetime(df['event_timestamp'])
+    df = df.dropna(subset=["event_id"])
+    df["event_id"] = df["event_id"].astype(str)
+
+    #rename dict params
+    parameters['act_name'] = "event_activity"
+    parameters['time_name'] = "event_timestamp"
+    parameters['id_name'] = "event_id"
+
+    #convert list objects to str
+   # for obj_col in parameters['obj_names']:
+   #     df[obj_col] = df[obj_col].apply(', '.join)
+
+    return df, parameters
+
+def df_to_ocel(df, parameters):
+    df, parameters = preprocess_csv(df, parameters)
+    log = Table(df, parameters=parameters, object_attributes=None)
+    obj = csv_to_ocel.apply(df, parameters)
+    graph = EventGraph(table_utils.eog_from_log(log))
+    ocel = OCEL(log, obj, graph, parameters)
     
     return ocel
 

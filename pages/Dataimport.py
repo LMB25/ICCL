@@ -63,12 +63,16 @@ csv_import = html.Div([
         csv_params,
         html.H5("Please specify the necessary parameters for OCEL csv import"),
         dbc.Row([
-            dbc.Col(html.P("Select event activity column: ")),
-            dbc.Col(dcc.Dropdown(id='act_name'))
+            dbc.Col(html.P("Select event id column: ")),
+            dbc.Col(dcc.Dropdown(id='id_name'))
         ]),
         dbc.Row([
             dbc.Col(html.P("Select timestamp column: ")),
             dbc.Col(dcc.Dropdown(id='time_name'))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Select event activity column: ")),
+            dbc.Col(dcc.Dropdown(id='act_name'))
         ]),
         dbc.Row([
             dbc.Col(html.P("Enter object names: ")),
@@ -154,14 +158,15 @@ def on_selection_folder(files):
         return options
 
 # load csv parameters into store
-@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("act_name", "value"), State("time_name", "value"), State("file-dropdown", "value"), State("drag-drop-field", "filename")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
-def on_upload_csv(obj_name, act_name, time_name, filename, drag_drop_filename, n):
+@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("act_name", "value"), State("time_name", "value"), State("id_name", "value"), State("file-dropdown", "value"), State("drag-drop-field", "filename")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
+def on_upload_csv(obj_name, act_name, time_name, id_name, filename, drag_drop_filename, n):
     if (filename != None and filename.endswith("csv")) or drag_drop_filename.endswith("csv"):
         sep = ","
         params = {"obj_names":obj_name,
                 "val_names":[],
                 "act_name":act_name,
                 "time_name":time_name,
+                "id_name":id_name,
                 "sep":sep}
         return params, {'display':'block'}
     else:
@@ -187,7 +192,10 @@ def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_conte
     else:
         # use different load function w.r.t file extension
         if selected_file!=None and selected_file.endswith("csv"):
-            ocel_log = dataimport.load_ocel_csv(os.path.join(selected_dir, selected_file), csv_params)
+            #ocel_log = dataimport.load_ocel_csv(os.path.join(selected_dir, selected_file), csv_params)
+            ocel_df = pd.read_csv(os.path.join(selected_dir, selected_file))
+            ocel_df = dataimport.remove_prefix_csv(ocel_df)
+            ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
         elif drag_drop_filename!=None and drag_drop_filename.endswith("csv"):
             ocel_log = dataimport.load_ocel_csv_drag_droph(drag_drop_content, csv_params)
         else:
@@ -223,6 +231,7 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, dr
             raise PreventUpdate
         elif filename.endswith("csv"):
             ocel_df = pd.read_csv(os.path.join(selected_dir, filename))
+            ocel_df = dataimport.remove_prefix_csv(ocel_df)
             ocel_df_head = ocel_df.head(10)
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
         else:
@@ -236,6 +245,7 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, dr
             content_type, content_string = drag_drop_contents.split(',')
             decoded = base64.b64decode(content_string)
             ocel_df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            ocel_df = dataimport.remove_prefix_csv(ocel_df)
             ocel_df_head = ocel_df.head(10)
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
         else:
@@ -250,16 +260,18 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, dr
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
 
 # uncover csv parameter form, if selected file has csv extension
-@app.callback([Output("csv-import", "style"), Output("obj_names", "options"), Output("act_name", "options"), Output("time_name", "options"), Output("obj_names", "value"), Output("act_name", "value"), Output("time_name", "value")], [Input("file-dropdown", "value"), Input("drag-drop-field", "filename")], [State("drag-drop-field", "contents"), State("path", "value")], prevent_initial_call = True)
+@app.callback([Output("csv-import", "style"), Output("id_name", "options"), Output("obj_names", "options"), Output("act_name", "options"), Output("time_name", "options"), Output("id_name", "value"), Output("obj_names", "value"), Output("act_name", "value"), Output("time_name", "value")], [Input("file-dropdown", "value"), Input("drag-drop-field", "filename")], [State("drag-drop-field", "contents"), State("path", "value")], prevent_initial_call = True)
 def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected_dir):
     if filename != None:
         if filename.endswith("csv"):
             ocel_csv = pd.read_csv(os.path.join(selected_dir, filename), nrows=5)
+            ocel_csv = dataimport.remove_prefix_csv(ocel_csv)
             column_names = ocel_csv.columns
+            id_names_options = column_names
             obj_names_options = column_names
             act_names_options = column_names
             time_names_options = column_names
-            return {'display':'block'}, obj_names_options, act_names_options, time_names_options, None, column_names[0], column_names[0]
+            return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, column_names[0], None, column_names[0], column_names[0]
         else:
             return {'display':'none'}
         
@@ -268,11 +280,13 @@ def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected
             content_type, content_string = drag_drop_contents.split(',')
             decoded = base64.b64decode(content_string)
             ocel_csv = pd.read_csv(io.StringIO(decoded.decode('utf-8')), nrows=5)
+            ocel_csv = dataimport.remove_prefix_csv(ocel_csv)
             column_names = ocel_csv.columns
+            id_names_options = column_names
             obj_names_options = column_names
             act_names_options = column_names
             time_names_options = column_names
-            return {'display':'block'}, obj_names_options, act_names_options, time_names_options, None, column_names[0], column_names[0]
+            return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, column_names[0], None, column_names[0], column_names[0]
         else:
             return {'display':'none'}
     else:
