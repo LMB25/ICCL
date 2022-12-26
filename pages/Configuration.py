@@ -31,6 +31,18 @@ event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', opt
 # extraction based feature selection dropdown
 extraction_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-extraction', options=[{'label': i, 'value': i} for i in feature_options_extraction], multi=True, value=[])#feature_options_extraction)
 
+# silhouette analysis explanation
+silhouette_explanation = dbc.Card(
+                                dbc.CardBody("Hier sollte eine Erklärung zum Silhouette Plot stehen. Was zeigt dieser Plot an und wie kommt er zustande?"),
+                                className="mb-3",
+                                )
+
+# process executions explanation
+process_executions_explanation = dbc.Card(
+                                dbc.CardBody("Hier sollte eine Erklärung zu den Process Executions stehen. Was zeigt der Plot des Process Execution Graphs an?"),
+                                className="mb-3",
+                                )
+
 
 # create form for attributed graph embedding parameters
 embedding_params_form_attributed = html.Div([
@@ -122,6 +134,9 @@ layout = dbc.Tabs([
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
+                    dbc.Col(process_executions_explanation)
+                ]),
+                dbc.Row([
                         dbc.Col([html.Div("Number of Process Executions:"), html.Div(id="process-executions-summary")]),
                         dbc.Col([html.Div("Select Process Execution to show Graph"), html.Div(dcc.Dropdown(id='executions_dropdown'))])
                     ]),
@@ -130,9 +145,17 @@ layout = dbc.Tabs([
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
-                        html.Div("Select maximal number of clusters: "), dbc.Input(id='max-clusters', placeholder='7'), dbc.Button("Apply Silhouette Analysis", className="me-2", id='start-silhouette', n_clicks=0, disabled=True)
-                        ]),
-                dbc.Row([html.Div(id='silhouette-plot')])
+                    dbc.Col(silhouette_explanation)
+                ]),
+                html.Br(),
+                dbc.Row([
+                    dbc.Col(html.Div("Select maximal number of clusters: "), width=2, align="center"),
+                    dbc.Col(dbc.Input(id='max-clusters', placeholder='7'), width=1),
+                    dbc.Col(dbc.Button("Apply Silhouette Analysis", className="me-2", id='start-silhouette', n_clicks=0, disabled=True), width=3),
+                ]),
+                dbc.Row([
+                    dbc.Col(html.Div(id='silhouette-plot'))
+                    ])
                 ], label="Silhouette Analysis", tab_id='silhouette-tab'),
         ], active_tab='clustering-tab')
 
