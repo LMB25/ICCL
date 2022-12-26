@@ -135,12 +135,9 @@ layout = dbc.Tabs([
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
-                    dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['AttributedGraph2Vec','Graph2Vec', 'Feather-G'], 'AttributedGraph2Vec',id='graph-embedding-dropdown'))]),
-                    dbc.Col([
-                        dbc.Row([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
-                        dbc.Row([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
-                    ])
-                    
+                    dbc.Col([html.H5("Select Graph Embedding Method"), html.Div(dbc.RadioItems(options=[{"label": "AttributedGraph2Vec", "value": "AttributedGraph2Vec"},{"label": "Graph2Vec", "value": 'Graph2Vec'},{"label": "Feather-G", "value": "Feather-G"}], value="AttributedGraph2Vec", id="graph-embedding-selection"),)]),
+                    dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Hierarchical", "value": "Hierarchical"}], value="K-Means", id="clustering-method-selection"),)]),
+                    dbc.Col([html.H5("Select Number of Clusters"), html.Div(dcc.Slider(1,10,1, value=2, id='num-clusters-slider', disabled=True))])
                 ]),
                 html.Br(),
                 dbc.Row([ 
@@ -197,7 +194,7 @@ def on_click(selected_event_features, selected_execution_features, n_clicks):
         raise PreventUpdate
 
 # update disability status of number of clusters slider, show option to apply silhouette analysis, if kmeans or hierarchical is selected
-@app.callback([Output('num-clusters-slider', 'disabled'), Output('start-silhouette', 'disabled')], Input('clustering-method-dropdown', 'value'))
+@app.callback([Output('num-clusters-slider', 'disabled'), Output('start-silhouette', 'disabled')], Input('clustering-method-selection', 'value'))
 def on_change_clustering_method(clustering_method):
     if clustering_method in ['K-Means', 'Hierarchical']:
         disabled = False
@@ -206,7 +203,7 @@ def on_change_clustering_method(clustering_method):
         return True, True
 
 # show parameter form for selected graph embedding method
-@app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style")], Input("graph-embedding-dropdown", "value"))
+@app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style")], Input("graph-embedding-selection", "value"))
 def on_embedding_selection(embedding_method):
     if embedding_method == 'Graph2Vec':
         return {'display':'block'}, {'display':'none'}
@@ -217,7 +214,7 @@ def on_embedding_selection(embedding_method):
 
 # save graph embedding parameter settings
 @app.callback([Output("embedding-parameters", "data"), Output("success-parse-embedding-params", "style")], [State("svd-dimensions", "value"), State("svd-iterations", "value"), State("theta-max", "value"), State("eval-points", "value"), State("order", "value"),
-                State("wl-iterations", "value"), State("graph2vec-dim", "value"), State("epochs", "value"), State("learning-rate", "value"), State("graph-embedding-dropdown", "value")], Input("parse-embedding-params", "n_clicks"), prevent_initial_call=True)
+                State("wl-iterations", "value"), State("graph2vec-dim", "value"), State("epochs", "value"), State("learning-rate", "value"), State("graph-embedding-selection", "value")], Input("parse-embedding-params", "n_clicks"), prevent_initial_call=True)
 def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points, order, wl_iterations, dimensions, epochs, learning_rate, embedding_method, n_click):
     if n_click > 0:
         if embedding_method =='AttributedGraph2Vec':
@@ -232,7 +229,7 @@ def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points,
 
 
 # show silhouette plot if button clicked
-@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State('clustering-method-dropdown', 'value'), State("graph-embedding-dropdown", "value"), State("max-clusters", "value"), State("embedding-parameters", "data") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
+@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State('clustering-method-selection', 'value'), State("graph-embedding-selection", "value"), State("max-clusters", "value"), State("embedding-parameters", "data") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
 def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_features, clustering_method, embedding_method, max_clusters, embedding_params_dict, n):
     if n > 0 and ocel_log != None:
         # load ocel
@@ -257,7 +254,7 @@ def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_fea
 
 # perform clustering and return dataframe with process execution ids and cluster labels
 @app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
-                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-dropdown", "value"), State('clustering-method-dropdown', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data")], 
+                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-selection", "value"), State('clustering-method-selection', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data")], 
                 Trigger("start-clustering", "n_clicks"), memoize=True)
 def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, n_clicks):
     time.sleep(1)
