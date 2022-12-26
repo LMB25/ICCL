@@ -42,6 +42,22 @@ process_executions_explanation = dbc.Card(
                                 dbc.CardBody("Hier sollte eine Erklärung zu den Process Executions stehen. Was zeigt der Plot des Process Execution Graphs an?"),
                                 className="mb-3",
                                 )
+# list of features and explanation
+features_explanation = dbc.Card(
+                                dbc.ListGroup(
+                                    [
+                                        dbc.ListGroupItem("EVENT_REMAINING_TIME: Remaining time from event to end of process execution."),
+                                        dbc.ListGroupItem("EVENT_ELAPSED_TIME: Elapsed time from process execution start to the event."),
+                                        dbc.ListGroupItem("EVENT_FLOW_TIME:"),
+                                        dbc.ListGroupItem("EVENT_ACTIVITY: Activity that is performed in the event."),
+                                        dbc.ListGroupItem("EVENT_NUM_OF_OBJECTS: Number of objects involved in the event."),
+                                        dbc.ListGroupItem("EVENT_PREVIOUS_ACTIVITY_COUNT: Number of activities that took place before the event."),
+                                        dbc.ListGroupItem("EVENT_DURATION: Duration of the event."),
+                                    ],
+                                    flush=True,
+                                ),
+                                
+                            )
 
 
 # create form for attributed graph embedding parameters
@@ -101,6 +117,12 @@ layout = dbc.Tabs([
         execution_store, event_store, embedding_params_store,
         dbc.Tab([
                 html.Br(),
+                html.H5("Feature Explanation:"),
+                dbc.Row([
+                    dbc.Col(features_explanation)
+                ]),
+                html.Br(),
+                html.H5("Feature Selection:"),
                 dbc.Row([
                     dbc.Col([html.Div("Select Event Features for Clustering:"), html.Div(event_feature_selection_dropdown)]),
                     dbc.Col([html.Div("Select Extraction Features for Clustering:"), html.Div(extraction_feature_selection_dropdown)])
@@ -108,6 +130,9 @@ layout = dbc.Tabs([
                 html.Br(),
                 dbc.Row([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0)]),
                 html.Div(id='feature-sucess'),
+                html.Br(),
+        ], label="Features", tab_id='features-tab'),
+        dbc.Tab([
                 html.Br(),
                 dbc.Row([
                     dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['AttributedGraph2Vec','Graph2Vec', 'Feather-G'], 'AttributedGraph2Vec',id='graph-embedding-dropdown'))]),
@@ -157,7 +182,7 @@ layout = dbc.Tabs([
                     dbc.Col(html.Div(id='silhouette-plot'))
                     ])
                 ], label="Silhouette Analysis", tab_id='silhouette-tab'),
-        ], active_tab='clustering-tab')
+        ], active_tab='features-tab')
 
 # load selected features in stores
 @app.callback([Output("event-feature-set", "data"), Output("execution-feature-set", "data"), Output("feature-sucess", "children")], [State("feature-selection-event", "value"), State("feature-selection-extraction", "value")], Input("set-features", "n_clicks"))
