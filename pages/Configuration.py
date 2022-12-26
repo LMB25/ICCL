@@ -141,7 +141,7 @@ layout = dbc.Tabs([
                 ]),
                 html.Br(),
                 dbc.Row([ 
-                        dbc.Col([embedding_param_form]),
+                        dbc.Col([embedding_param_form], width=8),
                         dbc.Col([dbc.Button("Parse Embedding Parameters", id="parse-embedding-params", className="me-2", n_clicks=0)]),
                         html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-embedding-params'),
                         ],
