@@ -85,54 +85,56 @@ embedding_param_form = html.Div([embedding_params_form_attributed, embedding_par
 
 
 # Define the page layout
-layout = dbc.Container([
+layout = dbc.Tabs([
         execution_store, event_store, embedding_params_store,
-        html.Center(html.H1("Clustering")),
-        html.Hr(),
-        dbc.Row([
-            dbc.Col([html.Div("Number of Process Executions:"), html.Div(id="process-executions-summary")]),
-            dbc.Col([html.Div("Select Process Execution to show Graph"), html.Div(dcc.Dropdown(id='executions_dropdown'))])
-        ]),
-        html.Br(),
-        dbc.Row([
-            dbc.Col([html.Div("Select Event Features for Clustering:"), html.Div(event_feature_selection_dropdown)]),
-            dbc.Col([html.Div("Select Extraction Features for Clustering:"), html.Div(extraction_feature_selection_dropdown)])
-        ]),
-        html.Br(),
-        dbc.Row([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0)]),
-        html.Div(id='feature-sucess'),
-        html.Br(),
-        dbc.Row([
-            dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['AttributedGraph2Vec','Graph2Vec', 'Feather-G'], 'AttributedGraph2Vec',id='graph-embedding-dropdown'))]),
-            dbc.Col([
-                dbc.Row([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
-                dbc.Row([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
-            ])
-            
-        ]),
-        html.Br(),
-        dbc.Row([ 
-                dbc.Col([embedding_param_form]),
-                dbc.Col([dbc.Button("Parse Embedding Parameters", color="warning", id="parse-embedding-params", className="me-2", n_clicks=0)]),
-                html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-embedding-params'),
+        dbc.Tab([
                 html.Br(),
-                dbc.Col([html.H5("Silhouette Analysis")]),
-                dbc.Col([html.Div("Select maximal number of clusters: ")]),
-                dbc.Col([dbc.Input(id='max-clusters', placeholder='7')], align='center', width=1),
+                dbc.Row([
+                    dbc.Col([html.Div("Select Event Features for Clustering:"), html.Div(event_feature_selection_dropdown)]),
+                    dbc.Col([html.Div("Select Extraction Features for Clustering:"), html.Div(extraction_feature_selection_dropdown)])
+                ]),
                 html.Br(),
-                dbc.Col([dbc.Button("Apply Silhouette Analysis", className="me-2", id='start-silhouette', n_clicks=0, disabled=True)], align='center'),
-                ],
-                style={'display':'block'}, id='silhouette-div'),
-
-        html.Br(),
-        html.Div(id='silhouette-plot'),
-        dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
-        html.Div(id='clustering-success'),
-        html.Br(),
-        html.Div(id="cluster-summary-component"),
-        html.Br(),
-        html.Div(id='process-execution-graph'),
-])
+                dbc.Row([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0)]),
+                html.Div(id='feature-sucess'),
+                html.Br(),
+                dbc.Row([
+                    dbc.Col([html.Div("Select Graph Embedding Method"), html.Div(dcc.Dropdown(['AttributedGraph2Vec','Graph2Vec', 'Feather-G'], 'AttributedGraph2Vec',id='graph-embedding-dropdown'))]),
+                    dbc.Col([
+                        dbc.Row([html.Div("Select Clustering Technique"), html.Div(dcc.Dropdown(['K-Means', 'Mean-Shift', 'Hierarchical'],'Mean-Shift',id='clustering-method-dropdown'))]),
+                        dbc.Row([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,7,1, value=2, id='num-clusters-slider', disabled=True))])
+                    ])
+                    
+                ]),
+                html.Br(),
+                dbc.Row([ 
+                        dbc.Col([embedding_param_form]),
+                        dbc.Col([dbc.Button("Parse Embedding Parameters", id="parse-embedding-params", className="me-2", n_clicks=0)]),
+                        html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-embedding-params'),
+                        ],
+                        style={'display':'block'}, id='silhouette-div'),
+                html.Br(),
+                dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
+                html.Div(id='clustering-success'),
+                html.Br(),
+                html.Div(id="cluster-summary-component"),
+                html.Br(),
+                ], label="Clustering", tab_id='clustering-tab'),
+        dbc.Tab([
+                html.Br(),
+                dbc.Row([
+                        dbc.Col([html.Div("Number of Process Executions:"), html.Div(id="process-executions-summary")]),
+                        dbc.Col([html.Div("Select Process Execution to show Graph"), html.Div(dcc.Dropdown(id='executions_dropdown'))])
+                    ]),
+                html.Div(id='process-execution-graph')
+                ], label="Process Executions", tab_id='process-executions-tab'),
+        dbc.Tab([
+                html.Br(),
+                dbc.Row([
+                        html.Div("Select maximal number of clusters: "), dbc.Input(id='max-clusters', placeholder='7'), dbc.Button("Apply Silhouette Analysis", className="me-2", id='start-silhouette', n_clicks=0, disabled=True)
+                        ]),
+                dbc.Row([html.Div(id='silhouette-plot')])
+                ], label="Silhouette Analysis", tab_id='silhouette-tab'),
+        ], active_tab='clustering-tab')
 
 # load selected features in stores
 @app.callback([Output("event-feature-set", "data"), Output("execution-feature-set", "data"), Output("feature-sucess", "children")], [State("feature-selection-event", "value"), State("feature-selection-extraction", "value")], Input("set-features", "n_clicks"))
@@ -171,10 +173,11 @@ def on_embedding_selection(embedding_method):
 def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points, order, wl_iterations, dimensions, epochs, learning_rate, embedding_method, n_click):
     if n_click > 0:
         if embedding_method =='AttributedGraph2Vec':
-            embedding_params_dict = {"svd_dimensions":svd_dimension, "svd_iterations":svd_iterations, "theta_max":theta_max, "eval_points":eval_points, "order":order}
+            embedding_params_dict = {"svd_dimensions":int(svd_dimension), "svd_iterations":int(svd_iterations), "theta_max":float(theta_max), "eval_points":int(eval_points), "order":int(order)}
+            print(embedding_params_dict)
             return embedding_params_dict, {'display':'block'}
         elif embedding_method == 'Graph2Vec':
-            embedding_params_dict = {"wl_iterations":wl_iterations, "dimensions":dimensions, "epochs":epochs, "learning_rate":learning_rate}
+            embedding_params_dict = {"wl_iterations":int(wl_iterations), "dimensions":int(dimensions), "epochs":int(epochs), "learning_rate":float(learning_rate)}
             return embedding_params_dict, {'display':'block'}
     else:
         dash.no_update
