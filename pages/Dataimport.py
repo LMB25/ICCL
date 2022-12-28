@@ -29,6 +29,17 @@ file_dropdown = dcc.Dropdown(id='file-dropdown')
 # create store for csv params
 csv_params = dcc.Store(id='csv-params', storage_type='local')
 
+# explanation for process execution extraction type selection
+features_explanation = dbc.Card(
+                                dbc.ListGroup(
+                                    [
+                                        dbc.ListGroupItem("Connected Components: process executions are extracted based on the connected components of the object graph. All transitively connected objects form one process execution."),
+                                        dbc.ListGroupItem("Leading Object Type: process execution is constructed for each object of a chosen leading object type. Connected objects are added to this process execution unless a connected object of the same type has a lower distance to the leading object."),
+                                    ],
+                                    flush=True,
+                                ),
+                            )
+
 # create form for csv parameter input
 csv_import = html.Div([
         csv_params,
@@ -55,16 +66,15 @@ csv_import = html.Div([
         ])], id='csv-import', style={'display': 'none'})
 
 # create html div for leading object dropdown
-leading_object_div = html.Div([
-                                html.Div("Select Leading Object Type: ", id='leading-object-div', style={'display': 'block'}), 
-                                dcc.Dropdown(id='leading-object', style={'display': 'block'})
-                                ], style={"width": "30%"})
+leading_object_div = html.Div([ 
+                                dcc.Dropdown(placeholder='Select leading object type', id='leading-object', style={'display': 'block', 'width':'80%'})
+                                ])
 
 # create form for leading object type oder connected component process execution extraction
 process_extraction = html.Div([
-                                html.Div("Select Type of Process Execution Extraction: "),
                                 dbc.Row([
-                                    dbc.Col([dbc.RadioItems(options=[{"label": "Connected Components", "value": "CONN_COMP"},{"label": "Leading Object Type", "value": 'LEAD_TYPE '}], value="CONN_COMP", id="process-extraction-type"), leading_object_div]),
+                                    dbc.Col([html.Div("Select Type of Process Execution Extraction: "), dbc.RadioItems(options=[{"label": "Connected Components", "value": "CONN_COMP"},{"label": "Leading Object Type", "value": 'LEAD_TYPE '}], value="CONN_COMP", id="process-extraction-type"), leading_object_div]),
+                                    dbc.Col([features_explanation], width=8)
                                     ])
                                 ])
 
