@@ -103,7 +103,7 @@ layout = dbc.Container([
         html.Br(),
         html.Div([
             ocel_table
-            ], id='ocel-table')
+            ], id='ocel-table', style={"overflow": "scroll"})
     ])
 
 

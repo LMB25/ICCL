@@ -31,7 +31,7 @@ layout = dbc.Container([
         html.Hr(),
     ]),
     dbc.Row([
-        ocel_table
+        html.Div([ocel_table], style={"overflow": "scroll"})
     ])
 ])
 
