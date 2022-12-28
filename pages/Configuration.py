@@ -11,6 +11,7 @@ from functions import process_executions, feature_extraction, graph_embedding, c
 from components import nxgraph_figure, silhouette_figure
 import pickle
 import codecs
+import pandas as pd
 
 # execution feature set store
 execution_store = dcc.Store('execution-feature-set', storage_type='local')
@@ -18,6 +19,8 @@ execution_store = dcc.Store('execution-feature-set', storage_type='local')
 event_store = dcc.Store('event-feature-set', storage_type='local')
 # graph embedding parameters store
 embedding_params_store = dcc.Store('embedding-parameters', storage_type='local')
+# Define Store object for List of DataFrames of Process Execution Features
+extracted_pe_features = dcc.Store(id='extracted-pe-features-store')
 
 
 # options for event based feature selection
@@ -30,6 +33,11 @@ feature_options_extraction = ['EXECUTION_NUM_OF_EVENTS', 'EXECUTION_NUM_OF_END_E
 event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', options=[{'label': i, 'value': i} for i in feature_options_event], multi=True, value=[])#feature_options_event)
 # extraction based feature selection dropdown
 extraction_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-extraction', options=[{'label': i, 'value': i} for i in feature_options_extraction], multi=True, value=[])#feature_options_extraction)
+
+# empty DataTable for Process Execution Features
+feature_options_extraction_renamed = ["Number of Events", "Number of Ending Events", "Throughput Duration", "Number of Objects", "Unique Activities", "Number of Starting Events", "Duration of Last Event"]
+dummy_df = pd.DataFrame(columns=feature_options_extraction_renamed)
+feature_table = dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, hover=True)
 
 # silhouette analysis explanation
 silhouette_explanation = dbc.Card(
@@ -56,7 +64,6 @@ features_explanation = dbc.Card(
                                     ],
                                     flush=True,
                                 ),
-                                
                             )
 
 
@@ -114,7 +121,7 @@ embedding_param_form = html.Div([embedding_params_form_attributed, embedding_par
 
 # Define the page layout
 layout = dbc.Tabs([
-        execution_store, event_store, embedding_params_store,
+        execution_store, event_store, embedding_params_store, extracted_pe_features,
         dbc.Tab([
                 html.Br(),
                 html.H5("Feature Explanation:"),
@@ -160,9 +167,13 @@ layout = dbc.Tabs([
                 ]),
                 dbc.Row([
                         dbc.Col([html.Div("Number of Process Executions:"), html.Div(id="process-executions-summary")]),
-                        dbc.Col([html.Div("Select Process Execution to show Graph"), html.Div(dcc.Dropdown(id='executions_dropdown'))])
+                        dbc.Col([dbc.Button("Start Process Execution Feature Extraction", color="warning", className="me-1", id='start-feature-extraction-pe', n_clicks=0), html.Div(id='pe-feature-success')]),
+                        dbc.Col([html.Div("Select Process Execution:"), html.Div(dcc.Dropdown(id='executions_dropdown'))])
                     ]),
-                html.Div(id='process-execution-graph')
+                html.Hr(),
+                dbc.Row([html.Div(feature_table, id="pe-feature-table")]),
+                html.Hr(),
+                dbc.Row([html.Div(id='process-execution-graph')]),
                 ], label="Process Executions", tab_id='process-executions-tab'),
         dbc.Tab([
                 html.Br(),
@@ -190,6 +201,17 @@ def on_click(selected_event_features, selected_execution_features, n_clicks):
         # set selected execution features
         feature_set_extraction = selected_execution_features
         return feature_set_event, feature_set_extraction, "Features successfully set."
+    else:
+        raise PreventUpdate
+
+# extract process execution features, get DataFrames of features
+@app.callback([ServersideOutput('extracted-pe-features-store', 'data'), Output("pe-feature-success", "children")], Trigger("start-feature-extraction-pe", "n_clicks"), State("ocel_obj", "data"), prevent_initial_call=True, memoize=True)
+def on_click(n_clicks, ocel):
+    if n_clicks > 0:
+        # load ocel
+        ocel = pickle.loads(codecs.decode(ocel.encode(), "base64"))
+        list_feature_dfs = feature_extraction.create_extraction_feature_dfs(ocel)
+        return list_feature_dfs, "Features successfully extracted."
     else:
         raise PreventUpdate
 
@@ -304,8 +326,8 @@ def on_extraction(executions):
         return executions_summary_text, options
 
 
-@app.callback(Output("process-execution-graph", "children"), State("ocel_obj", "data"), [Input("executions_dropdown", "value")])
-def on_extraction(ocel_log, execution_id):
+@app.callback([Output("process-execution-graph", "children"), Output("pe-feature-table", "children")], [State("ocel_obj", "data"), State("extracted-pe-features-store", "data")], [Input("executions_dropdown", "value")], prevent_initial_call=True)
+def on_extraction(ocel_log, extraction_features_list, execution_id):
     if execution_id != None:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
@@ -315,5 +337,18 @@ def on_extraction(ocel_log, execution_id):
         # convert nx graph to dash figure 
         cyto = nxgraph_figure.create_interactive_graph(ocel_executions_graph, ocel_log)
         #fig = nxgraph_figure.create_graph_figure(ocel_executions_graph, ocel_log)
-        return  cyto
+
+        # get DataFrame of Process Execution Features 
+        if extraction_features_list != None:
+            df_extr = pd.DataFrame(columns=["Feature", "Value"])
+            execution_values = extraction_features_list[int(execution_id) - 1]
+            df_extr["Feature"] = feature_options_extraction_renamed
+            df_extr["Value"] = execution_values
+            df_transposed = df_extr.T
+            df_transposed.columns = df_transposed.iloc[0]
+            df_transposed = df_transposed[1:]
+            datatable = dbc.Table.from_dataframe(df_transposed, striped=True, bordered=True, hover=True)
+        else:
+            datatable = feature_table
+        return  cyto, datatable
         #return dcc.Graph(id='pe-graph',figure=fig)

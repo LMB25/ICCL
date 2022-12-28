@@ -2,7 +2,7 @@ from ocpa.algo.predictive_monitoring import factory as predictive_monitoring
 import ocpa.algo.predictive_monitoring.event_based_features.extraction_functions as event_features
 import ocpa.algo.predictive_monitoring.execution_based_features.extraction_functions as execution_features
 from ocpa.algo.predictive_monitoring import tabular, sequential
-
+import pandas as pd
 
 # event_based_mapping = {
 #                 "EVENT_ELAPSED_TIME": event_features.elapsed_time,
@@ -50,3 +50,18 @@ def extract_features(ocel_log, feature_set_event, feature_set_extr, repr):
     elif repr == 'sequential':
         extraction = sequential.construct_sequence(feature_storage)
     return extraction
+
+
+def create_extraction_feature_dfs(ocel):
+    feature_options_extraction = ['EXECUTION_NUM_OF_EVENTS', 'EXECUTION_NUM_OF_END_EVENTS', 'EXECUTION_THROUGHPUT', 'EXECUTION_NUM_OBJECT', 'EXECUTION_UNIQUE_ACTIVITIES', 'EXECUTION_NUM_OF_STARTING_EVENTS', 'EXECUTION_LAST_EVENT_TIME_BEFORE']
+    feature_options_extraction_renamed = ["Number of Events", "Number of Ending Events", "Throughput Duration", "Number of Objects", "Unique Activities", "Number of Starting Events", "Duration of Last Event"]
+    extraction_feature_list = [getattr(predictive_monitoring,key) for key in feature_options_extraction]
+    feature_set_extraction = [(object_feature, ()) for object_feature in extraction_feature_list]
+    feature_storage = predictive_monitoring.apply(ocel, [], feature_set_extraction)
+    extraction_value_list = []
+    for graph in feature_storage.feature_graphs:
+        values = [] 
+        for tuple_feature in feature_set_extraction:
+            values.append(graph.attributes[tuple_feature])
+        extraction_value_list.append(values)
+    return extraction_value_list
