@@ -1,5 +1,5 @@
 from sklearn.cluster import DBSCAN 
-from sklearn.cluster import MeanShift, KMeans, AgglomerativeClustering
+from sklearn.cluster import MeanShift, KMeans, AgglomerativeClustering, AffinityPropagation
 from sklearn.metrics import silhouette_score
 import numpy as np
 import pandas as pd
@@ -24,6 +24,11 @@ def perform_silhouette_analysis(X, max_clusters, method):
 
 def perform_DBSCAN(X):
     labels = DBSCAN(eps=0.75, min_samples=8).fit_predict(X)
+
+    return labels
+
+def perform_AffinityPropagation(X):
+    labels = AffinityPropagation(max_iter=500).fit_predict(X)
 
     return labels
 

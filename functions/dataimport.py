@@ -42,11 +42,11 @@ def load_ocel_csv_drag_droph(content, parameters):
     return ocel_file
 
 # load ocel from jsnocel or xmlocel format
-def load_ocel_json_xml(path):
+def load_ocel_json_xml(path, parameters):
     if path.endswith("jsonocel"):
-        ocel_file = ocel_import_factory.apply(path)
+        ocel_file = ocel_import_factory.apply(path, parameters=parameters)
     elif path.endswith("xmlocel"):
-        ocel_file = ocel_import_factory.apply(path)
+        ocel_file = ocel_import_factory.apply(path, parameters=parameters)
     else:
         error_msg = "not a valid extension"
         return error_msg
@@ -189,6 +189,10 @@ def ocel_to_df_params(ocel, return_obj_df=False, parameters=None):
 def ocel_to_df(ocel, return_obj_df=False, parameters=None):
     eve_df = jsonocel_to_csv.apply(ocel)
     return eve_df
+
+def get_ocel_object_types(ocel):
+    object_types = ocel.object_types
+    return object_types
 
 # get summary of ocel
 def get_summary(ocel, ocel_df):

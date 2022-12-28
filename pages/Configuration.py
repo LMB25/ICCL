@@ -136,7 +136,7 @@ layout = dbc.Tabs([
                 html.Br(),
                 dbc.Row([
                     dbc.Col([html.H5("Select Graph Embedding Method"), html.Div(dbc.RadioItems(options=[{"label": "AttributedGraph2Vec", "value": "AttributedGraph2Vec"},{"label": "Graph2Vec", "value": 'Graph2Vec'},{"label": "Feather-G", "value": "Feather-G"}], value="AttributedGraph2Vec", id="graph-embedding-selection"),)]),
-                    dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Hierarchical", "value": "Hierarchical"}], value="K-Means", id="clustering-method-selection"),)]),
+                    dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Hierarchical", "value": "Hierarchical"}, {"label": "Affinity-Propagation", "value":"AffinityPropagation"}], value="K-Means", id="clustering-method-selection"),)]),
                     dbc.Col([html.H5("Select Number of Clusters"), html.Div(dcc.Slider(1,10,1, value=2, id='num-clusters-slider', disabled=True))])
                 ]),
                 html.Br(),
@@ -279,6 +279,8 @@ def on_click(ocel_log, selected_event_features, selected_execution_features, emb
             labels = clustering.perform_KMeans(embedding, num_clusters)
         elif clustering_method == 'Hierarchical':
             labels = clustering.perform_HierarchicalClustering(embedding, num_clusters)
+        elif clustering_method == "AffinityPropagation":
+            labels = clustering.perform_AffinityPropagation(embedding)
         # create Dataframe with process execution id and cluster labels
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # get summary of clusters

@@ -54,7 +54,19 @@ csv_import = html.Div([
             dbc.Button("Parse csv Parameters", color="warning", id="parse-csv", className="me-2", n_clicks=0)
         ])], id='csv-import', style={'display': 'none'})
 
+# create html div for leading object dropdown
+leading_object_div = html.Div([
+                                html.Div("Select Leading Object Type: ", id='leading-object-div', style={'display': 'block'}), 
+                                dcc.Dropdown(id='leading-object', style={'display': 'block'})
+                                ], style={"width": "30%"})
 
+# create form for leading object type oder connected component process execution extraction
+process_extraction = html.Div([
+                                html.Div("Select Type of Process Execution Extraction: "),
+                                dbc.Row([
+                                    dbc.Col([dbc.RadioItems(options=[{"label": "Connected Components", "value": "CONN_COMP"},{"label": "Leading Object Type", "value": 'LEAD_TYPE '}], value="CONN_COMP", id="process-extraction-type"), leading_object_div]),
+                                    ])
+                                ])
 
 # Define the page layout
 layout = dbc.Container([
@@ -81,7 +93,9 @@ layout = dbc.Container([
         html.Br(),
         csv_import,
         html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-csv'),
-        html.Br(),
+        html.Hr(),
+        process_extraction,
+        html.Hr(),
         dbc.Row([
             dbc.Button("Upload", id="upload-button", className="me-2", n_clicks=0, disabled=True),
                 ]), 
@@ -143,6 +157,23 @@ def on_upload_csv(obj_name, act_name, time_name, id_name, filename, drag_drop_fi
     else:
         return {}, {'display':'none'}
 
+# load possible leading object types into dropdown
+@app.callback(Output("leading-object", "options"), [Input("csv-params","data"), Input("process-extraction-type", "value")], [State("path", "value"), State("file-dropdown", "value")], prevent_initial_call=True)
+def on_parse_params(csv_params, process_ex_type, path, filename):
+    if (filename.endswith("csv")) and (csv_params != None):
+        options = csv_params['obj_names']
+        return options 
+    elif (not filename.endswith("csv")):
+        if process_ex_type == "CONN_COMP":
+            return [] 
+        else: 
+            ocel_log = dataimport.load_ocel_json_xml(os.path.join(path, filename), parameters=None)
+            object_types = dataimport.get_ocel_object_types(ocel_log)
+            return object_types
+    else:
+        return []
+
+
 # enable upload button
 @app.callback(Output("upload-button", "disabled"), [Input("csv-params", "data"), Input("file-dropdown", "value"), Input("drag-drop-field", "contents")], prevent_initial_call = True)
 def on_file_selection(csv_params_parsed, selected_file, drag_drop_content):
@@ -155,8 +186,10 @@ def on_file_selection(csv_params_parsed, selected_file, drag_drop_content):
         return True
 
 # load and store ocel, extract and store parameters, uncover 'success' div
-@app.callback([ServersideOutput("ocel_obj", "data"), Output("param-store", "data"), ServersideOutput("execution-store", "data"), Output("success-upload-ocel", "style")], [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),], [Trigger("upload-button",  "n_clicks")], memoize=True)
-def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_content, drag_drop_filename, n):
+@app.callback([ServersideOutput("ocel_obj", "data"), Output("param-store", "data"), ServersideOutput("execution-store", "data"), Output("success-upload-ocel", "style")], 
+                [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),State("process-extraction-type", "value"),State("leading-object", "value")], 
+                [Trigger("upload-button",  "n_clicks")], memoize=True)
+def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_content, drag_drop_filename, process_extr_type, leading_obj, n):
     time.sleep(1)
     if selected_file is None and drag_drop_content is None:
         raise PreventUpdate
@@ -166,14 +199,23 @@ def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_conte
             #ocel_log = dataimport.load_ocel_csv(os.path.join(selected_dir, selected_file), csv_params)
             ocel_df = pd.read_csv(os.path.join(selected_dir, selected_file))
             ocel_df = dataimport.remove_prefix_csv(ocel_df)
-            ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
+            if process_extr_type == "CONN_COMP":
+                ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
+            else:
+                # add leading object for process execution extraction
+                csv_params["execution_extraction"] = "leading_type"
+                csv_params["leading_type"] = leading_obj
+                ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
         elif drag_drop_filename!=None and drag_drop_filename.endswith("csv"):
             ocel_log = dataimport.load_ocel_csv_drag_droph(drag_drop_content, csv_params)
         else:
             if drag_drop_content!=None and drag_drop_filename.endswith("jsonocel"):
                 ocel_log = dataimport.load_ocel_drag_drop(drag_drop_content)
             else:
-                ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file))
+                if process_extr_type == "CONN_COMP":    
+                    ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file), parameters={"execution_extraction":"connected_components"})
+                else:
+                    ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file), parameters={"execution_extraction":"leading_type", "leading_type":leading_obj})
 
         # remove any existing discovered nets, if exist
         [f.unlink() for f in Path("/imgs").glob("*") if f.is_file()] 
