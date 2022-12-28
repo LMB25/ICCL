@@ -13,8 +13,7 @@ import pickle
 import codecs
 import pandas as pd
 
-# execution feature set store
-execution_store = dcc.Store('execution-feature-set', storage_type='local')
+
 # event feature set store
 event_store = dcc.Store('event-feature-set', storage_type='local')
 # graph embedding parameters store
@@ -22,17 +21,11 @@ embedding_params_store = dcc.Store('embedding-parameters', storage_type='local')
 # Define Store object for List of DataFrames of Process Execution Features
 extracted_pe_features = dcc.Store(id='extracted-pe-features-store')
 
-
 # options for event based feature selection
 feature_options_event = ['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_FLOW_TIME', 'EVENT_ACTIVITY', 'EVENT_NUM_OF_OBJECTS', 'EVENT_PREVIOUS_ACTIVITY_COUNT', 'EVENT_DURATION']
-# options for extraction based feature selection
-feature_options_extraction = ['EXECUTION_NUM_OF_EVENTS', 'EXECUTION_NUM_OF_END_EVENTS', 'EXECUTION_THROUGHPUT', 'EXECUTION_NUM_OBJECT', 'EXECUTION_UNIQUE_ACTIVITIES', 
-                              'EXECUTION_NUM_OF_STARTING_EVENTS', 'EXECUTION_LAST_EVENT_TIME_BEFORE']
                         
 # event based feature selection dropdown
 event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', options=[{'label': i, 'value': i} for i in feature_options_event], multi=True, value=[])#feature_options_event)
-# extraction based feature selection dropdown
-extraction_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-extraction', options=[{'label': i, 'value': i} for i in feature_options_extraction], multi=True, value=[])#feature_options_extraction)
 
 # empty DataTable for Process Execution Features
 feature_options_extraction_renamed = ["Number of Events", "Number of Ending Events", "Throughput Duration", "Number of Objects", "Unique Activities", "Number of Starting Events", "Duration of Last Event"]
@@ -121,23 +114,14 @@ embedding_param_form = html.Div([embedding_params_form_attributed, embedding_par
 
 # Define the page layout
 layout = dbc.Tabs([
-        execution_store, event_store, embedding_params_store, extracted_pe_features,
+        event_store, embedding_params_store, extracted_pe_features,
         dbc.Tab([
                 html.Br(),
                 html.H5("Feature Explanation:"),
-                dbc.Row([
-                    dbc.Col(features_explanation)
-                ]),
-                html.Br(),
-                html.H5("Feature Selection:"),
-                dbc.Row([
-                    dbc.Col([html.Div("Select Event Features for Clustering:"), html.Div(event_feature_selection_dropdown)]),
-                    dbc.Col([html.Div("Select Extraction Features for Clustering:"), html.Div(extraction_feature_selection_dropdown)])
-                ]),
-                html.Br(),
-                dbc.Row([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0)]),
-                html.Div(id='feature-sucess'),
-                html.Br(),
+                dbc.Row([dbc.Col([features_explanation], width=7),]),
+                html.Hr(),
+                dbc.Row(dbc.Col([html.H5("Feature Selection:"), html.Div("Select Event Features for Clustering:")], width=7)),
+                dbc.Row([dbc.Col([html.Div(event_feature_selection_dropdown)], width=7), dbc.Col([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0), html.Div(id='feature-sucess')], width=5)])
         ], label="Features", tab_id='features-tab'),
         dbc.Tab([
                 html.Br(),
@@ -193,14 +177,12 @@ layout = dbc.Tabs([
         ], active_tab='features-tab')
 
 # load selected features in stores
-@app.callback([Output("event-feature-set", "data"), Output("execution-feature-set", "data"), Output("feature-sucess", "children")], [State("feature-selection-event", "value"), State("feature-selection-extraction", "value")], Input("set-features", "n_clicks"))
-def on_click(selected_event_features, selected_execution_features, n_clicks):
+@app.callback([Output("event-feature-set", "data"), Output("feature-sucess", "children")], State("feature-selection-event", "value"), Input("set-features", "n_clicks"))
+def on_click(selected_event_features, n_clicks):
     if n_clicks > 0:
         # set selected event features
         feature_set_event = selected_event_features
-        # set selected execution features
-        feature_set_extraction = selected_execution_features
-        return feature_set_event, feature_set_extraction, "Features successfully set."
+        return feature_set_event, "Features successfully set."
     else:
         raise PreventUpdate
 
@@ -251,13 +233,13 @@ def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points,
 
 
 # show silhouette plot if button clicked
-@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State('clustering-method-selection', 'value'), State("graph-embedding-selection", "value"), State("max-clusters", "value"), State("embedding-parameters", "data") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
-def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_features, clustering_method, embedding_method, max_clusters, embedding_params_dict, n):
+@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State('clustering-method-selection', 'value'), State("graph-embedding-selection", "value"), State("max-clusters", "value"), State("embedding-parameters", "data") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
+def on_elbow_btn_click(ocel_log, selected_event_features, clustering_method, embedding_method, max_clusters, embedding_params_dict, n):
     if n > 0 and ocel_log != None:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # extract features, get feature graphs
-        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, selected_execution_features, 'graph')
+        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, [], 'graph')
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
@@ -276,15 +258,15 @@ def on_elbow_btn_click(ocel_log, selected_event_features, selected_execution_fea
 
 # perform clustering and return dataframe with process execution ids and cluster labels
 @app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
-                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("execution-feature-set", "data"), State("graph-embedding-selection", "value"), State('clustering-method-selection', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data")], 
+                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State('clustering-method-selection', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data")], 
                 Trigger("start-clustering", "n_clicks"), memoize=True)
-def on_click(ocel_log, selected_event_features, selected_execution_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, n_clicks):
+def on_click(ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, n_clicks):
     time.sleep(1)
     if n_clicks > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # extract features, get feature graphs
-        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, selected_execution_features, 'graph')
+        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, [], 'graph')
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
