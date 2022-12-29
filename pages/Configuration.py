@@ -38,6 +38,8 @@ silhouette_explanation = dbc.Card(
                                 className="mb-3",
                                 )
 
+
+
 # process executions explanation
 process_executions_explanation = dbc.Card(
                                 dbc.CardBody("Hier sollte eine Erklärung zu den Process Executions stehen. Was zeigt der Plot des Process Execution Graphs an?"),
@@ -164,7 +166,9 @@ layout = dbc.Tabs([
                 dbc.Row([
                     dbc.Col(silhouette_explanation)
                 ]),
-                html.Br(),
+                dbc.Row([
+                          dbc.Col([dbc.Alert([html.I(className="fa-solid fa-triangle-exclamation"),"You have to parse embedding parameters first."],color="warning", className="d-flex align-items-center")], width=4)
+                         ], id='alert-params-silhouette', style={"display":"block"}),
                 dbc.Row([
                     dbc.Col(html.Div("Select maximal number of clusters: "), width=3, align="center"),
                     dbc.Col(dbc.Input(id='max-clusters', placeholder='7'), width=1),
@@ -205,6 +209,14 @@ def on_change_clustering_method(clustering_method):
         return False, disabled
     else:
         return True, True
+
+# show alert if silhouette analysis is selected, but no embedding parameters are parsed
+@app.callback(Output("alert-params-silhouette","style"), Input("success-parse-embedding-params","style"))
+def on_embedding_parameters_parsed(embedding_parse_success):
+    if embedding_parse_success == {"style":"block"}:
+        return {"display":"none"}
+    else:
+        return {"display":"block"}
 
 # show parameter form for selected graph embedding method
 @app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style")], Input("graph-embedding-selection", "value"))
