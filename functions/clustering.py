@@ -27,24 +27,24 @@ def perform_DBSCAN(X):
 
     return labels
 
-def perform_AffinityPropagation(X):
-    labels = AffinityPropagation(max_iter=500).fit_predict(X)
+def perform_AffinityPropagation(X, parameters):
+    labels = AffinityPropagation(max_iter=parameters['max_iter'],convergence_iter=parameters['convergence_iter']).fit_predict(X)
 
     return labels
 
 
-def perform_MeanShift(X):
-    clustering = MeanShift().fit(X)
+def perform_MeanShift(X, parameters):
+    clustering = MeanShift(max_iter=parameters['max_iter']).fit(X)
 
     return clustering.labels_
 
-def perform_KMeans(X, n_clusters):
-    clustering = KMeans(n_clusters).fit(X)
+def perform_KMeans(X, n_clusters, parameters):
+    clustering = KMeans(n_clusters, n_init=parameters['n_init'], max_iter=parameters['max_iter']).fit(X)
 
     return clustering.labels_
 
-def perform_HierarchicalClustering(X, n_clusters):
-    hierarchical_cluster = AgglomerativeClustering(n_clusters=n_clusters, affinity='euclidean', linkage='ward')
+def perform_HierarchicalClustering(X, n_clusters, parameters):
+    hierarchical_cluster = AgglomerativeClustering(n_clusters=n_clusters, linkage=parameters['linkage'])
     labels = hierarchical_cluster.fit_predict(X)
     
     return labels

@@ -20,6 +20,8 @@ event_store = dcc.Store('event-feature-set', storage_type='local')
 embedding_params_store = dcc.Store('embedding-parameters', storage_type='local')
 # Define Store object for List of DataFrames of Process Execution Features
 extracted_pe_features = dcc.Store(id='extracted-pe-features-store')
+# clustering parameters store
+clustering_params_store = dcc.Store('clustering-parameters', storage_type='local')
 
 # options for event based feature selection
 feature_options_event = ['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_FLOW_TIME', 'EVENT_ACTIVITY', 'EVENT_NUM_OF_OBJECTS', 'EVENT_PREVIOUS_ACTIVITY_COUNT', 'EVENT_DURATION']
@@ -128,13 +130,60 @@ embedding_params_form_featherg = html.Div([
         html.Br(),
         ], id='embedding-params-div-featherg', style={'display': 'none'})
 
+# create form for K-Means parameters
+clustering_params_form_kmeans = html.Div([
+        dbc.Row([
+            dbc.Col(html.P("Number of times the algorithm is run with different centroid seeds: ")),
+            dbc.Col(dbc.Input(id='n-init-kmeans', value=10))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Maximum number of iterations for a single run: ")),
+            dbc.Col(dbc.Input(id='max-iter-kmeans', value=300))
+        ]),
+        html.Br(),
+        ], id='clustering-params-div-kmeans', style={'display': 'none'})
+
+# create form for Hierarchical Clustering parameters
+clustering_params_form_hierarchical = html.Div([
+        dbc.Row([
+            dbc.Col(html.P("Linkage criterion: ")),
+            dbc.Col(dcc.Dropdown(options=['ward', 'complete', 'average', 'single'], id='linkage-criterion', value='ward'))
+        ]),
+        html.Br(),
+        ], id='clustering-params-div-hierarchical', style={'display': 'none'})
+
+# create form for Mean Shift parameters
+clustering_params_form_meanshift = html.Div([
+        dbc.Row([
+            dbc.Col(html.P("Maximum number of iterations: ")),
+            dbc.Col(dbc.Input(id='max-iter-meanshift', value=300))
+        ]),
+        html.Br(),
+        ], id='clustering-params-div-meanshift', style={'display': 'none'})
+
+# create form for Affinity-Propagation parameters
+clustering_params_form_affinity = html.Div([
+        dbc.Row([
+            dbc.Col(html.P("Maximum number of iterations: ")),
+            dbc.Col(dbc.Input(id='max-iter-affinity', value=200))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Number of iterations with no change in the number of estimated clusters that stops the convergence: ")),
+            dbc.Col(dbc.Input(id='convergence-iter-affinity', value=15))
+        ]),
+        html.Br(),
+        ], id='clustering-params-div-affinity', style={'display': 'none'})
+
+
 # create empty div for embedding param form
 embedding_param_form = html.Div([embedding_params_form_attributed, embedding_params_form_graph2vec, embedding_params_form_featherg], id='embedding-params-div', style={'display': 'block'})
 
+# create empty div for clustering param form
+clustering_param_form = html.Div([clustering_params_form_kmeans, clustering_params_form_hierarchical, clustering_params_form_meanshift, clustering_params_form_affinity], id='clustering-params-div', style={'display':'block'})
 
 # Define the page layout
 layout = dbc.Tabs([
-        event_store, embedding_params_store, extracted_pe_features,
+        event_store, embedding_params_store, extracted_pe_features, clustering_params_store,
         dbc.Tab([
                 html.Br(),
                 html.H5("Feature Explanation:"),
@@ -161,11 +210,20 @@ layout = dbc.Tabs([
                 html.Br(),
                 dbc.Row([
                         dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Hierarchical", "value": "Hierarchical"}, {"label": "Affinity-Propagation", "value":"AffinityPropagation"}], value="K-Means", id="clustering-method-selection"),)]),
-                        dbc.Col([html.H5("Select Number of Clusters"), html.Div(dcc.Slider(1,10,1, value=2, id='num-clusters-slider', disabled=True))])
+                        ]),
+                html.Br(),
+                dbc.Row([dbc.Col([html.H5("Modify Clustering Embedding Parameters:")])]),
+                dbc.Row([
+                        dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,10,1, value=2, id='num-clusters-slider', disabled=True)), clustering_param_form], width=7),
                         ]),
                 html.Br(),
                 dbc.Row([
-                        dbc.Col([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)], width=8)
+                        dbc.Col([dbc.Button("Parse Clustering Parameters", id="parse-clustering-params", className="me-2", n_clicks=0)], width=4),
+                        html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-clustering-params'),
+                        ]),
+                html.Br(),
+                dbc.Row([
+                        dbc.Col([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)], width=4)
                         ]),
                 html.Div(id='clustering-success'),
                 html.Br(),
@@ -266,6 +324,20 @@ def on_embedding_selection(embedding_method):
     else:
         return {'display':'none'}, {'display':'none'}, {'display':'none'}
 
+# show parameter form for selected clustering method
+@app.callback([Output("clustering-params-div-kmeans", "style"), Output("clustering-params-div-hierarchical", "style"), Output("clustering-params-div-meanshift", "style"), Output("clustering-params-div-affinity", "style")], Input("clustering-method-selection", "value"))
+def on_clustering_selection(clustering_method):
+    if clustering_method == 'K-Means':
+        return {'display':'block'}, {'display':'none'}, {'display':'none'}, {'display':'none'}
+    elif clustering_method == 'Hierarchical':
+        return {'display':'none'}, {'display':'block'}, {'display':'none'}, {'display':'none'}
+    elif clustering_method == "Mean-Shift":
+        return {'display':'none'}, {'display':'none'}, {'display':'block'}, {'display':'none'}
+    elif clustering_method == 'AffinityPropagation':
+        return {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'block'}
+    else:
+        return {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'none'}
+
 # save graph embedding parameter settings
 @app.callback([Output("embedding-parameters", "data"), Output("success-parse-embedding-params", "style")], [State("svd-dimensions", "value"), State("svd-iterations", "value"), State("theta-max", "value"), State("eval-points", "value"), State("order", "value"),
                 State("wl-iterations", "value"), State("graph2vec-dim", "value"), State("epochs", "value"), State("learning-rate", "value"), State("graph-embedding-selection", "value"), State("theta-max-g", "value"), State("eval-points-g", "value"), State("order-g", "value")], 
@@ -274,7 +346,6 @@ def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points,
     if n_click > 0:
         if embedding_method =='AttributedGraph2Vec':
             embedding_params_dict = {"svd_dimensions":int(svd_dimension), "svd_iterations":int(svd_iterations), "theta_max":float(theta_max), "eval_points":int(eval_points), "order":int(order)}
-            print(embedding_params_dict)
             return embedding_params_dict, {'display':'block'}
         elif embedding_method == 'Graph2Vec':
             embedding_params_dict = {"wl_iterations":int(wl_iterations), "dimensions":int(dimensions), "epochs":int(epochs), "learning_rate":float(learning_rate)}
@@ -285,6 +356,25 @@ def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points,
     else:
         dash.no_update
 
+# save clustering parameter settings
+@app.callback([Output('clustering-parameters', 'data'), Output("success-parse-clustering-params", "style")], [State('n-init-kmeans', 'value'), State('max-iter-kmeans', 'value'), State('max-iter-meanshift', 'value'), State('linkage-criterion','value'), 
+               State('max-iter-affinity', 'value'), State('convergence-iter-affinity','value'), State('clustering-method-selection', 'value')], Input('parse-clustering-params', 'n_clicks'), prevent_initial_call=True)
+def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, max_iter_affinity, convergence_iter, clustering_method, n_click):
+    if n_click > 0:
+        if clustering_method =='K-Means':
+            clustering_params_dict = {"n_init":int(n_init), "max_iter":int(max_iter_kmeans)}
+            return clustering_params_dict, {'display':'block'}
+        elif clustering_method == 'Hierarchical':
+            clustering_params_dict = {"linkage":linkage}
+            return clustering_params_dict, {'display':'block'}
+        elif clustering_method == "Mean-Shift":
+            clustering_params_dict = {"max_iter":int(max_iter_meanshift)}
+            return clustering_params_dict, {'display':'block'}
+        elif clustering_method == "AffinityPropagation":
+            clustering_params_dict = {"max_iter":int(max_iter_affinity), "convergence_iter":int(convergence_iter)}
+            return clustering_params_dict, {'display':'block'}
+    else:
+        dash.no_update
 
 # show silhouette plot if button clicked
 @app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State('clustering-method-selection', 'value'), State("graph-embedding-selection", "value"), State("max-clusters", "value"), State("embedding-parameters", "data") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
@@ -312,9 +402,9 @@ def on_elbow_btn_click(ocel_log, selected_event_features, clustering_method, emb
 
 # perform clustering and return dataframe with process execution ids and cluster labels
 @app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
-                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State('clustering-method-selection', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data")], 
+                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State('clustering-method-selection', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data"), State('clustering-parameters', 'data')], 
                 Trigger("start-clustering", "n_clicks"), memoize=True)
-def on_click(ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, n_clicks):
+def on_click(ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, clustering_params_dict, n_clicks):
     time.sleep(1)
     if n_clicks > 0:
         # load ocel
@@ -332,13 +422,13 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
         # cluster embedding
         if clustering_method == 'Mean-Shift':
-            labels = clustering.perform_MeanShift(embedding)
+            labels = clustering.perform_MeanShift(embedding, clustering_params_dict)
         elif clustering_method == 'K-Means':
-            labels = clustering.perform_KMeans(embedding, num_clusters)
+            labels = clustering.perform_KMeans(embedding, num_clusters, clustering_params_dict)
         elif clustering_method == 'Hierarchical':
-            labels = clustering.perform_HierarchicalClustering(embedding, num_clusters)
+            labels = clustering.perform_HierarchicalClustering(embedding, num_clusters, clustering_params_dict)
         elif clustering_method == "AffinityPropagation":
-            labels = clustering.perform_AffinityPropagation(embedding)
+            labels = clustering.perform_AffinityPropagation(embedding, clustering_params_dict)
         # create Dataframe with process execution id and cluster labels
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # get summary of clusters
