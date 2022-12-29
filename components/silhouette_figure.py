@@ -15,6 +15,11 @@ def create_silhouette_figure(silhouette, max_clusters, method):
                         title= method + " Silhouette Analysis",
                         xaxis_title="Number of Clusters",
                         yaxis_title="Silhouette Score",
+                        xaxis = dict(
+                                    tickmode = 'linear',
+                                    tick0 = 2,
+                                    dtick = 1
+                                    )
                      )
 
     return fig
