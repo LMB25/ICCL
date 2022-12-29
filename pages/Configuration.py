@@ -110,8 +110,26 @@ embedding_params_form_graph2vec = html.Div([
         html.Br(),
         ], id='embedding-params-div-graph2vec', style={'display': 'none'})
 
+# create form for Feather-G embedding parameters
+embedding_params_form_featherg = html.Div([
+        html.H5("Modify Graph Embedding Parameters:"),
+        dbc.Row([
+            dbc.Col(html.P("Maximal evaluation point: ")),
+            dbc.Col(dbc.Input(id='theta-max-g', value=2.5))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Number of characteristic function evaluation points: ")),
+            dbc.Col(dbc.Input(id='eval-points-g', value=25))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Scale - number of adjacency matrix powers: ")),
+            dbc.Col(dbc.Input(id='order-g', value=5))
+        ]),
+        html.Br(),
+        ], id='embedding-params-div-featherg', style={'display': 'none'})
+
 # create empty div for embedding param form
-embedding_param_form = html.Div([embedding_params_form_attributed, embedding_params_form_graph2vec], id='embedding-params-div', style={'display': 'block'})
+embedding_param_form = html.Div([embedding_params_form_attributed, embedding_params_form_graph2vec, embedding_params_form_featherg], id='embedding-params-div', style={'display': 'block'})
 
 
 # Define the page layout
@@ -219,19 +237,22 @@ def on_embedding_parameters_parsed(embedding_data):
         return False
 
 # show parameter form for selected graph embedding method
-@app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style")], Input("graph-embedding-selection", "value"))
+@app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style"), Output("embedding-params-div-featherg", "style")], Input("graph-embedding-selection", "value"))
 def on_embedding_selection(embedding_method):
     if embedding_method == 'Graph2Vec':
-        return {'display':'block'}, {'display':'none'}
+        return {'display':'block'}, {'display':'none'}, {'display':'none'}
     elif embedding_method == 'AttributedGraph2Vec':
-        return {'display':'none'}, {'display':'block'}
+        return {'display':'none'}, {'display':'block'}, {'display':'none'}
+    elif embedding_method == "Feather-G":
+        return {'display':'none'}, {'display':'none'}, {'display':'block'}
     else:
-        return {'display':'none'}, {'display':'none'}
+        return {'display':'none'}, {'display':'none'}, {'display':'none'}
 
 # save graph embedding parameter settings
 @app.callback([Output("embedding-parameters", "data"), Output("success-parse-embedding-params", "style")], [State("svd-dimensions", "value"), State("svd-iterations", "value"), State("theta-max", "value"), State("eval-points", "value"), State("order", "value"),
-                State("wl-iterations", "value"), State("graph2vec-dim", "value"), State("epochs", "value"), State("learning-rate", "value"), State("graph-embedding-selection", "value")], Input("parse-embedding-params", "n_clicks"), prevent_initial_call=True)
-def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points, order, wl_iterations, dimensions, epochs, learning_rate, embedding_method, n_click):
+                State("wl-iterations", "value"), State("graph2vec-dim", "value"), State("epochs", "value"), State("learning-rate", "value"), State("graph-embedding-selection", "value"), State("theta-max-g", "value"), State("eval-points-g", "value"), State("order-g", "value")], 
+                Input("parse-embedding-params", "n_clicks"), prevent_initial_call=True)
+def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points, order, wl_iterations, dimensions, epochs, learning_rate, embedding_method, theta_max_g, eval_points_g, order_g, n_click):
     if n_click > 0:
         if embedding_method =='AttributedGraph2Vec':
             embedding_params_dict = {"svd_dimensions":int(svd_dimension), "svd_iterations":int(svd_iterations), "theta_max":float(theta_max), "eval_points":int(eval_points), "order":int(order)}
@@ -239,6 +260,9 @@ def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points,
             return embedding_params_dict, {'display':'block'}
         elif embedding_method == 'Graph2Vec':
             embedding_params_dict = {"wl_iterations":int(wl_iterations), "dimensions":int(dimensions), "epochs":int(epochs), "learning_rate":float(learning_rate)}
+            return embedding_params_dict, {'display':'block'}
+        elif embedding_method == "Feather-G":
+            embedding_params_dict = {"theta_max":float(theta_max_g), "eval_points":int(eval_points_g), "order":int(order_g)}
             return embedding_params_dict, {'display':'block'}
     else:
         dash.no_update
@@ -258,7 +282,7 @@ def on_elbow_btn_click(ocel_log, selected_event_features, clustering_method, emb
         if embedding_method == 'Graph2Vec':
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
-            embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
+            embedding = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
         elif embedding_method == 'AttributedGraph2Vec':
             embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         # calculate silhouette score for different k 
@@ -287,7 +311,7 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
         elif embedding_method == 'Graph2Vec':
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
-            embedding = graph_embedding.perform_feather_g(feature_nx_graphs)
+            embedding = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
         # cluster embedding
         if clustering_method == 'Mean-Shift':
             labels = clustering.perform_MeanShift(embedding)
