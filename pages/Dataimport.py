@@ -16,6 +16,7 @@ import time
 import base64, io
 
 from functions import dataimport, process_executions
+from components import explanation_texts, input_forms
 
 # create empty Dataframe to display before any OCEL is uploaded
 dummy_df = pd.DataFrame(columns=['event_id', 'activity', 'timestamp', 'object'])
@@ -29,57 +30,22 @@ file_dropdown = dcc.Dropdown(id='file-dropdown')
 # create store for csv params
 csv_params = dcc.Store(id='csv-params', storage_type='local')
 
-# explanation for process execution extraction type selection
-features_explanation = dbc.Card(
-                                dbc.ListGroup(
-                                    [
-                                        dbc.ListGroupItem("Connected Components: process executions are extracted based on the connected components of the object graph. All transitively connected objects form one process execution."),
-                                        dbc.ListGroupItem("Leading Object Type: process execution is constructed for each object of a chosen leading object type. Connected objects are added to this process execution unless a connected object of the same type has a lower distance to the leading object."),
-                                    ],
-                                    flush=True,
-                                ),
-                            )
-
-# create form for csv parameter input
-csv_import = html.Div([
-        csv_params,
-        html.H5("Please specify the necessary parameters for OCEL csv import"),
-        dbc.Row([
-            dbc.Col(html.P("Select event id column: ")),
-            dbc.Col(dcc.Dropdown(id='id_name'))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Select timestamp column: ")),
-            dbc.Col(dcc.Dropdown(id='time_name'))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Select event activity column: ")),
-            dbc.Col(dcc.Dropdown(id='act_name'))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Enter object names: ")),
-            dbc.Col(dcc.Dropdown(id='obj_names', multi=True))
-        ]),
-        html.Br(),
-        dbc.Row([
-            dbc.Button("Parse csv Parameters", color="warning", id="parse-csv", className="me-2", n_clicks=0)
-        ])], id='csv-import', style={'display': 'none'})
-
 # create html div for leading object dropdown
 leading_object_div = html.Div([ 
                                 dcc.Dropdown(placeholder='Select leading object type', id='leading-object', style={'display': 'block', 'width':'80%'})
                                 ])
 
-# create form for leading object type oder connected component process execution extraction
+# create selection for leading object type oder connected component process execution extraction
 process_extraction = html.Div([
                                 dbc.Row([
                                     dbc.Col([html.Div("Select Type of Process Execution Extraction: "), dbc.RadioItems(options=[{"label": "Connected Components", "value": "CONN_COMP"},{"label": "Leading Object Type", "value": 'LEAD_TYPE '}], value="CONN_COMP", id="process-extraction-type"), leading_object_div]),
-                                    dbc.Col([features_explanation], width=8)
+                                    dbc.Col([explanation_texts.extraction_type_explanation], width=8)
                                     ])
                                 ])
 
 # Define the page layout
 layout = dbc.Container([
+        csv_params,
         html.Center(html.H1("Import Data")),
         html.Hr(),
         dcc.Upload(id="drag-drop-field", children=html.Div(["Drag and Drop or ", html.A("Select Files")]),
@@ -101,7 +67,7 @@ layout = dbc.Container([
             dbc.Col(file_dropdown)
         ]),
         html.Br(),
-        csv_import,
+        input_forms.csv_import,
         html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-csv'),
         html.Hr(),
         process_extraction,

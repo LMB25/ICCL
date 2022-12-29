@@ -8,7 +8,7 @@ from app import app
 from dash.exceptions import PreventUpdate
 from dash_extensions.enrich import Dash, Trigger, ServersideOutput
 from functions import process_executions, feature_extraction, graph_embedding, clustering, dataimport
-from components import nxgraph_figure, silhouette_figure
+from components import nxgraph_figure, silhouette_figure, input_forms, explanation_texts
 import pickle
 import codecs
 import pandas as pd
@@ -34,152 +34,12 @@ feature_options_extraction_renamed = ["Number of Events", "Number of Ending Even
 dummy_df = pd.DataFrame(columns=feature_options_extraction_renamed)
 feature_table = dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, hover=True)
 
-# silhouette analysis explanation
-silhouette_explanation = dbc.Card(
-                                dbc.CardBody("Intuitively, the silhouette score quantifies the space between different clusters. For each number of clusters (up to the inserted max.), the selected clustering method is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The plot displays the average silhouette score for each number of clusters. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated. Thus, to get a reasonable clustering result, one should choose the cluster number with the maximal positive average silhouette score."),
-                                className="mb-3",
-                                )
-
-
-
-# process executions explanation
-process_executions_explanation = dbc.Card(
-                                dbc.CardBody("Hier sollte eine Erklärung zu den Process Executions stehen. Was zeigt der Plot des Process Execution Graphs an?"),
-                                className="mb-3",
-                                )
-# list of features and explanation
-features_explanation = dbc.Card(
-                                dbc.ListGroup(
-                                    [
-                                        dbc.ListGroupItem("EVENT_REMAINING_TIME: Remaining time from event to end of process execution."),
-                                        dbc.ListGroupItem("EVENT_ELAPSED_TIME: Elapsed time from process execution start to the event."),
-                                        dbc.ListGroupItem("EVENT_FLOW_TIME:"),
-                                        dbc.ListGroupItem("EVENT_ACTIVITY: Activity that is performed in the event."),
-                                        dbc.ListGroupItem("EVENT_NUM_OF_OBJECTS: Number of objects involved in the event."),
-                                        dbc.ListGroupItem("EVENT_PREVIOUS_ACTIVITY_COUNT: Number of activities that took place before the event."),
-                                        dbc.ListGroupItem("EVENT_DURATION: Duration of the event."),
-                                    ],
-                                    flush=True,
-                                ),
-                            )
-
-
-# create form for attributed graph embedding parameters
-embedding_params_form_attributed = html.Div([
-        html.H5("Modify Graph Embedding Parameters:"),
-        dbc.Row([
-            dbc.Col(html.P("SVD Reduction Dimensions: ")),
-            dbc.Col(dbc.Input(id='svd-dimensions', value=64))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("SVD Iterations: ")),
-            dbc.Col(dbc.Input(id='svd-iterations', value=20))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Maximal evaluation point: ")),
-            dbc.Col(dbc.Input(id='theta-max', value=2.5))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Number of characteristic function evaluation points: ")),
-            dbc.Col(dbc.Input(id='eval-points', value=25))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Scale - number of adjacency matrix powers: ")),
-            dbc.Col(dbc.Input(id='order', value=5))
-        ]),
-        html.Br(),
-        ], id='embedding-params-div-attributedgraph2vec', style={'display': 'none'})
-
-# create form for Graph2Vec embedding parameters
-embedding_params_form_graph2vec = html.Div([
-        html.H5("Modify Graph Embedding Parameters:"),
-        dbc.Row([
-            dbc.Col(html.P("WL iterations: ")),
-            dbc.Col(dbc.Input(id='wl-iterations', value=50))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Dimensions: ")),
-            dbc.Col(dbc.Input(id='graph2vec-dim', value=128))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Epochs: ")),
-            dbc.Col(dbc.Input(id='epochs', value=10))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Learning Rate: ")),
-            dbc.Col(dbc.Input(id='learning-rate', value=0.025))
-        ]),
-        html.Br(),
-        ], id='embedding-params-div-graph2vec', style={'display': 'none'})
-
-# create form for Feather-G embedding parameters
-embedding_params_form_featherg = html.Div([
-        html.H5("Modify Graph Embedding Parameters:"),
-        dbc.Row([
-            dbc.Col(html.P("Maximal evaluation point: ")),
-            dbc.Col(dbc.Input(id='theta-max-g', value=2.5))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Number of characteristic function evaluation points: ")),
-            dbc.Col(dbc.Input(id='eval-points-g', value=25))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Scale - number of adjacency matrix powers: ")),
-            dbc.Col(dbc.Input(id='order-g', value=5))
-        ]),
-        html.Br(),
-        ], id='embedding-params-div-featherg', style={'display': 'none'})
-
-# create form for K-Means parameters
-clustering_params_form_kmeans = html.Div([
-        dbc.Row([
-            dbc.Col(html.P("Number of times the algorithm is run with different centroid seeds: ")),
-            dbc.Col(dbc.Input(id='n-init-kmeans', value=10))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Maximum number of iterations for a single run: ")),
-            dbc.Col(dbc.Input(id='max-iter-kmeans', value=300))
-        ]),
-        html.Br(),
-        ], id='clustering-params-div-kmeans', style={'display': 'none'})
-
-# create form for Hierarchical Clustering parameters
-clustering_params_form_hierarchical = html.Div([
-        dbc.Row([
-            dbc.Col(html.P("Linkage criterion: ")),
-            dbc.Col(dcc.Dropdown(options=['ward', 'complete', 'average', 'single'], id='linkage-criterion', value='ward'))
-        ]),
-        html.Br(),
-        ], id='clustering-params-div-hierarchical', style={'display': 'none'})
-
-# create form for Mean Shift parameters
-clustering_params_form_meanshift = html.Div([
-        dbc.Row([
-            dbc.Col(html.P("Maximum number of iterations: ")),
-            dbc.Col(dbc.Input(id='max-iter-meanshift', value=300))
-        ]),
-        html.Br(),
-        ], id='clustering-params-div-meanshift', style={'display': 'none'})
-
-# create form for Affinity-Propagation parameters
-clustering_params_form_affinity = html.Div([
-        dbc.Row([
-            dbc.Col(html.P("Maximum number of iterations: ")),
-            dbc.Col(dbc.Input(id='max-iter-affinity', value=200))
-        ]),
-        dbc.Row([
-            dbc.Col(html.P("Number of iterations with no change in the number of estimated clusters that stops the convergence: ")),
-            dbc.Col(dbc.Input(id='convergence-iter-affinity', value=15))
-        ]),
-        html.Br(),
-        ], id='clustering-params-div-affinity', style={'display': 'none'})
-
 
 # create empty div for embedding param form
-embedding_param_form = html.Div([embedding_params_form_attributed, embedding_params_form_graph2vec, embedding_params_form_featherg], id='embedding-params-div', style={'display': 'block'})
+embedding_param_form = html.Div([input_forms.embedding_params_form_attributed, input_forms.embedding_params_form_graph2vec, input_forms.embedding_params_form_featherg], id='embedding-params-div', style={'display': 'block'})
 
 # create empty div for clustering param form
-clustering_param_form = html.Div([clustering_params_form_kmeans, clustering_params_form_hierarchical, clustering_params_form_meanshift, clustering_params_form_affinity], id='clustering-params-div', style={'display':'block'})
+clustering_param_form = html.Div([input_forms.clustering_params_form_kmeans, input_forms.clustering_params_form_hierarchical, input_forms.clustering_params_form_meanshift, input_forms.clustering_params_form_affinity], id='clustering-params-div', style={'display':'block'})
 
 # Define the page layout
 layout = dbc.Tabs([
@@ -187,7 +47,7 @@ layout = dbc.Tabs([
         dbc.Tab([
                 html.Br(),
                 html.H5("Feature Explanation:"),
-                dbc.Row([dbc.Col([features_explanation], width=7),]),
+                dbc.Row([dbc.Col([explanation_texts.features_explanation], width=7),]),
                 html.Hr(),
                 dbc.Row(dbc.Col([html.H5("Feature Selection:"), html.Div("Select Event Features for Clustering:")], width=7)),
                 dbc.Row([dbc.Col([html.Div(event_feature_selection_dropdown)], width=7), dbc.Col([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0), html.Div(id='feature-sucess')], width=5)])
@@ -233,7 +93,7 @@ layout = dbc.Tabs([
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
-                    dbc.Col(process_executions_explanation)
+                    dbc.Col(explanation_texts.process_executions_explanation)
                 ]),
                 dbc.Row([
                         dbc.Col([html.Div("Number of Process Executions:"), html.Div(id="process-executions-summary")]),
@@ -248,7 +108,7 @@ layout = dbc.Tabs([
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
-                    dbc.Col(silhouette_explanation)
+                    dbc.Col(explanation_texts.silhouette_explanation)
                 ]),
                 html.Div([
                           dbc.Col([dbc.Alert([html.I(className="fa-solid fa-triangle-exclamation"),"You have to parse embedding parameters first."],color="warning", className="d-flex align-items-center")], width=4)
