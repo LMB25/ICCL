@@ -142,13 +142,11 @@ layout = dbc.Tabs([
                 html.Hr(),
                 dbc.Row(dbc.Col([html.H5("Feature Selection:"), html.Div("Select Event Features for Clustering:")], width=7)),
                 dbc.Row([dbc.Col([html.Div(event_feature_selection_dropdown)], width=7), dbc.Col([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0), html.Div(id='feature-sucess')], width=5)])
-        ], label="Features", tab_id='features-tab'),
+        ], label="Features", tab_id='features-tab', label_style={'background-color': '#8daed9'}),
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
                     dbc.Col([html.H5("Select Graph Embedding Method"), html.Div(dbc.RadioItems(options=[{"label": "AttributedGraph2Vec", "value": "AttributedGraph2Vec"},{"label": "Graph2Vec", "value": 'Graph2Vec'},{"label": "Feather-G", "value": "Feather-G"}], value="AttributedGraph2Vec", id="graph-embedding-selection"),)]),
-                    dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Hierarchical", "value": "Hierarchical"}, {"label": "Affinity-Propagation", "value":"AffinityPropagation"}], value="K-Means", id="clustering-method-selection"),)]),
-                    dbc.Col([html.H5("Select Number of Clusters"), html.Div(dcc.Slider(1,10,1, value=2, id='num-clusters-slider', disabled=True))])
                 ]),
                 html.Br(),
                 dbc.Row([ 
@@ -158,12 +156,22 @@ layout = dbc.Tabs([
                         ],
                         style={'display':'block'}, id='silhouette-div'),
                 html.Br(),
-                dbc.Row([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)]),
+                ], label="Embedding", tab_id='embedding-tab', label_style={'background-color': '#8dd996'}),
+        dbc.Tab([
+                html.Br(),
+                dbc.Row([
+                        dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Hierarchical", "value": "Hierarchical"}, {"label": "Affinity-Propagation", "value":"AffinityPropagation"}], value="K-Means", id="clustering-method-selection"),)]),
+                        dbc.Col([html.H5("Select Number of Clusters"), html.Div(dcc.Slider(1,10,1, value=2, id='num-clusters-slider', disabled=True))])
+                        ]),
+                html.Br(),
+                dbc.Row([
+                        dbc.Col([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)], width=8)
+                        ]),
                 html.Div(id='clustering-success'),
                 html.Br(),
                 html.Div(id="cluster-summary-component"),
                 html.Br(),
-                ], label="Clustering", tab_id='clustering-tab'),
+                ], label="Clustering", tab_id='clustering-tab', label_style={'background-color': '#f5b553'}),
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
@@ -196,7 +204,17 @@ layout = dbc.Tabs([
                     dbc.Col(html.Div(id='silhouette-plot'))
                     ])
                 ], label="Silhouette Analysis", tab_id='silhouette-tab'),
-        ], active_tab='features-tab')
+        ], id='configuration-tabs',active_tab='features-tab')
+
+# switch between active tabs
+@app.callback(Output('configuration-tabs', 'active_tab'), [Input("feature-sucess", "children"), Input("success-parse-embedding-params", "style")], prevent_initial_call=True)
+def on_configuration(features_set, embedding_parsed):
+    if features_set != None and embedding_parsed == {'display':'none'}:
+        return 'embedding-tab'
+    elif features_set != None and embedding_parsed == {'display':'block'}:
+        return 'clustering-tab'
+    else:
+        dash.no_update
 
 # load selected features in stores
 @app.callback([Output("event-feature-set", "data"), Output("feature-sucess", "children")], State("feature-selection-event", "value"), Input("set-features", "n_clicks"))
