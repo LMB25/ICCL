@@ -2,6 +2,12 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
+# clustering evaluation explanation
+clustering_evaluation_explanation = dbc.Card( 
+                                            dbc.CardBody("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.."),
+                                            className="mb-3",
+                                            )
+
 # silhouette analysis explanation
 silhouette_explanation = dbc.Card(
                                 dbc.CardBody("Intuitively, the silhouette score quantifies the space between different clusters. For each number of clusters (up to the inserted max.), the selected clustering method is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The plot displays the average silhouette score for each number of clusters. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated. Thus, to get a reasonable clustering result, one should choose the cluster number with the maximal positive average silhouette score."),

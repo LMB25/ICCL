@@ -6,6 +6,10 @@ import pandas as pd
 from ocpa.algo.util.filtering.log import case_filtering
 from ocpa.objects.log.util import misc as log_util
 
+import matplotlib.pyplot as plt
+import io
+import base64
+import clusteval
 
 def perform_silhouette_analysis(X, max_clusters, method):
     silhouette = []
@@ -102,3 +106,69 @@ def get_cluster_summary(clustered_df):
     #summary_df['Number of Process Executions'] = clustered_df['cluster'].map(clustered_df['cluster'].value_counts())   #returns the number of process executions in first cluster for all clusters in summary
 
     return summary_df
+
+
+def cluster_evaluation_hierarchical(X, linkage):
+
+    buf = io.BytesIO()
+    plt.figure()
+    fig, axs = plt.subplots(1,3, figsize=(15,4))
+
+    # dbindex
+    results = clusteval.dbindex.fit(X, linkage=linkage, max_clust=15)
+    _ = clusteval.dbindex.plot(results, title='DBindex', ax=axs[0], visible=False)
+
+    # silhouette
+    results = clusteval.silhouette.fit(X, linkage=linkage, max_clust=15)
+    _ = clusteval.silhouette.plot(results, title='Silhouette', ax=axs[1], visible=False)
+
+    # derivative
+    results = clusteval.derivative.fit(X, linkage=linkage, max_clust=15)
+    _ = clusteval.derivative.plot(results, title='Derivative', ax=axs[2], visible=False)
+
+    plt.savefig(buf, format = "png")
+    plt.close()
+    data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
+    buf.close()
+
+    return "data:image/png;base64,{}".format(data)
+
+def cluster_evaluation_kmeans(X):
+
+    buf = io.BytesIO()
+
+    plt.figure()
+    fig, axs = plt.subplots(1,2, figsize=(10,4))
+
+    # dbindex
+    results = clusteval.dbindex.fit(X, cluster='kmeans', max_clust=15)
+    _ = clusteval.dbindex.plot(results, title='DBindex', ax=axs[0], visible=False)
+
+    # silhouette
+    results = clusteval.silhouette.fit(X, cluster='kmeans', max_clust=15)
+    _ = clusteval.silhouette.plot(results, title='Silhouette', ax=axs[1], visible=False)
+
+    plt.savefig(buf, format = "png")
+    plt.close()
+    data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
+    buf.close()
+
+    return "data:image/png;base64,{}".format(data)
+
+def cluster_evaluation_dbscan(X):
+
+    buf = io.BytesIO()
+
+    plt.figure()
+    fig, ax = plt.subplots(figsize=(7, 4))
+
+    # dbscan
+    results = clusteval.dbscan.fit(X)
+    _ = clusteval.dbscan.plot(results, title='DBscan', ax=ax, visible=False)
+
+    plt.savefig(buf, format = "png")
+    plt.close()
+    data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
+    buf.close()
+
+    return "data:image/png;base64,{}".format(data)

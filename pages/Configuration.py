@@ -93,6 +93,37 @@ layout = dbc.Tabs([
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
+                        dbc.Col(explanation_texts.clustering_evaluation_explanation)
+                        ]),
+                dbc.Row([
+                        dbc.Col([dbc.Button("Analyze Clustering Techniques", className="me-1", id='show-plot', n_clicks=0)])
+                        ]),
+                html.Br(),
+                html.Div([
+                html.H5("Hierarchical Clustering"),
+                html.Div("Ward Linkage"),
+                dbc.Row([
+                        dbc.Col([html.Img(id='ward-evaluation')])
+                        ]),
+                html.Div("Average Linkage"), 
+                dbc.Row([
+                        dbc.Col([html.Img(id='average-evaluation')])
+                        ]),
+                html.Br(),
+                html.H5("K-Means Clustering"),
+                dbc.Row([
+                        dbc.Col([html.Img(id='kmeans-evaluation')])
+                        ]),
+                html.Br(),
+                html.H5("DBscan Clustering"),
+                dbc.Row([
+                        dbc.Col([html.Img(id='dbscan-evaluation')])
+                        ]),
+                        ], id='cluster-evaluation-result', hidden=True),
+                ], label='Cluster Evaluation', tab_id='cluster-eval'),
+        dbc.Tab([
+                html.Br(),
+                dbc.Row([
                     dbc.Col(explanation_texts.process_executions_explanation)
                 ]),
                 dbc.Row([
@@ -123,6 +154,34 @@ layout = dbc.Tabs([
                     ])
                 ], label="Silhouette Analysis", tab_id='silhouette-tab'),
         ], id='configuration-tabs',active_tab='features-tab')
+
+
+
+@app.callback([Output('ward-evaluation', 'src'), Output('average-evaluation', 'src'), Output('kmeans-evaluation', 'src'), Output('dbscan-evaluation', 'src'), Output('cluster-evaluation-result', 'hidden')], 
+               Input('show-plot', 'n_clicks'), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State("embedding-parameters", "data") ], prevent_initial_call=True)
+def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_method, embedding_params_dict):
+    if n_clicks > 0:
+        # load ocel
+        ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
+        # extract features, get feature graphs
+        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, [], 'graph')
+        # remap nodes of feature graphs
+        feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
+        # embedd feature graphs
+        if embedding_method == 'Graph2Vec':
+            X = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
+        elif embedding_method == 'Feather-G':
+            X = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
+        elif embedding_method == 'AttributedGraph2Vec':
+            X = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
+
+        hierarchical_ward = clustering.cluster_evaluation_hierarchical(X, "ward")
+        hierarchical_average = clustering.cluster_evaluation_hierarchical(X, "average")
+        kmeans = clustering.cluster_evaluation_kmeans(X)
+        dbscan = clustering.cluster_evaluation_dbscan(X)
+
+        return hierarchical_ward, hierarchical_average, kmeans, dbscan, False
+
 
 # switch between active tabs
 @app.callback(Output('configuration-tabs', 'active_tab'), [Input("feature-sucess", "children"), Input("success-parse-embedding-params", "style")], prevent_initial_call=True)
