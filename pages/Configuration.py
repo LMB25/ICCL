@@ -1,5 +1,5 @@
 # Import necessary libraries 
-from dash import html, dcc
+from dash import html, dcc, ctx
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import dash
@@ -8,7 +8,7 @@ from app import app
 from dash.exceptions import PreventUpdate
 from dash_extensions.enrich import Dash, Trigger, ServersideOutput
 from functions import process_executions, feature_extraction, graph_embedding, clustering, dataimport
-from components import nxgraph_figure, silhouette_figure, input_forms, explanation_texts
+from components import nxgraph_figure, silhouette_figure, input_forms, explanation_texts, collapse_buttons
 import pickle
 import codecs
 import pandas as pd
@@ -96,6 +96,16 @@ layout = dbc.Tabs([
                 dbc.Row([
                         dbc.Col(explanation_texts.clustering_evaluation_explanation)
                         ]),
+                dbc.Row([
+                        dbc.Col(["DBindex", collapse_buttons.dbindex_button]),
+                        dbc.Col(["Silhouette", collapse_buttons.silhouette_button]),
+                        dbc.Col(["Derivative", collapse_buttons.derivative_button]),
+                        dbc.Col(["DBscan", collapse_buttons.dbscan_button]),
+                        ]),
+                dbc.Row([
+                        dbc.Collapse(dbc.Card(children=[],id='evaluation-explanations'),id="evaluation-collapse", is_open=False)
+                        ]),
+                html.Br(),
                 html.Div([
                           dbc.Col([dbc.Alert([html.I(className="fa-solid fa-triangle-exclamation"),"You have to parse embedding parameters first."],color="warning", className="d-flex align-items-center")], width=4)
                          ], id='alert-params-evaluation', hidden=False),
@@ -370,3 +380,40 @@ def on_extraction(ocel_log, extraction_features_list, execution_id):
             datatable = feature_table
         return  cyto, datatable
         #return dcc.Graph(id='pe-graph',figure=fig)
+
+
+# collapse evaluation explanation
+@app.callback(
+    [Output("evaluation-collapse", "is_open"), Output("evaluation-explanations","children")],
+    [Input("collapse-silhouette", "n_clicks"), Input("collapse-dbindex", "n_clicks"), Input("collapse-derivative", "n_clicks"), Input("collapse-dbscan", "n_clicks")],
+    [State("evaluation-collapse", "is_open")], prevent_initial_call=True
+)
+def show_explanation(silhouette_n, dbindex_n, derivative_n, dbscan_n, is_open):
+    triggered_id = ctx.triggered_id
+    if (silhouette_n > 0) or (dbindex_n > 0) or (derivative_n > 0) or (dbscan_n > 0):
+        if triggered_id == "collapse-silhouette":
+            explanation_text = explanation_texts.silhouette_explanation
+            if silhouette_n % 2 != 0:
+                open_status = True 
+            else:
+                open_status = False 
+        elif triggered_id == "collapse-dbindex":
+            explanation_text = explanation_texts.dbindex_explanation
+            if dbindex_n % 2 != 0:
+                open_status = True 
+            else:
+                open_status = False 
+        elif triggered_id == "collapse-derivative":
+            explanation_text = explanation_texts.derivative_explanation
+            if derivative_n % 2 != 0:
+                open_status = True 
+            else:
+                open_status = False 
+        elif triggered_id == "collapse-dbscan":
+            explanation_text = explanation_texts.dbscan_explanation
+            if dbscan_n % 2 != 0:
+                open_status = True 
+            else:
+                open_status = False 
+        return open_status, explanation_text
+    return is_open, []

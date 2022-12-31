@@ -4,15 +4,22 @@ import dash_bootstrap_components as dbc
 
 # clustering evaluation explanation
 clustering_evaluation_explanation = dbc.Card( 
-                                            dbc.CardBody("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.."),
+                                            dbc.CardBody("By clicking the button below, the OCEL will be analyzed with respect to the best clustering results. You can see the optimal number of clusters for K-Means and Hierarchical Clustering as well as the optimal parameter epsilon for DBscan clustering."),
                                             className="mb-3",
                                             )
 
 # silhouette analysis explanation
-silhouette_explanation = dbc.Card(
-                                dbc.CardBody("Intuitively, the silhouette score quantifies the space between different clusters. For each number of clusters (up to the inserted max.), the selected clustering method is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The plot displays the average silhouette score for each number of clusters. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated. Thus, to get a reasonable clustering result, one should choose the cluster number with the maximal positive average silhouette score."),
-                                className="mb-3",
-                                )
+silhouette_explanation =  dbc.CardBody("Intuitively, the silhouette score quantifies the space between different clusters. For each number of clusters, the clustering algorithm is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The plot displays the average silhouette score for each number of clusters. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated.")
+
+# DBindex analysis explanation
+dbindex_explanation =  dbc.CardBody("The Davies–Bouldin index can intuitively be described as a measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters.")
+
+# Derivative analysis explanation
+derivative_explanation =  dbc.CardBody("The derivative method compares each cluster merge’s height to the average mean and normalizes it by the standard deviation formed over the depth previous levels.")
+
+# DBscan analysis explanation
+dbscan_explanation =  dbc.CardBody("Density-Based Spatial Clustering of Applications with Noise is an clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.")
+
 
 # list of features and explanation
 features_explanation = dbc.Card(
