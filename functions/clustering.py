@@ -26,8 +26,8 @@ def perform_silhouette_analysis(X, max_clusters, method):
 
     return silhouette 
 
-def perform_DBSCAN(X):
-    labels = DBSCAN(eps=0.75, min_samples=8).fit_predict(X)
+def perform_DBSCAN(X, parameters):
+    labels = DBSCAN(eps=parameters['eps'], min_samples=parameters['min_samples']).fit_predict(X)
 
     return labels
 
@@ -61,23 +61,6 @@ def create_clustered_df(process_executions, labels):
 
     return clustered_df
 
-'''
-def partition_ocel(ocel, clustered_df):
-    sub_ocels = [] 
-
-    for cluster in np.sort(clustered_df['cluster'].unique()):   #sort because .unique() otherwise sorts after first occurences
-        cluster_df = clustered_df[clustered_df['cluster'] == cluster]
-        cluster_process_ex = list(cluster_df.index.values)
-        # get corresponding event ids
-        event_ids = [key for (key,val) in ocel.process_execution_mappings.items() if val in cluster_process_ex]
-        new_event_df = ocel.log.log.loc[ocel.log.log["event_id"].isin(event_ids)].copy()
-        ocel.parameters = {"obj_names": ocel.object_types, "val_names":[], "act_name": "event_activity", "time_name":"event_timestamp"}
-        # to-do: add parameters so that conversion is possible
-        new_log = log_util.copy_log_from_df(new_event_df, ocel.parameters)
-        sub_ocels.append(new_log)
-    
-    return sub_ocels
-'''
 def partition_ocel(ocel, ocel_df, clustered_df):
     sub_ocels = [] 
     

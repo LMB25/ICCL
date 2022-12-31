@@ -39,7 +39,7 @@ feature_table = dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, 
 embedding_param_form = html.Div([input_forms.embedding_params_form_attributed, input_forms.embedding_params_form_graph2vec, input_forms.embedding_params_form_featherg], id='embedding-params-div', style={'display': 'block'})
 
 # create empty div for clustering param form
-clustering_param_form = html.Div([input_forms.clustering_params_form_kmeans, input_forms.clustering_params_form_hierarchical, input_forms.clustering_params_form_meanshift, input_forms.clustering_params_form_affinity], id='clustering-params-div', style={'display':'block'})
+clustering_param_form = html.Div([input_forms.clustering_params_form_kmeans, input_forms.clustering_params_form_hierarchical, input_forms.clustering_params_form_meanshift, input_forms.clustering_params_form_affinity, input_forms.clustering_params_form_dbscan], id='clustering-params-div', style={'display':'block'})
 
 # Define the page layout
 layout = dbc.Tabs([
@@ -63,18 +63,19 @@ layout = dbc.Tabs([
                         dbc.Col([dbc.Button("Parse Embedding Parameters", id="parse-embedding-params", className="me-2", n_clicks=0)]),
                         html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-embedding-params'),
                         ],
-                        style={'display':'block'}, id='silhouette-div'),
+                        style={'display':'block'}),
                 html.Br(),
                 ], label="Embedding", tab_id='embedding-tab', label_style={'background-color': '#8dd996'}),
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
-                        dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Hierarchical", "value": "Hierarchical"}, {"label": "Affinity-Propagation", "value":"AffinityPropagation"}], value="K-Means", id="clustering-method-selection"),)]),
+                        dbc.Col([html.H5("Select Clustering Technique"), html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Mean-Shift", "value": 'Mean-Shift'},
+                        {"label": "Hierarchical", "value": "Hierarchical"}, {"label": "Affinity-Propagation", "value":"AffinityPropagation"}, {'label':'DBscan', 'value':'DBscan'}], value="K-Means", id="clustering-method-selection"),)]),
                         ]),
                 html.Br(),
                 dbc.Row([dbc.Col([html.H5("Modify Clustering Embedding Parameters:")])]),
                 dbc.Row([
-                        dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,10,1, value=2, id='num-clusters-slider', disabled=True)), clustering_param_form], width=7),
+                        dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,14,1, value=2, id='num-clusters-slider', disabled=True)), clustering_param_form], width=7),
                         ]),
                 html.Br(),
                 dbc.Row([
@@ -95,8 +96,11 @@ layout = dbc.Tabs([
                 dbc.Row([
                         dbc.Col(explanation_texts.clustering_evaluation_explanation)
                         ]),
+                html.Div([
+                          dbc.Col([dbc.Alert([html.I(className="fa-solid fa-triangle-exclamation"),"You have to parse embedding parameters first."],color="warning", className="d-flex align-items-center")], width=4)
+                         ], id='alert-params-evaluation', hidden=False),
                 dbc.Row([
-                        dbc.Col([dbc.Button("Analyze Clustering Techniques", className="me-1", id='show-plot', n_clicks=0)])
+                        dbc.Col([dbc.Button("Analyze Clustering Techniques", className="me-1", id='evaluation-button', n_clicks=0, disabled=True)])
                         ]),
                 html.Br(),
                 html.Div([
@@ -136,29 +140,12 @@ layout = dbc.Tabs([
                 html.Hr(),
                 dbc.Row([html.Div(id='process-execution-graph')]),
                 ], label="Process Executions", tab_id='process-executions-tab'),
-        dbc.Tab([
-                html.Br(),
-                dbc.Row([
-                    dbc.Col(explanation_texts.silhouette_explanation)
-                ]),
-                html.Div([
-                          dbc.Col([dbc.Alert([html.I(className="fa-solid fa-triangle-exclamation"),"You have to parse embedding parameters first."],color="warning", className="d-flex align-items-center")], width=4)
-                         ], id='alert-params-silhouette', hidden=False),
-                dbc.Row([
-                    dbc.Col(html.Div("Select maximal number of clusters: "), width=3, align="center"),
-                    dbc.Col(dbc.Input(id='max-clusters', placeholder='7'), width=1),
-                    dbc.Col(dbc.Button("Apply Silhouette Analysis", className="me-2", id='start-silhouette', n_clicks=0, disabled=True), width=3),
-                ]),
-                dbc.Row([
-                    dbc.Col(html.Div(id='silhouette-plot'))
-                    ])
-                ], label="Silhouette Analysis", tab_id='silhouette-tab'),
         ], id='configuration-tabs',active_tab='features-tab')
 
 
 
 @app.callback([Output('ward-evaluation', 'src'), Output('average-evaluation', 'src'), Output('kmeans-evaluation', 'src'), Output('dbscan-evaluation', 'src'), Output('cluster-evaluation-result', 'hidden')], 
-               Input('show-plot', 'n_clicks'), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State("embedding-parameters", "data") ], prevent_initial_call=True)
+               Input('evaluation-button', 'n_clicks'), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State("embedding-parameters", "data") ], prevent_initial_call=True)
 def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_method, embedding_params_dict):
     if n_clicks > 0:
         # load ocel
@@ -214,22 +201,15 @@ def on_click(n_clicks, ocel):
     else:
         raise PreventUpdate
 
-# update disability status of number of clusters slider, show option to apply silhouette analysis, if kmeans or hierarchical is selected
-@app.callback([Output('num-clusters-slider', 'disabled'), Output('start-silhouette', 'disabled')], Input('clustering-method-selection', 'value'))
-def on_change_clustering_method(clustering_method):
-    if clustering_method in ['K-Means', 'Hierarchical']:
-        disabled = False
-        return False, disabled
-    else:
-        return True, True
 
-# show alert if silhouette analysis is selected, but no embedding parameters are parsed
-@app.callback(Output("alert-params-silhouette","hidden"), Input("embedding-parameters","data"), prevent_initial_call=True)
+# show alert if cluster evaluation is selected, but no embedding parameters are parsed
+# if embedding parameters are parsed, hide alert and enable button
+@app.callback([Output("alert-params-evaluation","hidden"), Output("evaluation-button", "disabled")], Input("embedding-parameters","data"), prevent_initial_call=True)
 def on_embedding_parameters_parsed(embedding_data):
     if embedding_data != None:
-        return True
+        return True, False
     else:
-        return False
+        return False, True
 
 # show parameter form for selected graph embedding method
 @app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style"), Output("embedding-params-div-featherg", "style")], Input("graph-embedding-selection", "value"))
@@ -244,18 +224,21 @@ def on_embedding_selection(embedding_method):
         return {'display':'none'}, {'display':'none'}, {'display':'none'}
 
 # show parameter form for selected clustering method
-@app.callback([Output("clustering-params-div-kmeans", "style"), Output("clustering-params-div-hierarchical", "style"), Output("clustering-params-div-meanshift", "style"), Output("clustering-params-div-affinity", "style")], Input("clustering-method-selection", "value"))
+@app.callback([Output("clustering-params-div-kmeans", "style"), Output("clustering-params-div-hierarchical", "style"), Output("clustering-params-div-meanshift", "style"), Output("clustering-params-div-affinity", "style"), 
+               Output("clustering-params-div-dbscan", "style")], Input("clustering-method-selection", "value"))
 def on_clustering_selection(clustering_method):
     if clustering_method == 'K-Means':
-        return {'display':'block'}, {'display':'none'}, {'display':'none'}, {'display':'none'}
+        return {'display':'block'}, {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'none'}
     elif clustering_method == 'Hierarchical':
-        return {'display':'none'}, {'display':'block'}, {'display':'none'}, {'display':'none'}
+        return {'display':'none'}, {'display':'block'}, {'display':'none'}, {'display':'none'}, {'display':'none'}
     elif clustering_method == "Mean-Shift":
-        return {'display':'none'}, {'display':'none'}, {'display':'block'}, {'display':'none'}
+        return {'display':'none'}, {'display':'none'}, {'display':'block'}, {'display':'none'}, {'display':'none'}
     elif clustering_method == 'AffinityPropagation':
-        return {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'block'}
+        return {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'block'}, {'display':'none'}
+    elif clustering_method == 'DBscan':
+        return {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'block'}
     else:
-        return {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'none'}
+        return {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'none'}, {'display':'none'}
 
 # save graph embedding parameter settings
 @app.callback([Output("embedding-parameters", "data"), Output("success-parse-embedding-params", "style")], [State("svd-dimensions", "value"), State("svd-iterations", "value"), State("theta-max", "value"), State("eval-points", "value"), State("order", "value"),
@@ -275,10 +258,18 @@ def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points,
     else:
         dash.no_update
 
+# enable number of clusters slider, if kmeans or hierarchical clustering is selected
+@app.callback(Output('num-clusters-slider', 'disabled'), Input('clustering-method-selection', 'value'))
+def on_clustering_selection(clustering_method):
+    if (clustering_method == 'K-Means') or (clustering_method == 'Hierarchical'):
+        return False 
+    else:
+        return True
+
 # save clustering parameter settings
 @app.callback([Output('clustering-parameters', 'data'), Output("success-parse-clustering-params", "style")], [State('n-init-kmeans', 'value'), State('max-iter-kmeans', 'value'), State('max-iter-meanshift', 'value'), State('linkage-criterion','value'), 
-               State('max-iter-affinity', 'value'), State('convergence-iter-affinity','value'), State('clustering-method-selection', 'value')], Input('parse-clustering-params', 'n_clicks'), prevent_initial_call=True)
-def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, max_iter_affinity, convergence_iter, clustering_method, n_click):
+               State('max-iter-affinity', 'value'), State('convergence-iter-affinity','value'), State('epsilon', 'value'), State('min-samples', 'value'), State('clustering-method-selection', 'value')], Input('parse-clustering-params', 'n_clicks'), prevent_initial_call=True)
+def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, max_iter_affinity, convergence_iter, eps, min_samples, clustering_method, n_click):
     if n_click > 0:
         if clustering_method =='K-Means':
             clustering_params_dict = {"n_init":int(n_init), "max_iter":int(max_iter_kmeans)}
@@ -292,32 +283,12 @@ def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, 
         elif clustering_method == "AffinityPropagation":
             clustering_params_dict = {"max_iter":int(max_iter_affinity), "convergence_iter":int(convergence_iter)}
             return clustering_params_dict, {'display':'block'}
+        elif clustering_method == "DBscan":
+            clustering_params_dict = {"eps":float(eps), "min_samples":int(min_samples)}
+            return clustering_params_dict, {'display':'block'}
     else:
         dash.no_update
 
-# show silhouette plot if button clicked
-@app.callback(Output("silhouette-plot", "children"), [State("ocel_obj", "data"), State("event-feature-set", "data"), State('clustering-method-selection', 'value'), State("graph-embedding-selection", "value"), State("max-clusters", "value"), State("embedding-parameters", "data") ], [Input("start-silhouette", "n_clicks")], prevent_initial_call = True)
-def on_elbow_btn_click(ocel_log, selected_event_features, clustering_method, embedding_method, max_clusters, embedding_params_dict, n):
-    if n > 0 and ocel_log != None:
-        # load ocel
-        ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
-        # extract features, get feature graphs
-        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, [], 'graph')
-        # remap nodes of feature graphs
-        feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
-        # embedd feature graphs
-        if embedding_method == 'Graph2Vec':
-            embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
-        elif embedding_method == 'Feather-G':
-            embedding = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
-        elif embedding_method == 'AttributedGraph2Vec':
-            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
-        # calculate silhouette score for different k 
-        max_clusters = int(max_clusters)
-        silhouette = clustering.perform_silhouette_analysis(embedding, max_clusters, clustering_method)
-        fig = silhouette_figure.create_silhouette_figure(silhouette, max_clusters, clustering_method)
-
-        return dcc.Graph(id='silhouette-graph',figure=fig)
 
 # perform clustering and return dataframe with process execution ids and cluster labels
 @app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
@@ -348,6 +319,8 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
             labels = clustering.perform_HierarchicalClustering(embedding, num_clusters, clustering_params_dict)
         elif clustering_method == "AffinityPropagation":
             labels = clustering.perform_AffinityPropagation(embedding, clustering_params_dict)
+        elif clustering_method == "DBscan":
+            labels = clustering.perform_DBSCAN(embedding, clustering_params_dict)
         # create Dataframe with process execution id and cluster labels
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # get summary of clusters

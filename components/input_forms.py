@@ -135,3 +135,16 @@ clustering_params_form_affinity = html.Div([
         ]),
         html.Br(),
         ], id='clustering-params-div-affinity', style={'display': 'none'})
+
+# create form for DBscan parameters
+clustering_params_form_dbscan = html.Div([
+        dbc.Row([
+            dbc.Col(html.P("Epsilon: ")),
+            dbc.Col(dbc.Input(id='epsilon', value=0.5))
+        ]),
+        dbc.Row([
+            dbc.Col(html.P("Min. number of samples in a neighborhood for a point to be considered as a core point: ")),
+            dbc.Col(dbc.Input(id='min-samples', value=5))
+        ]),
+        html.Br(),
+        ], id='clustering-params-div-dbscan', style={'display': 'none'})
