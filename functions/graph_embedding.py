@@ -59,7 +59,7 @@ def perform_graph2vec(graph_list, attributed, embedding_params):
     return X
 
 def perform_feather_g(graph_list, embedding_params):
-    model = feathergraph.FeatherGraph(order=5, eval_points=25, theta_max=2.5)
+    model = feathergraph.FeatherGraph(order=embedding_params['order'], eval_points=embedding_params['eval_points'], theta_max=embedding_params['theta_max'])
     model.fit(graph_list)
     X = model.get_embedding()
 
