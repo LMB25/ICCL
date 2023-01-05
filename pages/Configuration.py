@@ -24,7 +24,7 @@ extracted_pe_features = dcc.Store(id='extracted-pe-features-store')
 clustering_params_store = dcc.Store('clustering-parameters', storage_type='local')
 
 # options for event based feature selection
-feature_options_event = ['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_FLOW_TIME', 'EVENT_ACTIVITY', 'EVENT_NUM_OF_OBJECTS', 'EVENT_PREVIOUS_ACTIVITY_COUNT', 'EVENT_DURATION']
+feature_options_event = ['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_ACTIVITY', 'EVENT_NUM_OF_OBJECTS', 'EVENT_PREVIOUS_ACTIVITY_COUNT', 'EVENT_DURATION']
                         
 # event based feature selection dropdown
 event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', options=[{'label': i, 'value': i} for i in feature_options_event], multi=True, value=[])#feature_options_event)
@@ -152,9 +152,6 @@ layout = dbc.Tabs([
                 ], label='Cluster Evaluation', tab_id='cluster-eval'),
         dbc.Tab([
                 html.Br(),
-                dbc.Row([
-                    dbc.Col(explanation_texts.process_executions_explanation)
-                ]),
                 dbc.Row([
                         dbc.Col([html.Div("Number of Process Executions:"), html.Div(id="process-executions-summary")]),
                         dbc.Col([dbc.Button("Start Process Execution Feature Extraction", color="warning", className="me-1", id='start-feature-extraction-pe', n_clicks=0), html.Div(id='pe-feature-success')]),
