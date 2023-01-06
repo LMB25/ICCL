@@ -17,8 +17,9 @@ def create_conformance_df(conformance_result, measure):
 
     conformance_df = pd.DataFrame(columns=['Cluster', measure])
     num_clusters = len(conformance_result)
-    clusters = [i for i in range(1, num_clusters + 1)]
+    clusters = [i for i in range(0, num_clusters)]
     conformance_df['Cluster'] = clusters
     conformance_df[measure] = conformance_result
+
 
     return conformance_df
