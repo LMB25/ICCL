@@ -1,14 +1,15 @@
 from ocpa.algo.conformance.precision_and_fitness import evaluator as quality_measure_factory
 import pandas as pd
+import numpy as np
 
 def calculate_fitness(ocel, ocpn):
     _, fitness = quality_measure_factory.apply(ocel, ocpn)
-
+    fitness = np.round(fitness, 2)
     return fitness
 
 def calculate_precision(ocel, ocpn):
     precision, _ = quality_measure_factory.apply(ocel, ocpn)
-
+    precision = np.round(precision, 2)
     return precision
 
 

@@ -18,7 +18,7 @@ import pandas as pd
 event_store = dcc.Store('event-feature-set', storage_type='local')
 # graph embedding parameters store
 embedding_params_store = dcc.Store('embedding-parameters', storage_type='local')
-# Define Store object for List of DataFrames of Process Execution Features
+# Define Store object for List of list of Process Execution Features
 extracted_pe_features = dcc.Store(id='extracted-pe-features-store')
 # clustering parameters store
 clustering_params_store = dcc.Store('clustering-parameters', storage_type='local')
@@ -43,7 +43,7 @@ clustering_param_form = html.Div([input_forms.clustering_params_form_kmeans, inp
 
 # Define the page layout
 layout = dbc.Tabs([
-        event_store, embedding_params_store, extracted_pe_features, clustering_params_store,
+        event_store, embedding_params_store, extracted_pe_features, clustering_params_store, 
         dbc.Tab([
                 html.Br(),
                 html.H5("Feature Explanation:"),
@@ -212,14 +212,14 @@ def on_click(selected_event_features, n_clicks):
     else:
         raise PreventUpdate
 
-# extract process execution features, get DataFrames of features
+# extract process execution features, get list of lists of features
 @app.callback([ServersideOutput('extracted-pe-features-store', 'data'), Output("pe-feature-success", "children")], Trigger("start-feature-extraction-pe", "n_clicks"), State("ocel_obj", "data"), prevent_initial_call=True, memoize=True)
 def on_click(n_clicks, ocel):
     if n_clicks > 0:
         # load ocel
         ocel = pickle.loads(codecs.decode(ocel.encode(), "base64"))
-        list_feature_dfs = feature_extraction.create_extraction_feature_dfs(ocel)
-        return list_feature_dfs, "Features successfully extracted."
+        list_features = feature_extraction.create_extraction_features(ocel)
+        return list_features, "Features successfully extracted."
     else:
         raise PreventUpdate
 
@@ -313,7 +313,7 @@ def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, 
 
 
 # perform clustering and return dataframe with process execution ids and cluster labels
-@app.callback([ServersideOutput("clustered-ocels", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
+@app.callback([ServersideOutput("clustered-ocels", "data"), ServersideOutput("extracted-pe-features-cluster-store", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
                 [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State('clustering-method-selection', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data"), State('clustering-parameters', 'data')], 
                 Trigger("start-clustering", "n_clicks"), memoize=True)
 def on_click(ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, clustering_params_dict, n_clicks):
@@ -350,11 +350,13 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
         # partition ocel into clustered ocels
         ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
         sub_ocels = clustering.partition_ocel(ocel_log, ocel_df, clustered_df)
+        # get average process execution features for each cluster
+        average_pe_features = feature_extraction.create_cluster_feature_summary(sub_ocels)
         # encoding/ storing of sub ocels
         sub_ocels_encoded = [codecs.encode(pickle.dumps(ocel), "base64").decode() for ocel in sub_ocels]
     else:
         raise PreventUpdate
-    return sub_ocels_encoded, "Clustering successfully performed.", dbc.Table.from_dataframe(cluster_summary_df, striped=True, bordered=True, hover=True, id="cluster-summary-table")
+    return sub_ocels_encoded, average_pe_features, "Clustering successfully performed.", dbc.Table.from_dataframe(cluster_summary_df, striped=True, bordered=True, hover=True, id="cluster-summary-table")
 
 @app.callback([Output("process-executions-summary", "children"), Output("executions_dropdown", "options")], [Input("execution-store", "data")])
 def on_extraction(executions):

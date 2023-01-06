@@ -3,6 +3,7 @@ import ocpa.algo.predictive_monitoring.event_based_features.extraction_functions
 import ocpa.algo.predictive_monitoring.execution_based_features.extraction_functions as execution_features
 from ocpa.algo.predictive_monitoring import tabular, sequential
 import pandas as pd
+import numpy as np
 
 # event_based_mapping = {
 #                 "EVENT_ELAPSED_TIME": event_features.elapsed_time,
@@ -52,7 +53,7 @@ def extract_features(ocel_log, feature_set_event, feature_set_extr, repr):
     return extraction
 
 
-def create_extraction_feature_dfs(ocel):
+def create_extraction_features(ocel):
     feature_options_extraction = ['EXECUTION_NUM_OF_EVENTS', 'EXECUTION_NUM_OF_END_EVENTS', 'EXECUTION_THROUGHPUT', 'EXECUTION_NUM_OBJECT', 'EXECUTION_UNIQUE_ACTIVITIES', 'EXECUTION_NUM_OF_STARTING_EVENTS', 'EXECUTION_LAST_EVENT_TIME_BEFORE']
     feature_options_extraction_renamed = ["Number of Events", "Number of Ending Events", "Throughput Duration", "Number of Objects", "Unique Activities", "Number of Starting Events", "Duration of Last Event"]
     extraction_feature_list = [getattr(predictive_monitoring,key) for key in feature_options_extraction]
@@ -65,3 +66,12 @@ def create_extraction_feature_dfs(ocel):
             values.append(graph.attributes[tuple_feature])
         extraction_value_list.append(values)
     return extraction_value_list
+
+def create_cluster_feature_summary(ocels):
+    average_feature_values = []
+    for ocel in ocels: 
+        extraction_values = create_extraction_features(ocel)
+        average_values = [np.round(float(sum(feature))/len(feature), 2) for feature in zip(*extraction_values)]
+        average_feature_values.append(average_values)
+        print(average_values)
+    return average_feature_values

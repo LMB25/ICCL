@@ -10,6 +10,7 @@ import dash
 import pickle, codecs
 import os
 import dash_interactive_graphviz
+import pandas as pd
 
 # store for number of discovered models
 models_num = dcc.Store(id='discovered-models-num', storage_type='local')
@@ -17,6 +18,10 @@ models_num = dcc.Store(id='discovered-models-num', storage_type='local')
 conformance_dropdown = dcc.Dropdown(id='conformance-measure-cluster', options=['Fitness', 'Precision'], multi=False, value='Fitness')
 # cluster dropdown
 cluster_dropdown = dcc.Dropdown(id='cluster-selection', options=[], multi=False, disabled=True)
+# empty DataTable for Process Execution Features
+feature_options_extraction_renamed = ["Number of Events", "Number of Ending Events", "Throughput Duration", "Number of Objects", "Unique Activities", "Number of Starting Events", "Duration of Last Event"]
+dummy_df = pd.DataFrame(columns=feature_options_extraction_renamed)
+feature_table = dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, hover=True)
 
 # Define the page layout
 layout = dbc.Container([
@@ -41,6 +46,11 @@ layout = dbc.Container([
             dbc.Col([html.Div("Select Cluster: ")], align='center'),
             dbc.Col([cluster_dropdown], align='center')
             ]),
+        html.Div([
+            html.Hr(),
+            dbc.Row([html.H5("Process Execution Features Average:")]),
+            dbc.Row([html.Div(feature_table, id="pe-feature-avg-table")]), 
+            ], id='avg-pe-features', style={'display': 'block'}),
         html.Div([
             html.Hr(),
             dbc.Row([html.H5("Save Petri Net")]),
@@ -82,8 +92,9 @@ def on_button_click(n):
     else:
         return True 
 
-@app.callback([Output("download-model-clustered", "style"), Output("ocpn-clustered-ocel", "dot_source")], [State("clustered-ocels", "data")], [Input("cluster-selection", "value")], prevent_initial_call=True)
-def on_selection(clustered_ocel, selected_cluster):
+@app.callback([Output("download-model-clustered", "style"), Output("ocpn-clustered-ocel", "dot_source"), Output("pe-feature-avg-table", "children")], [State("clustered-ocels", "data"), State("extracted-pe-features-cluster-store","data")], 
+              [Input("cluster-selection", "value")], prevent_initial_call=True)
+def on_selection(clustered_ocel, avg_pe_features_list, selected_cluster):
     if selected_cluster != None:
 
         selected_cluster_ocel = clustered_ocel[int(selected_cluster)]
@@ -92,8 +103,20 @@ def on_selection(clustered_ocel, selected_cluster):
         ocpn = process_discovery.process_discovery_ocel_to_ocpn(clustered_ocel_obj)
         # graph source
         graphviz_src = process_discovery.ocpn_to_gviz(ocpn)
+        # avg process execution features
+        if avg_pe_features_list != None:
+            df_extr = pd.DataFrame(columns=["Feature", "Value"])
+            avg_pe_features = avg_pe_features_list[int(selected_cluster) - 1]
+            df_extr["Feature"] = feature_options_extraction_renamed
+            df_extr["Value"] = avg_pe_features
+            df_transposed = df_extr.T
+            df_transposed.columns = df_transposed.iloc[0]
+            df_transposed = df_transposed[1:]
+            datatable = dbc.Table.from_dataframe(df_transposed, striped=True, bordered=True, hover=True)
+        else:
+            datatable = feature_table
 
-        return {'display':'block'}, graphviz_src
+        return {'display':'block'}, graphviz_src, datatable
     else:
         return dash.no_update
 
@@ -133,3 +156,4 @@ def on_button_click(clustered_ocels, conformance_meas, n):
         return dbc.Table.from_dataframe(conformance_df, striped=True, bordered=True, hover=True, id="conformance-cluster-table")
     else:
         return dash.no_update
+

@@ -37,11 +37,13 @@ ocel_params = dcc.Store(id='param-store', storage_type='local')
 ocel_executions = dcc.Store(id='execution-store')
 # Define Store object for clustered OCELs
 clustered_ocel_store = dcc.Store(id='clustered-ocels')
+# Define Store object for List of list of average Process Execution Features per cluster
+extracted_pe_features_cluster = dcc.Store(id='extracted-pe-features-cluster-store')
 
 # Define the index page layout
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    nav, side, file_store, ocel_obj, ocel_params, ocel_executions, clustered_ocel_store,
+    nav, side, file_store, ocel_obj, ocel_params, ocel_executions, clustered_ocel_store, extracted_pe_features_cluster,
     html.Div(id='page-content', children=[], style=CONTENT_STYLE), 
 ])
 
