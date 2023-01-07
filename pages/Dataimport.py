@@ -119,16 +119,27 @@ def on_selection_folder(files):
         return options
 
 # load csv parameters into store
-@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("act_name", "value"), State("time_name", "value"), State("id_name", "value"), State("file-dropdown", "value"), State("drag-drop-field", "filename")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
-def on_upload_csv(obj_name, act_name, time_name, id_name, filename, drag_drop_filename, n):
+@app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("act_name", "value"), State("start_time_name", "value"), State("time_name", "value"), State("id_name", "value"), State("file-dropdown", "value"), State("drag-drop-field", "filename")], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
+def on_upload_csv(obj_name, act_name, start_time_name, time_name, id_name, filename, drag_drop_filename, n):
     if (filename != None and filename.endswith("csv")) or drag_drop_filename.endswith("csv"):
         sep = ","
-        params = {"obj_names":obj_name,
+        if start_time_name != None: 
+            params = {
+                "obj_names":obj_name,
                 "val_names":[],
                 "act_name":act_name,
+                "start_timestamp":start_time_name,
                 "time_name":time_name,
                 "id_name":id_name,
-                "sep":sep}
+                "sep":sep
+            }
+        else:
+            params = {"obj_names":obj_name,
+                    "val_names":[],
+                    "act_name":act_name,
+                    "time_name":time_name,
+                    "id_name":id_name,
+                    "sep":sep}
         return params, {'display':'block'}
     else:
         return {}, {'display':'none'}
@@ -249,7 +260,7 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, dr
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
 
 # uncover csv parameter form, if selected file has csv extension
-@app.callback([Output("csv-import", "style"), Output("id_name", "options"), Output("obj_names", "options"), Output("act_name", "options"), Output("time_name", "options"), Output("id_name", "value"), Output("obj_names", "value"), Output("act_name", "value"), Output("time_name", "value")], [Input("file-dropdown", "value"), Input("drag-drop-field", "filename")], [State("drag-drop-field", "contents"), State("path", "value")], prevent_initial_call = True)
+@app.callback([Output("csv-import", "style"), Output("id_name", "options"), Output("obj_names", "options"), Output("act_name", "options"), Output("time_name", "options"), Output("start_time_name", "options"), Output("id_name", "value"), Output("obj_names", "value"), Output("act_name", "value"), Output("time_name", "value")], [Input("file-dropdown", "value"), Input("drag-drop-field", "filename")], [State("drag-drop-field", "contents"), State("path", "value")], prevent_initial_call = True)
 def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected_dir):
     if filename != None:
         if filename.endswith("csv"):
@@ -259,10 +270,11 @@ def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected
             id_names_options = column_names
             obj_names_options = column_names
             act_names_options = column_names
+            start_time_names_options = column_names
             time_names_options = column_names
-            return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, column_names[0], None, column_names[0], column_names[0]
+            return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, start_time_names_options, column_names[0], None, column_names[0], column_names[0]
         else:
-            return {'display':'none'}, [], [], [], [], None, None, None, None
+            return {'display':'none'}, [], [], [], [], [], None, None, None, None
         
     elif drag_drop_filename != None:
         if drag_drop_filename.endswith("csv"):
@@ -274,9 +286,10 @@ def on_selection_file(filename, drag_drop_filename, drag_drop_contents, selected
             id_names_options = column_names
             obj_names_options = column_names
             act_names_options = column_names
+            start_time_names_options = column_names
             time_names_options = column_names
-            return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, column_names[0], None, column_names[0], column_names[0]
+            return {'display':'block'}, id_names_options, obj_names_options, act_names_options, time_names_options, start_time_names_options, column_names[0], None, column_names[0], column_names[0]
         else:
-            return {'display':'none'}, [], [], [], [], None, None, None, None
+            return {'display':'none'}, [], [], [], [], [], None, None, None, None
     else:
         dash.no_update
