@@ -35,7 +35,8 @@ def create_feature_set(ocel, event_feature_list, extraction_feature_list):
         event_feature_list.remove("EVENT_PREVIOUS_ACTIVITY_COUNT") 
     if "EVENT_DURATION" in event_feature_list:
         if "event_start_timestamp" in ocel.log.log.columns:
-            feature_set_event += [(predictive_monitoring.EVENT_DURATION, ("event_start_timestamp",))]
+            if ocel.log.log["event_start_timestamp"].dtypes != np.object:
+                feature_set_event += [(predictive_monitoring.EVENT_DURATION, ("event_start_timestamp",))]
         event_feature_list.remove("EVENT_DURATION") 
     if event_feature_list != []:
         event_feature_list = [getattr(predictive_monitoring,key) for key in event_feature_list]
