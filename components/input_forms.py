@@ -14,6 +14,10 @@ csv_import = html.Div([
             dbc.Col(dcc.Dropdown(id='time_name'))
         ]),
         dbc.Row([
+            dbc.Col(html.P("Select start timestamp column (optional): ")),
+            dbc.Col(dcc.Dropdown(id='start_time_name'))
+        ]),
+        dbc.Row([
             dbc.Col(html.P("Select event activity column: ")),
             dbc.Col(dcc.Dropdown(id='act_name'))
         ]),
