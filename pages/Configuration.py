@@ -360,7 +360,9 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
 
 @app.callback([Output("process-executions-summary", "children"), Output("executions_dropdown", "options")], [Input("execution-store", "data")])
 def on_extraction(executions):
-    if executions != None:
+    if executions is None: 
+        return dash.no_update
+    else:
         # update display of number of process executions
         executions_summary_text = html.P([str(len(executions))])
         # update dropdown widget with list of process executions
