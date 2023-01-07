@@ -97,16 +97,21 @@ def cluster_evaluation_hierarchical(X, linkage):
     plt.figure()
     fig, axs = plt.subplots(1,3, figsize=(15,4))
 
+    if len(X) < 15:
+        max_clust = len(X)
+    else:
+        max_clust = 15
+
     # dbindex
-    results = clusteval.dbindex.fit(X, linkage=linkage, max_clust=15)
+    results = clusteval.dbindex.fit(X, linkage=linkage, max_clust=max_clust)
     _ = clusteval.dbindex.plot(results, title='DBindex', ax=axs[0], visible=False)
 
     # silhouette
-    results = clusteval.silhouette.fit(X, linkage=linkage, max_clust=15)
+    results = clusteval.silhouette.fit(X, linkage=linkage, max_clust=max_clust)
     _ = clusteval.silhouette.plot(results, title='Silhouette', ax=axs[1], visible=False)
 
     # derivative
-    results = clusteval.derivative.fit(X, linkage=linkage, max_clust=15)
+    results = clusteval.derivative.fit(X, linkage=linkage, max_clust=max_clust)
     _ = clusteval.derivative.plot(results, title='Derivative', ax=axs[2], visible=False)
 
     plt.savefig(buf, format = "png")
@@ -123,12 +128,17 @@ def cluster_evaluation_kmeans(X):
     plt.figure()
     fig, axs = plt.subplots(1,2, figsize=(10,4))
 
+    if len(X) < 15:
+        max_clust = len(X)
+    else:
+        max_clust = 15
+
     # dbindex
-    results = clusteval.dbindex.fit(X, cluster='kmeans', max_clust=15)
+    results = clusteval.dbindex.fit(X, cluster='kmeans', max_clust=max_clust)
     _ = clusteval.dbindex.plot(results, title='DBindex', ax=axs[0], visible=False)
 
     # silhouette
-    results = clusteval.silhouette.fit(X, cluster='kmeans', max_clust=15)
+    results = clusteval.silhouette.fit(X, cluster='kmeans', max_clust=max_clust)
     _ = clusteval.silhouette.plot(results, title='Silhouette', ax=axs[1], visible=False)
 
     plt.savefig(buf, format = "png")
