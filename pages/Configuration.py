@@ -184,10 +184,22 @@ def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_metho
         elif embedding_method == 'AttributedGraph2Vec':
             X = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
 
-        hierarchical_ward = clustering.cluster_evaluation_hierarchical(X, "ward")
-        hierarchical_average = clustering.cluster_evaluation_hierarchical(X, "average")
-        kmeans = clustering.cluster_evaluation_kmeans(X)
-        dbscan = clustering.cluster_evaluation_dbscan(X)
+        try:
+            hierarchical_ward = clustering.cluster_evaluation_hierarchical(X, "ward")
+        except: 
+            hierarchical_ward = None 
+        try:
+            hierarchical_average = clustering.cluster_evaluation_hierarchical(X, "average")
+        except:    
+            hierarchical_average = None
+        try:
+            kmeans = clustering.cluster_evaluation_kmeans(X)
+        except:
+            kmeans = None
+        try:
+            dbscan = clustering.cluster_evaluation_dbscan(X)
+        except:
+            dbscan = None
 
         return hierarchical_ward, hierarchical_average, kmeans, dbscan, False
 
