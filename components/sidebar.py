@@ -66,6 +66,13 @@ def Sidebar():
             id="submenu-2-collapse",
             is_open=True
         ),
+        dbc.Collapse(
+            [
+                dbc.NavLink("Automatic Clustering", href="/page-2/2", className="page-link"),
+            ],
+            id="submenu-2-2-collapse",
+            is_open=True
+        ),
     ]
 
     submenu_3 = [

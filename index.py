@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 from app import app
 
 # Connect to your app pages
-from pages import Dataimport, Dataview, Configuration, ProcessModel, ProcessModelCluster
+from pages import Dataimport, Dataview, Configuration, ProcessModel, ProcessModelCluster, AutomaticMode
 
 # Connect the navbar to the index
 from components import sidebar, navbar
@@ -57,6 +57,8 @@ def render_page_content(pathname):
         return Dataview.layout
     elif pathname == "/page-2/1":
         return Configuration.layout
+    elif pathname == "/page-2/2":
+        return AutomaticMode.layout
     elif pathname == "/page-3/1":
         return ProcessModel.layout
     elif pathname == "/page-3/2":
