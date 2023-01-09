@@ -19,6 +19,7 @@ layout = dbc.Container([
     dbc.Button("Cancel", className="me-2", id='cancel-auto-clustering', n_clicks=0),
     dbc.Row(html.Progress(id="progress-bar", value="0")),
     dbc.Row(html.Div(id="progress-message")),
+    dbc.Row(html.Div(id="optimal-params")),
     html.Div(id="auto-cluster-summary-component"),
     html.Div(dbc.Button("Discover Process Models", className="me-2", n_clicks=0, id="discover-auto-button"), hidden=True, id='discover-auto')
 ])
@@ -37,33 +38,38 @@ layout = dbc.Container([
                   (Output("progress-bar", "style"),{"visibility": "visible"},{"visibility": "hidden"}),
                   ],
               cancel=[Input("cancel-auto-clustering", "n_clicks")],
-              progress=[Output("progress-bar", "value"), Output("progress-bar", "max"), Output("progress-message","children")]
+              progress=[Output("progress-bar", "value"), Output("progress-bar", "max"), Output("progress-message","children"), Output("optimal-params","children")]
               )
 def on_click(set_progress, ocel_log, n_clicks):
     if n_clicks>0:        
         #Feature Extraction
-        set_progress(("0","10","... Extracting Features"))
+        set_progress(("0","10","... Extracting Features",""))
             #simply choose all events
         selected_event_features=['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_ACTIVITY', 'EVENT_NUM_OF_OBJECTS', 'EVENT_PREVIOUS_OBJECT_COUNT', 'EVENT_PREVIOUS_ACTIVITY_COUNT', 'EVENT_DURATION']
-        
+        set_progress(("0.5","10","... Extracting Features - Loading OCEL",""))
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
+        set_progress(("1","10","... Extracting Features - Creating Feature Storage",""))
         feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, [], 'graph')
+        set_progress(("2","10","... Extracting Features - Construct attributed Feature Graph",""))
+        feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         
         
         #Graph Embedding     
-        set_progress(("3","10","... Embedding Features"))   
-        feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
+        set_progress(("3","10","... Embedding Features", ""))   
         embedding_params_dict = {"svd_dimensions":int(64), "svd_iterations":int(20), "theta_max":float(2.5), "eval_points":int(25), "order":int(5)}
         embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
                 
         
         
         #Clustering 
-        set_progress(("6","10","... Perform Clustering"))      
-        clustering_params_dict = {"max_iter":int(300)}
-        labels = clustering.perform_MeanShift(embedding, clustering_params_dict)
+        set_progress(("6","10","... Perform Clustering", ""))   
+        #labels, best_params = clustering.perform_auto_MeanShift(embedding)
+        labels, best_params = clustering.perform_auto_clustering(embedding)
+            
+        #set_progress(("7","10",''.join(f"{i}={s} was chosen" for i,s in best_params.items())+progress_string))   
+        optimal_params = ['optimal parameters:', html.Br(), ''.join(f"{i}={s},   " for i,s in best_params.items())]
         
-        set_progress(("8","10","... Partition OCEL"))      
+        set_progress(("8","10","... Partition OCEL", optimal_params))      
         # create Dataframe with process execution id and cluster labels
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # get summary of clusters
@@ -76,7 +82,7 @@ def on_click(set_progress, ocel_log, n_clicks):
         # encoding/ storing of sub ocels
         sub_ocels_encoded = [codecs.encode(pickle.dumps(ocel), "base64").decode() for ocel in sub_ocels]
         
-        set_progress(("10","10","Done!"))      
+        set_progress(("10","10","Done!", optimal_params))     
         
         return sub_ocels_encoded, average_pe_features, dbc.Table.from_dataframe(cluster_summary_df, striped=True, bordered=True, hover=True, id="cluster-summary-table"), False
     

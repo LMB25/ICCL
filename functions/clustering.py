@@ -5,11 +5,24 @@ import numpy as np
 import pandas as pd
 from ocpa.algo.util.filtering.log import case_filtering
 from ocpa.objects.log.util import misc as log_util
+import itertools
 
 import matplotlib.pyplot as plt
 import io
 import base64
 import clusteval
+
+def perform_auto_clustering(X):
+    best_score = None
+    for method in [perform_auto_MeanShift, perform_auto_KMeans]:#, perform_KMeans, perform_DBSCAN, perform_HierarchicalClustering]:
+        labels, best_params = method(X)
+        score = silhouette_score(X, labels)
+        if best_score is None or score>best_score:
+            best_score = score
+            best_labels = labels
+            best_params = {"clustering_method":method.__name__}|best_params
+    
+    return best_labels, best_params
 
 def perform_silhouette_analysis(X, max_clusters, method):
     silhouette = []
@@ -42,10 +55,38 @@ def perform_MeanShift(X, parameters):
 
     return clustering.labels_
 
+def perform_auto_MeanShift(X):
+    best_score = None
+    for max_iter in range(100,500,50):#range(100,500,50): 
+        clustering_params_dict = {"max_iter":int(max_iter)} #default max_iter=300
+        labels = perform_MeanShift(X, clustering_params_dict)
+        score = silhouette_score(X, labels)
+        print(score)
+        if best_score is None or score>best_score:
+            best_score = score
+            best_labels = labels
+            best_params = {"max_iter":max_iter}
+    
+    return labels, best_params
+
 def perform_KMeans(X, n_clusters, parameters):
     clustering = KMeans(n_clusters, n_init=parameters['n_init'], max_iter=parameters['max_iter']).fit(X)
 
     return clustering.labels_
+
+def perform_auto_KMeans(X):
+    best_score = None
+    for n_clusters, n_init in itertools.product(range(2,20,1), range(5,20,3)): 
+        clustering_params_dict = {"n_init":int(n_init), "max_iter":300} #default max_iter=300
+        labels = perform_KMeans(X, n_clusters, clustering_params_dict)
+        score = silhouette_score(X, labels)
+        print(score)
+        if best_score is None or score>best_score:
+            best_score = score
+            best_labels = labels
+            best_params = {"n_clusters":n_clusters, "n_init":n_init}
+    
+    return labels, best_params
 
 def perform_HierarchicalClustering(X, n_clusters, parameters):
     hierarchical_cluster = AgglomerativeClustering(n_clusters=n_clusters, linkage=parameters['linkage'])

@@ -28,7 +28,7 @@ CONTENT_STYLE = {
 }
 
 # Define Store object for OCEL object
-ocel_obj = dcc.Store(id='ocel_obj')
+ocel_obj = dcc.Store(id='ocel_obj', storage_type='local')
 # Define Store object for directory files
 file_store = dcc.Store(id='folder-selection', storage_type='local')
 # Define Store object for OCEL params
