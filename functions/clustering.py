@@ -95,7 +95,7 @@ def cluster_evaluation_hierarchical(X, linkage):
 
     buf = io.BytesIO()
     plt.figure()
-    fig, axs = plt.subplots(1,3, figsize=(15,4))
+    fig, axs = plt.subplots(1,2, figsize=(10,4))
 
     if len(X) < 15:
         max_clust = len(X)
@@ -109,10 +109,6 @@ def cluster_evaluation_hierarchical(X, linkage):
     # silhouette
     results = clusteval.silhouette.fit(X, linkage=linkage, max_clust=max_clust)
     _ = clusteval.silhouette.plot(results, title='Silhouette', ax=axs[1], visible=False)
-
-    # derivative
-    results = clusteval.derivative.fit(X, linkage=linkage, max_clust=max_clust)
-    _ = clusteval.derivative.plot(results, title='Derivative', ax=axs[2], visible=False)
 
     plt.savefig(buf, format = "png")
     plt.close()

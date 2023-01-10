@@ -114,7 +114,6 @@ layout = dbc.Tabs([
                 dbc.Row([
                         dbc.Col(["DBindex", collapse_buttons.dbindex_button]),
                         dbc.Col(["Silhouette", collapse_buttons.silhouette_button]),
-                        dbc.Col(["Derivative", collapse_buttons.derivative_button]),
                         dbc.Col(["DBscan", collapse_buttons.dbscan_button]),
                         ]),
                 dbc.Row([
@@ -413,12 +412,12 @@ def on_extraction(ocel_log, extraction_features_list, execution_id):
 # collapse evaluation explanation
 @app.callback(
     [Output("evaluation-collapse", "is_open"), Output("evaluation-explanations","children")],
-    [Input("collapse-silhouette", "n_clicks"), Input("collapse-dbindex", "n_clicks"), Input("collapse-derivative", "n_clicks"), Input("collapse-dbscan", "n_clicks")],
+    [Input("collapse-silhouette", "n_clicks"), Input("collapse-dbindex", "n_clicks"), Input("collapse-dbscan", "n_clicks")],
     [State("evaluation-collapse", "is_open")], prevent_initial_call=True
 )
-def show_explanation(silhouette_n, dbindex_n, derivative_n, dbscan_n, is_open):
+def show_explanation(silhouette_n, dbindex_n, dbscan_n, is_open):
     triggered_id = ctx.triggered_id
-    if (silhouette_n > 0) or (dbindex_n > 0) or (derivative_n > 0) or (dbscan_n > 0):
+    if (silhouette_n > 0) or (dbindex_n > 0) or (dbscan_n > 0):
         if triggered_id == "collapse-silhouette":
             explanation_text = explanation_texts.silhouette_explanation
             if silhouette_n % 2 != 0:
@@ -428,12 +427,6 @@ def show_explanation(silhouette_n, dbindex_n, derivative_n, dbscan_n, is_open):
         elif triggered_id == "collapse-dbindex":
             explanation_text = explanation_texts.dbindex_explanation
             if dbindex_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        elif triggered_id == "collapse-derivative":
-            explanation_text = explanation_texts.derivative_explanation
-            if derivative_n % 2 != 0:
                 open_status = True 
             else:
                 open_status = False 

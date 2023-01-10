@@ -14,9 +14,6 @@ silhouette_explanation =  dbc.CardBody("Intuitively, the silhouette score quanti
 # DBindex analysis explanation
 dbindex_explanation =  dbc.CardBody("The Davies–Bouldin index can intuitively be described as a measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters.")
 
-# Derivative analysis explanation
-derivative_explanation =  dbc.CardBody("The derivative method compares each cluster merge’s height to the average mean and normalizes it by the standard deviation formed over the depth previous levels.")
-
 # DBscan analysis explanation
 dbscan_explanation =  dbc.CardBody("Density-Based Spatial Clustering of Applications with Noise is an clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.")
 
