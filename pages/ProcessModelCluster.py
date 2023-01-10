@@ -106,7 +106,7 @@ def on_selection(clustered_ocel, avg_pe_features_list, selected_cluster):
         # avg process execution features
         if avg_pe_features_list != None:
             df_extr = pd.DataFrame(columns=["Feature", "Value"])
-            avg_pe_features = avg_pe_features_list[int(selected_cluster) - 1]
+            avg_pe_features = avg_pe_features_list[int(selected_cluster)]
             df_extr["Feature"] = feature_options_extraction_renamed
             df_extr["Value"] = avg_pe_features
             df_transposed = df_extr.T
