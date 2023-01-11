@@ -1,13 +1,15 @@
 FROM python:3.8
+
+#otherwise there occurs an error because some package (probably node2vec) is using some old sklearn version that is not available anymore
+ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
  
+RUN mkdir /app
+COPY ./ /app
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install gunicorn
 RUN pip install -r requirements.txt
-RUN pip install ocpa==1.0.0
+ 
   
-COPY ./ /app
-  
-CMD gunicorn --bind 0.0.0.0:8050 index:app
+CMD ["python", "index.py"]
