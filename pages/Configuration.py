@@ -343,6 +343,7 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
+        print("Embedding worked.")
         # cluster embedding
         if clustering_method == 'Mean-Shift':
             labels = clustering.perform_MeanShift(embedding, clustering_params_dict)
@@ -359,8 +360,7 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
         # get summary of clusters
         cluster_summary_df = clustering.get_cluster_summary(clustered_df)
         # partition ocel into clustered ocels
-        ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
-        sub_ocels = clustering.partition_ocel(ocel_log, ocel_df, clustered_df)
+        sub_ocels = clustering.partition_ocel(ocel_log, clustered_df)
         # get average process execution features for each cluster
         average_pe_features = feature_extraction.create_cluster_feature_summary(sub_ocels)
         # encoding/ storing of sub ocels
