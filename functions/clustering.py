@@ -3,8 +3,8 @@ from sklearn.cluster import MeanShift, KMeans, AgglomerativeClustering, Affinity
 from sklearn.metrics import silhouette_score
 import numpy as np
 import pandas as pd
-from ocpa.algo.util.filtering.log import case_filtering
 from ocpa.objects.log.util import misc as log_util
+from ocpa.algo.util.filtering.log import case_filtering
 
 import matplotlib.pyplot as plt
 import io
@@ -61,7 +61,7 @@ def create_clustered_df(process_executions, labels):
 
     return clustered_df
 
-def partition_ocel(ocel, ocel_df, clustered_df):
+def partition_ocel(ocel, clustered_df):
     sub_ocels = [] 
     
     for cluster in np.sort(clustered_df['cluster'].unique()):   #sort because .unique() otherwise sorts after first occurences
@@ -71,12 +71,7 @@ def partition_ocel(ocel, ocel_df, clustered_df):
         for i, process_ex in enumerate(ocel.process_executions):
             if i in cluster_process_ex:
                 event_ids.append(list(process_ex))
-        # flatten list
-        event_ids = [item for sublist in event_ids for item in sublist]
-        ocel_df_cluster = ocel_df[ocel_df['event_id'].isin(event_ids)]
-        ocel.parameters = {"obj_names": ocel.object_types, "val_names":[], "act_name": "event_activity", "time_name":"event_timestamp"}
-        # to-do: add parameters so that conversion is possible
-        new_log = log_util.copy_log_from_df(ocel_df_cluster, ocel.parameters)
+        new_log = case_filtering.filter_process_executions(ocel, event_ids)
         sub_ocels.append(new_log)
     
     return sub_ocels
