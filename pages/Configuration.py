@@ -112,7 +112,7 @@ layout = dbc.Tabs([
                         dbc.Col(explanation_texts.clustering_evaluation_explanation)
                         ]),
                 dbc.Row([
-                        dbc.Col(["DBindex", collapse_buttons.dbindex_button]),
+                        dbc.Col(["Davies-Bouldin index", collapse_buttons.dbindex_button]),
                         dbc.Col(["Silhouette", collapse_buttons.silhouette_button]),
                         dbc.Col(["DBscan", collapse_buttons.dbscan_button]),
                         ]),
