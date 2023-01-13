@@ -10,6 +10,7 @@ from ocpa.objects.log.variants.table import Table
 from ocpa.objects.log.variants.graph import EventGraph
 import ocpa.objects.log.importer.csv.versions.to_obj as csv_to_ocel
 import ocpa.objects.log.variants.util.table as table_utils
+import ocpa.objects.log.util.misc as import_helper
 from typing import Dict
 
 # to intermediately store the uploaded ocel file from the drag and drop field
@@ -94,6 +95,13 @@ def preprocess_csv(df, parameters=None):
         df['start_timestamp'] = df['timestamp']
     #### change to ocpa version
     df['event_id'] = df[parameters['id_name']].values
+    # check if event id column is numeric
+    try:
+        pd.to_numeric(df['event_id'])
+    except:
+        # create a numeric event id column
+        df['event_id'] = [i for i in range(0, len(df))]
+        
     #df = df.drop(columns=[parameters['id_name']])
 
 
@@ -120,10 +128,13 @@ def preprocess_csv(df, parameters=None):
 
 def df_to_ocel(df, parameters):
     df, parameters = preprocess_csv(df, parameters)
+    '''
     log = Table(df, parameters=parameters, object_attributes=None)
     obj = csv_to_ocel.apply(df, parameters)
     graph = EventGraph(table_utils.eog_from_log(log))
     ocel = OCEL(log, obj, graph, parameters)
+    '''
+    ocel = import_helper.copy_log_from_df(df, parameters)
     
     return ocel
 
