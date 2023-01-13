@@ -99,7 +99,7 @@ def cluster_evaluation_hierarchical(X, linkage):
 
     # dbindex
     results = clusteval.dbindex.fit(X, linkage=linkage, max_clust=max_clust)
-    _ = clusteval.dbindex.plot(results, title='DBindex', ax=axs[0], visible=False)
+    _ = clusteval.dbindex.plot(results, title='Davies-Bouldin index', ax=axs[0], visible=False)
 
     # silhouette
     results = clusteval.silhouette.fit(X, linkage=linkage, max_clust=max_clust)
@@ -126,7 +126,7 @@ def cluster_evaluation_kmeans(X):
 
     # dbindex
     results = clusteval.dbindex.fit(X, cluster='kmeans', max_clust=max_clust)
-    _ = clusteval.dbindex.plot(results, title='DBindex', ax=axs[0], visible=False)
+    _ = clusteval.dbindex.plot(results, title='Davies-Bouldin index', ax=axs[0], visible=False)
 
     # silhouette
     results = clusteval.silhouette.fit(X, cluster='kmeans', max_clust=max_clust)
