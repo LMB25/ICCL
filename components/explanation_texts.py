@@ -30,13 +30,13 @@ meanshift_explanation = dbc.CardBody("Mean-Shift clustering aims to discover blo
 affinity_explanation = dbc.CardBody("Affinity-Propagation creates clusters by sending messages between pairs of samples until convergence. The algorithm finds members of the data points that are representatives of the clusters.")
 
 # Attributed Graph2Vec explanation
-attributedgraphvec_explanation = dbc.CardBody("Insert explanation here.")
+attributedgraphvec_explanation = dbc.CardBody("The algorithm first creates a node embedding via FeatherNode which uses characteristic functions of node features with random walk weights to describe node neighborhoods. In the second step, the node embeddings are averaged over each dimension, resulting in a vectorized embedding of the graph.")
 
 # Graph2Vec explanation
-graphvec_explanation = dbc.CardBody("Insert explanation here.")
+graphvec_explanation = dbc.CardBody("The algorithm first identifies subgraphs sourrounding each node in the feature graphs. By means of the Weisfeiler-Lehman’s algorithm, the subgraphs are considered as the vocabulary for a doc2vec SkipGram model. Since the graph’s structure is captured within the algorithm, feature graphs that are similar in structure will be close in the embedding space.")
 
 # Feather-G explanation
-featherg_explanation = dbc.CardBody("Insert explanation here.")
+featherg_explanation = dbc.CardBody("The algorithm uses characteristic functions defined on graph vertices to describe the distribution of vertex attributes. Feather-G extracts node-level features that are pooled and then used to create a description of the feature graph.")
 
 # list of features and explanation
 features_explanation = dbc.Card(
