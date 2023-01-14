@@ -38,7 +38,51 @@ graphvec_explanation = dbc.CardBody("The algorithm first identifies subgraphs so
 # Feather-G explanation
 featherg_explanation = dbc.CardBody("The algorithm uses characteristic functions defined on graph vertices to describe the distribution of vertex attributes. Feather-G extracts node-level features that are pooled and then used to create a description of the feature graph.")
 
-# list of features and explanation
+# feature selection explanation
+feature_selection_explanation = dbc.Card( 
+                                        dbc.CardBody("Here, event features from different perspectives can be selected. You can select as many features and perspectives from the dropdown lists as you like. After selecting the features, please click the button below to parse the features."),
+                                        className="mb-3",
+                                        )
+
+# list of event features and explanation
+control_features_explanation = dbc.Card(
+                                dbc.ListGroup(
+                                    [
+                                        dbc.ListGroupItem("EVENT_CURRENT_ACTIVITIES: Other current end activities (without finished events)."),
+                                        dbc.ListGroupItem("EVENT_ACTIVITY: Activity that is performed in the event."),
+                                        dbc.ListGroupItem("EVENT_PREVIOUS_ACTIVITY_COUNT: Number of activities that took place before the event."),
+                                        dbc.ListGroupItem("EVENT_PRECEDING_ACTIVITES: Count for activities in the events before the current event.")
+                                    ],
+                                    flush=True,
+                                ),
+                            )
+
+performance_features_explanation = dbc.Card(
+                                    dbc.ListGroup(
+                                    [
+                                        dbc.ListGroupItem("EVENT_EXECUTION_DURATION: Duration of process execution the event belongs to."),
+                                        dbc.ListGroupItem("EVENT_ELAPSED_TIME: Elapsed time from process execution start to the event."),
+                                        dbc.ListGroupItem("EVENT_REMAINING_TIME: Remaining time from event to end of process execution."),
+                                        dbc.ListGroupItem("EVENT_SOJOURN_TIME: Sojourn time of the event."),
+                                        dbc.ListGroupItem("EVENT_WAITING_TIME: Waiting time of the event."),
+                                        dbc.ListGroupItem("EVENT_DURATION: Duration of the event."),
+                                    ],
+                                    flush=True,
+                                ),
+                            )
+
+object_features_explanation = dbc.Card(
+                                dbc.ListGroup(
+                                    [
+                                        dbc.ListGroupItem("EVENT_PREVIOUS_OBJECT_COUNT: Number of objects involved up to the event."),
+                                        dbc.ListGroupItem("EVENT_PREVIOUS_TYPE_COUNT: Count for object types before the event takes place."),
+                                        dbc.ListGroupItem("EVENT_NUM_OF_OBJECTS: Number of objects involved in the event."),
+                                    ],
+                                    flush=True,
+                                ),
+                            )
+
+
 features_explanation = dbc.Card(
                                 dbc.ListGroup(
                                     [

@@ -24,10 +24,16 @@ extracted_pe_features = dcc.Store(id='extracted-pe-features-store')
 clustering_params_store = dcc.Store('clustering-parameters', storage_type='local')
 
 # options for event based feature selection
-feature_options_event = ['EVENT_REMAINING_TIME', 'EVENT_ELAPSED_TIME', 'EVENT_ACTIVITY', 'EVENT_NUM_OF_OBJECTS', 'EVENT_PREVIOUS_OBJECT_COUNT', 'EVENT_PREVIOUS_ACTIVITY_COUNT', 'EVENT_DURATION']
+feature_options_control = ['EVENT_CURRENT_ACTIVITIES', 'EVENT_ACTIVITY', 'EVENT_PREVIOUS_ACTIVITY_COUNT', 'EVENT_PRECEDING_ACTIVITES']
+feature_options_performance = ['EVENT_EXECUTION_DURATION', 'EVENT_ELAPSED_TIME', 'EVENT_REMAINING_TIME', 'EVENT_SOJOURN_TIME', 'EVENT_WAITING_TIME', 'EVENT_DURATION']
+feature_options_object = ['EVENT_PREVIOUS_OBJECT_COUNT', 'EVENT_PREVIOUS_TYPE_COUNT', 'EVENT_NUM_OF_OBJECTS']
                         
-# event based feature selection dropdown
-event_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-event', options=[{'label': i, 'value': i} for i in feature_options_event], multi=True, value=[])#feature_options_event)
+# control perspective feature selection dropdown
+control_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-control', options=[{'label': i, 'value': i} for i in feature_options_control], multi=True, value=[])
+# performance perspective feature selection dropdown
+performance_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-performance', options=[{'label': i, 'value': i} for i in feature_options_performance], multi=True, value=[])
+# object perspective feature selection dropdown
+object_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-object', options=[{'label': i, 'value': i} for i in feature_options_object], multi=True, value=[])
 
 # empty DataTable for Process Execution Features
 feature_options_extraction_renamed = ["Number of Events", "Number of Ending Events", "Throughput Duration", "Number of Objects", "Unique Activities", "Number of Starting Events", "Duration of Last Event"]
@@ -46,11 +52,22 @@ layout = dbc.Tabs([
         event_store, embedding_params_store, extracted_pe_features, clustering_params_store, 
         dbc.Tab([
                 html.Br(),
-                html.H5("Feature Explanation:"),
-                dbc.Row([dbc.Col([explanation_texts.features_explanation], width=7),]),
-                html.Hr(),
-                dbc.Row(dbc.Col([html.H5("Feature Selection:"), html.Div("Select Event Features for Clustering:")], width=7)),
-                dbc.Row([dbc.Col([html.Div(event_feature_selection_dropdown)], width=7), dbc.Col([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0), html.Div(id='feature-sucess')], width=5)])
+                dbc.Row([
+                        dbc.Col(explanation_texts.feature_selection_explanation)
+                        ]),
+                html.H5("Control Perspective:"),
+                dbc.Row([dbc.Col([explanation_texts.control_features_explanation], width=7),
+                         dbc.Col([html.Div("Select Control Perspective Features for Clustering:"), html.Div(control_feature_selection_dropdown)])]),
+                html.Br(),
+                html.H5("Performance Perspective:"),
+                dbc.Row([dbc.Col([explanation_texts.performance_features_explanation], width=7),
+                         dbc.Col([html.Div("Select Performance Perspective Features for Clustering:"), html.Div(performance_feature_selection_dropdown)])]),
+                html.Br(),
+                html.H5("Object Perspective:"),
+                dbc.Row([dbc.Col([explanation_texts.object_features_explanation], width=7),
+                        dbc.Col([html.Div("Select Object Perspective Features for Clustering:"), html.Div(object_feature_selection_dropdown)])]),
+                html.Br(),
+                dbc.Row([dbc.Col([dbc.Button("Set Selected Features", className="me-2", id='set-features', n_clicks=0), html.Div(id='feature-sucess')], width=6)])
         ], label="Features", tab_id='features-tab', label_style={'background-color': '#8daed9'}),
         dbc.Tab([
                 html.Br(),
@@ -172,7 +189,7 @@ def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_metho
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # extract features, get feature graphs
-        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, [], 'graph')
+        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, 'graph')
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
@@ -214,11 +231,11 @@ def on_configuration(features_set, embedding_parsed):
         dash.no_update
 
 # load selected features in stores
-@app.callback([Output("event-feature-set", "data"), Output("feature-sucess", "children")], State("feature-selection-event", "value"), Input("set-features", "n_clicks"))
-def on_click(selected_event_features, n_clicks):
+@app.callback([Output("event-feature-set", "data"), Output("feature-sucess", "children")], [State("feature-selection-control", "value"), State("feature-selection-performance", "value"), State("feature-selection-object", "value")], Input("set-features", "n_clicks"))
+def on_click(selected_control_features, selected_performance_features, selected_object_features, n_clicks):
     if n_clicks > 0:
         # set selected event features
-        feature_set_event = selected_event_features
+        feature_set_event = selected_control_features + selected_performance_features + selected_object_features
         return feature_set_event, "Features successfully set."
     else:
         raise PreventUpdate
@@ -333,7 +350,7 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # extract features, get feature graphs
-        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, [], 'graph')
+        feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, 'graph')
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
