@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 from app import app
 
 # Connect to your app pages
-from pages import Dataimport, Dataview, Configuration, ProcessModel, ProcessModelCluster
+from pages import Dataimport, Dataview, Configuration, ProcessModel, ProcessModelCluster, Manual
 
 # Connect the navbar to the index
 from components import sidebar, navbar
@@ -61,6 +61,8 @@ def render_page_content(pathname):
         return ProcessModel.layout
     elif pathname == "/page-3/2":
         return ProcessModelCluster.layout
+    elif pathname == "/page-4/1":
+        return Manual.layout
     # If the user tries to reach a different page, return a 404 message
     return html.Div(
         [

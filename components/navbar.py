@@ -8,7 +8,7 @@ def Navbar():
 
     layout = html.Div([
         dbc.NavbarSimple([
-                        dbc.NavItem(dbc.NavLink(html.I(className="far fa-question-circle"),href="#")),
+                        dbc.NavItem(dbc.NavLink(html.I(className="far fa-question-circle"),href="/page-4/1")),
                          ],
                 brand="RWTH Aachen",
                 brand_href="#",
