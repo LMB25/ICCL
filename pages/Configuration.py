@@ -118,7 +118,7 @@ layout = dbc.Tabs([
                 html.Br(),
                 dbc.Row([dbc.Col([html.H5("Modify Clustering Embedding Parameters:")])]),
                 dbc.Row([
-                        dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,14,1, value=2, id='num-clusters-slider', disabled=True)), clustering_param_form], width=7),
+                        dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,14,1, value=2, id='num-clusters-slider', disabled=False)), clustering_param_form], width=7),
                         ]),
                 html.Br(),
                 dbc.Row([
@@ -128,7 +128,7 @@ layout = dbc.Tabs([
                 html.Br(),
                 dbc.Row([
                         dbc.Col([
-                            dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0),
+                            dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0, disabled=True),
                             dbc.Button("Cancel", className="me-2", id='cancel-auto-clustering', n_clicks=0),
                             dbc.Row(html.Progress(id="progress-bar", value="0")),
                             dbc.Row(html.Div(id="progress-message")),
@@ -341,7 +341,7 @@ def on_clustering_selection(clustering_method):
         return True
 
 # save clustering parameter settings
-@app.callback([Output('clustering-parameters', 'data'), Output("success-parse-clustering-params", "style")], [State('n-init-kmeans', 'value'), State('max-iter-kmeans', 'value'), State('max-iter-meanshift', 'value'), State('linkage-criterion','value'), 
+@app.callback([Output('clustering-parameters', 'data'), Output("success-parse-clustering-params", "style"), Output("start-clustering", "disabled")], [State('n-init-kmeans', 'value'), State('max-iter-kmeans', 'value'), State('max-iter-meanshift', 'value'), State('linkage-criterion','value'), 
                State('max-iter-affinity', 'value'), State('convergence-iter-affinity','value'), State('epsilon', 'value'), State('min-samples', 'value'), State('clustering-method-selection', 'value')], Input('parse-clustering-params', 'n_clicks'), prevent_initial_call=True)
 def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, max_iter_affinity, convergence_iter, eps, min_samples, clustering_method, n_click):
     if n_click > 0:
@@ -357,7 +357,7 @@ def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, 
             clustering_params_dict = {"max_iter":int(max_iter_affinity), "convergence_iter":int(convergence_iter)}
         elif clustering_method == "DBscan":
             clustering_params_dict = {"eps":float(eps), "min_samples":int(min_samples)}
-        return clustering_params_dict, {'display':'block'}
+        return clustering_params_dict, {'display':'block'}, False
     else:
         dash.no_update
 
@@ -378,7 +378,7 @@ def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, 
         State('clustering-parameters', 'data'),
         Trigger("start-clustering", "n_clicks")), 
     running=[
-        (Output("start-clustering", "disabled"), True, False),
+        #(Output("start-clustering", "disabled"), True, False),
         (Output("cancel-auto-clustering", "disabled"), False, True),
         (Output("progress-bar", "style"),{"visibility": "visible"},{"visibility": "hidden"}),
     ],
@@ -399,8 +399,9 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         # embedd feature graphs
         set_progress(("3","10","... Embedding Features", ""))   
         if embedding_method == 'AutoEmbed':
-            pass
-            #TODO
+            #TODO make dimensions dependant on size of the input and number of features !!!
+            embedding_params_dict = {"svd_dimensions":int(64), "svd_iterations":int(20), "theta_max":float(2.5), "eval_points":int(25), "order":int(5)}
+            embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         elif embedding_method == 'CFGE':
             embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         elif embedding_method == 'Graph2Vec':
@@ -412,8 +413,8 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         # clustering
         set_progress(("6","10","... Perform Clustering", ""))   
         if clustering_method == 'AutoCluster':
-            pass
             #TODO
+            labels, best_params = clustering.perform_auto_clustering(embedding)
         if clustering_method == 'Mean-Shift':
             labels = clustering.perform_MeanShift(embedding, clustering_params_dict)
         elif clustering_method == 'K-Means':
