@@ -55,11 +55,9 @@ layout = dbc.Container([
         dbc.Row([
             dbc.Col(html.P("Insert Path to OCEL")), 
             dbc.Col(dbc.Input(id="path", value=os.path.dirname(os.path.realpath(__file__)), type="text", persistence = False)),
+            dbc.Col(dbc.Button("Search", id="enable-path", className="me-2", n_clicks=0, disabled=False))
         ]),
         html.Br(),
-        dbc.Row([
-            dbc.Button("Search", id="enable-path", className="me-2", n_clicks=0, disabled=False),
-                ]),
         html.Div("Path successfully searched.", style={'display':'none'}, id='folder-search-result'),
         html.Br(),
         dbc.Row([
@@ -73,8 +71,12 @@ layout = dbc.Container([
         process_extraction,
         html.Hr(),
         dbc.Row([
-            dbc.Button("Upload", id="upload-button", className="me-2", n_clicks=0, disabled=True),
-                ]), 
+            dbc.Col([
+                dbc.Button("Upload", color="warning", id="upload-button", className="me-1", n_clicks=0, disabled=True),
+                dbc.Button("Cancel", className="me-2", id='cancel-upload', n_clicks=0)
+            ],width=7), 
+        ]), 
+        dbc.Row(html.Progress(id="progress-bar-upload", value="0")),
         html.Div("OCEL successfully uploaded.", style={'display':'none'}, id='success-upload-ocel'),
         html.Br(),
         html.Div([
@@ -173,10 +175,30 @@ def on_file_selection(csv_params_parsed, selected_file, drag_drop_content):
         return True
 
 # load and store ocel, extract and store parameters, uncover 'success' div
-@app.callback([ServersideOutput("ocel_obj", "data"), Output("param-store", "data"), ServersideOutput("execution-store", "data"), Output("success-upload-ocel", "style")], 
-                [State("file-dropdown", "value"), State("path", "value"), State("csv-params", "data"),State("drag-drop-field", "contents"),State("drag-drop-field", "filename"),State("process-extraction-type", "value"),State("leading-object", "value")], 
-                [Trigger("upload-button",  "n_clicks")], memoize=True)
-def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_content, drag_drop_filename, process_extr_type, leading_obj, n):
+@app.long_callback(output=(
+    ServersideOutput("ocel_obj", "data"), 
+    Output("param-store", "data"), 
+    ServersideOutput("execution-store", "data"), 
+    Output("success-upload-ocel", "style")
+    ),inputs=(
+        State("file-dropdown", "value"), 
+        State("path", "value"), 
+        State("csv-params", "data"),
+        State("drag-drop-field", "contents"),
+        State("drag-drop-field", "filename"),
+        State("process-extraction-type", "value"),
+        State("leading-object", "value"), 
+        Trigger("upload-button",  "n_clicks")), 
+    running=[
+        (Output("upload-button", "disabled"), True, False),
+        (Output("cancel-upload", "disabled"), False, True),
+        (Output("progress-bar-upload", "style"),{"visibility": "visible"},{"visibility": "hidden"}),
+        ],
+    cancel=[Input("cancel-upload", "n_clicks")],
+    progress=[Output("progress-bar-upload", "value"), Output("progress-bar-upload", "max")],
+    memoize=True)
+def on_upload_ocel_path(set_progress, selected_file, selected_dir, csv_params, drag_drop_content, drag_drop_filename, process_extr_type, leading_obj, n):
+    set_progress(("0","10"))
     time.sleep(1)
     if selected_file is None and drag_drop_content is None:
         raise PreventUpdate
@@ -203,21 +225,24 @@ def on_upload_ocel_path(selected_file, selected_dir, csv_params, drag_drop_conte
                     ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file), parameters={"execution_extraction":"connected_components"})
                 else:
                     ocel_log = dataimport.load_ocel_json_xml(os.path.join(selected_dir, selected_file), parameters={"execution_extraction":"leading_type", "leading_type":leading_obj})
-
+        set_progress(("3","10"))
         # remove any existing discovered nets, if exist
         [f.unlink() for f in Path("/imgs").glob("*") if f.is_file()] 
 
         # extract and store process executions as list, i.e. list of event ids within process execution
         ocel_process_executions = process_executions.get_process_executions(ocel_log)
         ocel_process_executions_list = process_executions.convert_process_executions_tolist(ocel_process_executions)
-
+        
+        set_progress(("5","10"))
         # extract and store ocel parameters
         ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
         object_types, num_events, num_activities, num_obj, activity_count, object_types_occurences = dataimport.get_summary(ocel_log, ocel_df)
         dict_params = {'object_types': object_types, 'num_events': num_events, 'num_activities':num_activities, 'num_objects':num_obj, 'activity_count':activity_count, 'object_type_occurences':object_types_occurences}
-
+        
+        set_progress(("9","10"))
         # encode ocel
         encoded_ocel = codecs.encode(pickle.dumps(ocel_log), "base64").decode()
+        set_progress(("10","10"))
 
         return encoded_ocel, dict_params, ocel_process_executions_list, {'display':'block'}
 
