@@ -30,7 +30,7 @@ def feature_graphs_to_nx_graphs(feature_graphs):
     
     return graph_list, attr_matrix_list
 
-def perform_attrgraph2vec(graph_list, attr_matrix_list, embedding_params):
+def perform_cfge(graph_list, attr_matrix_list, embedding_params):
     X_graphs = []
     for graph, attr_matrix in zip(graph_list, attr_matrix_list):
         #model = TENE(dimensions=100)

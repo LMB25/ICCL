@@ -14,6 +14,9 @@ silhouette_explanation =  dbc.CardBody("Intuitively, the silhouette score quanti
 # DBindex analysis explanation
 dbindex_explanation =  dbc.CardBody("The Davies–Bouldin index can intuitively be described as a measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters.")
 
+# Auto cluster explanation
+autocluster_explanation = "tries to find the best clustering method automatically and optimizes their hyperparameters "
+
 # DBscan analysis explanation
 dbscan_explanation =  "finds core samples of high density and expands clusters from them (epsilon specifies radius of neighborhood with respect to some point, in which number of neighboring points is counted)"
 
@@ -28,6 +31,9 @@ meanshift_explanation = "centroid based algorithm, discovers blobs in smooth den
 
 # Affinity-Propagation clustering explanation
 affinity_explanation = "creates clusters by sending messages between pairs of samples until convergence, members of the data points are found that are representatives of the clusters."
+
+# Auto Embed 
+autoembed_explanation = "tries to find an optimal embedding with optimal number of dimensions with respect to the fitness/accurady of the later discovered model"
 
 # Custom Feature Graph Embedding
 cfge_explanation = "focus on features: creates TENE node embedding for each attributed node in feature graph and averages over these to get embedding for whole graph (structure only considered implicetely)"

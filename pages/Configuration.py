@@ -74,11 +74,13 @@ layout = dbc.Tabs([
                 dbc.Row(html.H5("Select Graph Embedding Method")),
                 dbc.Row([
                     html.Div(dbc.RadioItems(options=[
+                                {"label": "Auto Mode", "value": "AutoEmbed", "label_id":"tooltip-autoembed"},
                                 {"label": "Custom Feature Graph Embedding", "value": "CFGE", "label_id":"tooltip-cfge"},
                                 {"label": "Graph2Vec", "value": 'Graph2Vec', "label_id":"tooltip-graph2vec"},
                                 {"label": "Feather-G", "value": "Feather-G", "label_id":"tooltip-featherg"}
-                            ], value="CFGE", id="graph-embedding-selection"),),
+                            ], value="AutoEmbed", id="graph-embedding-selection"),),
                     #exlanations for the different algorithms
+                    dbc.Tooltip(explanation_texts.autoembed_explanation, target="tooltip-autoembed", placement='right'),
                     dbc.Tooltip(explanation_texts.cfge_explanation, target="tooltip-cfge", placement='right'),
                     dbc.Tooltip(explanation_texts.graphvec_explanation, target="tooltip-graph2vec", placement='right'),
                     dbc.Tooltip(explanation_texts.featherg_explanation, target="tooltip-featherg", placement='right'),
@@ -98,13 +100,15 @@ layout = dbc.Tabs([
                 dbc.Row([
                         html.Div(dbc.RadioItems(
                             options=[
+                                    {"label": "Auto Cluster", "value": "AutoCluster", "label_id":"tooltip-autocluster"},
                                     {"label": "K-Means", "value": "K-Means", "label_id":"tooltip-kmeans"},
                                     {"label": "Hierarchical", "value": "Hierarchical", "label_id":"tooltip-hierarchical"},
                                     {"label": "Mean-Shift", "value": 'Mean-Shift', "label_id":"tooltip-meanshift"},
                                     {"label": "Affinity-Propagation", "value":"AffinityPropagation", "label_id":"tooltip-affinity"}, 
                                     {'label':'DBscan', 'value':'DBscan', "label_id":"tooltip-dbscan"}
-                                ], value="K-Means", id="clustering-method-selection")),
+                                ], value="AutoCluster", id="clustering-method-selection")),
                         #exlanations for the different clustering methods
+                        dbc.Tooltip(explanation_texts.autocluster_explanation, target="tooltip-autocluster", placement='right'),
                         dbc.Tooltip(explanation_texts.kmeans_explanation, target="tooltip-kmeans", placement='right'),
                         dbc.Tooltip(explanation_texts.hierarchical_explanation, target="tooltip-hierarchical", placement='right'),
                         dbc.Tooltip(explanation_texts.meanshift_explanation, target="tooltip-meanshift", placement='right'),
@@ -200,12 +204,15 @@ def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_metho
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
-        if embedding_method == 'Graph2Vec':
+        if embedding_method == 'AutoEmbed':
+            #TODO
+            pass
+        elif embedding_method == 'Graph2Vec':
             X = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
             X = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
         elif embedding_method == 'CFGE':
-            X = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
+            X = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
 
         try:
             hierarchical_ward = clustering.cluster_evaluation_hierarchical(X, "ward")
@@ -303,7 +310,10 @@ def on_clustering_selection(clustering_method):
                 Input("parse-embedding-params", "n_clicks"), prevent_initial_call=True)
 def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points, order, wl_iterations, dimensions, epochs, learning_rate, embedding_method, theta_max_g, eval_points_g, order_g, n_click):
     if n_click > 0:
-        if embedding_method =='CFGE':
+        if embedding_method =='AutoEmbed':
+            embedding_params_dict = {}
+            return embedding_params_dict, {'display':'block'}
+        elif embedding_method =='CFGE':
             embedding_params_dict = {"svd_dimensions":int(svd_dimension), "svd_iterations":int(svd_iterations), "theta_max":float(theta_max), "eval_points":int(eval_points), "order":int(order)}
             return embedding_params_dict, {'display':'block'}
         elif embedding_method == 'Graph2Vec':
@@ -328,21 +338,19 @@ def on_clustering_selection(clustering_method):
                State('max-iter-affinity', 'value'), State('convergence-iter-affinity','value'), State('epsilon', 'value'), State('min-samples', 'value'), State('clustering-method-selection', 'value')], Input('parse-clustering-params', 'n_clicks'), prevent_initial_call=True)
 def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, max_iter_affinity, convergence_iter, eps, min_samples, clustering_method, n_click):
     if n_click > 0:
-        if clustering_method =='K-Means':
+        if clustering_method == 'AutoCluster':
+            clustering_params_dict = {}
+        elif clustering_method =='K-Means':
             clustering_params_dict = {"n_init":int(n_init), "max_iter":int(max_iter_kmeans)}
-            return clustering_params_dict, {'display':'block'}
         elif clustering_method == 'Hierarchical':
             clustering_params_dict = {"linkage":linkage}
-            return clustering_params_dict, {'display':'block'}
         elif clustering_method == "Mean-Shift":
             clustering_params_dict = {"max_iter":int(max_iter_meanshift)}
-            return clustering_params_dict, {'display':'block'}
         elif clustering_method == "AffinityPropagation":
             clustering_params_dict = {"max_iter":int(max_iter_affinity), "convergence_iter":int(convergence_iter)}
-            return clustering_params_dict, {'display':'block'}
         elif clustering_method == "DBscan":
             clustering_params_dict = {"eps":float(eps), "min_samples":int(min_samples)}
-            return clustering_params_dict, {'display':'block'}
+        return clustering_params_dict, {'display':'block'}
     else:
         dash.no_update
 
@@ -361,14 +369,20 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
-        if embedding_method == 'CFGE':
-            embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
+        if embedding_method == 'AutoEmbed':
+            pass
+            #TODO
+        elif embedding_method == 'CFGE':
+            embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         elif embedding_method == 'Graph2Vec':
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
         print("Embedding worked.")
         # cluster embedding
+        if clustering_method == 'AutoCluster':
+            pass
+            #TODO
         if clustering_method == 'Mean-Shift':
             labels = clustering.perform_MeanShift(embedding, clustering_params_dict)
         elif clustering_method == 'K-Means':
