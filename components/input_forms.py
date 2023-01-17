@@ -54,7 +54,7 @@ embedding_params_form_attributed = html.Div([
             dbc.Col(dbc.Input(id='order', value=5))
         ]),
         html.Br(),
-        ], id='embedding-params-div-attributedgraph2vec', style={'display': 'none'})
+        ], id='embedding-params-div-cfge', style={'display': 'none'})
 
 # create form for Graph2Vec embedding parameters
 embedding_params_form_graph2vec = html.Div([

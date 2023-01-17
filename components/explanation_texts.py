@@ -15,28 +15,31 @@ silhouette_explanation =  dbc.CardBody("Intuitively, the silhouette score quanti
 dbindex_explanation =  dbc.CardBody("The Davies–Bouldin index can intuitively be described as a measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters.")
 
 # DBscan analysis explanation
-dbscan_explanation =  dbc.CardBody("Density-Based Spatial Clustering of Applications with Noise is an clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.")
+dbscan_explanation =  "finds core samples of high density and expands clusters from them (epsilon specifies radius of neighborhood with respect to some point, in which number of neighboring points is counted)"
 
 # K-Means clustering explanation
-kmeans_explanation = dbc.CardBody("The K-Means algorithm clusters data by trying to separate samples in n groups of equal variance. It aims to choose centroids that minimize the within-cluster sum-of-squares.")
+kmeans_explanation = "clusters data by trying to separate samples in n groups of equal variance, centroids are chosen that minimize within-cluster sum-of-squares."
 
 # Hierarchical clustering explanation
-hierarchical_explanation = dbc.CardBody("Hierarchical clustering builds nested clusters by merging or splitting them successively. This hierarchy of clusters is represented as a tree, whereas the root is the unique cluster gathering all samples and the leaves are clusters containing only one sample.")
+hierarchical_explanation = "builds nested clusters by merging or splitting them successively (this hierarchy can be represented as tree (root: unique cluster gathering all samples, leaves: clusters containing only one sample)"
 
 # Mean-Shift clustering explanation
-meanshift_explanation = dbc.CardBody("Mean-Shift clustering aims to discover blobs in a smooth density of samples. It is a centroid based algorithm, which works by updating candidates for centroids to be the mean of the points within a given region")
+meanshift_explanation = "centroid based algorithm, discovers blobs in smooth density of samples (candidates for centroids are updated to be mean of the points within a given region)"
 
 # Affinity-Propagation clustering explanation
-affinity_explanation = dbc.CardBody("Affinity-Propagation creates clusters by sending messages between pairs of samples until convergence. The algorithm finds members of the data points that are representatives of the clusters.")
+affinity_explanation = "creates clusters by sending messages between pairs of samples until convergence, members of the data points are found that are representatives of the clusters."
 
-# Attributed Graph2Vec explanation
-attributedgraphvec_explanation = dbc.CardBody("The algorithm first creates a node embedding via FeatherNode which uses characteristic functions of node features with random walk weights to describe node neighborhoods. In the second step, the node embeddings are averaged over each dimension, resulting in a vectorized embedding of the graph.")
+# Custom Feature Graph Embedding
+cfge_explanation = "focus on features: creates TENE node embedding for each attributed node in feature graph and averages over these to get embedding for whole graph (structure only considered implicetely)"
+#"The algorithm first creates a node embedding via FeatherNode which uses characteristic functions of node features with random walk weights to describe node neighborhoods. In the second step, the node embeddings are averaged over each dimension, resulting in a vectorized embedding of the graph."
 
 # Graph2Vec explanation
-graphvec_explanation = dbc.CardBody("The algorithm first identifies subgraphs sourrounding each node in the feature graphs. By means of the Weisfeiler-Lehman’s algorithm, the subgraphs are considered as the vocabulary for a doc2vec SkipGram model. Since the graph’s structure is captured within the algorithm, feature graphs that are similar in structure will be close in the embedding space.")
+graphvec_explanation = "embeds the whole graph based on the structure (additionaly each node can have one feature value)"
+#"The algorithm first identifies subgraphs sourrounding each node in the feature graphs. By means of the Weisfeiler-Lehman’s algorithm, the subgraphs are considered as the vocabulary for a doc2vec SkipGram model. Since the graph’s structure is captured within the algorithm, feature graphs that are similar in structure will be close in the embedding space."
 
 # Feather-G explanation
-featherg_explanation = dbc.CardBody("The algorithm uses characteristic functions defined on graph vertices to describe the distribution of vertex attributes. Feather-G extracts node-level features that are pooled and then used to create a description of the feature graph.")
+featherg_explanation = "embeds the whole graph by only focusing on the structure (features cannot be embedded)"
+"The algorithm uses characteristic functions defined on graph vertices to describe the distribution of vertex attributes. Feather-G extracts node-level features that are pooled and then used to create a description of the feature graph."
 
 # feature selection explanation
 feature_selection_explanation = dbc.Card( 

@@ -71,15 +71,17 @@ layout = dbc.Tabs([
         ], label="Features", tab_id='features-tab', label_style={'background-color': '#8daed9'}),
         dbc.Tab([
                 html.Br(),
+                dbc.Row(html.H5("Select Graph Embedding Method")),
                 dbc.Row([
-                    dbc.Col([html.H5("Select Graph Embedding Method")], width=5),
-                    dbc.Col(["Attributed Graph2Vec", collapse_buttons.attr_graph_vec_button]),
-                    dbc.Col(["Graph2Vec", collapse_buttons.graph_vec_button]),
-                    dbc.Col(["Feather-G", collapse_buttons.featherg_button]),
-                ]),
-                dbc.Row([
-                    dbc.Col([html.Div(dbc.RadioItems(options=[{"label": "AttributedGraph2Vec", "value": "AttributedGraph2Vec"},{"label": "Graph2Vec", "value": 'Graph2Vec'},{"label": "Feather-G", "value": "Feather-G"}], value="AttributedGraph2Vec", id="graph-embedding-selection"),)], width=5),
-                    dbc.Col([dbc.Collapse(dbc.Card(children=[],id='embedding-explanations'),id="embedding-collapse", is_open=False)])
+                    html.Div(dbc.RadioItems(options=[
+                                {"label": "Custom Feature Graph Embedding", "value": "CFGE", "label_id":"tooltip-cfge"},
+                                {"label": "Graph2Vec", "value": 'Graph2Vec', "label_id":"tooltip-graph2vec"},
+                                {"label": "Feather-G", "value": "Feather-G", "label_id":"tooltip-featherg"}
+                            ], value="CFGE", id="graph-embedding-selection"),),
+                    #exlanations for the different algorithms
+                    dbc.Tooltip(explanation_texts.cfge_explanation, target="tooltip-cfge", placement='right'),
+                    dbc.Tooltip(explanation_texts.graphvec_explanation, target="tooltip-graph2vec", placement='right'),
+                    dbc.Tooltip(explanation_texts.featherg_explanation, target="tooltip-featherg", placement='right'),
                 ]),
                 html.Br(),
                 dbc.Row([ 
@@ -92,17 +94,22 @@ layout = dbc.Tabs([
                 ], label="Embedding", tab_id='embedding-tab', label_style={'background-color': '#8dd996'}),
         dbc.Tab([
                 html.Br(),
+                dbc.Row(html.H5("Select Clustering Technique")),
                 dbc.Row([
-                        dbc.Col([html.H5("Select Clustering Technique")],width=4),
-                        dbc.Col(["K-Means", collapse_buttons.kmeans_button]),
-                        dbc.Col(["Hierarchical", collapse_buttons.hierarchical_button]),
-                        dbc.Col(["Mean-Shift", collapse_buttons.meanshift_button]),
-                        dbc.Col(["Affinity-Prop.", collapse_buttons.affinity_button]),
-                        dbc.Col(["DBscan", collapse_buttons.dbscan_expl_button]),
-                        ]),
-                dbc.Row([
-                        dbc.Col([html.Div(dbc.RadioItems(options=[{"label": "K-Means", "value": "K-Means"},{"label": "Hierarchical", "value": "Hierarchical"},{"label": "Mean-Shift", "value": 'Mean-Shift'},{"label": "Affinity-Propagation", "value":"AffinityPropagation"}, {'label':'DBscan', 'value':'DBscan'}], value="K-Means", id="clustering-method-selection"),)], width=4),
-                        dbc.Col([dbc.Collapse(dbc.Card(children=[],id='clustering-explanations'),id="clustering-collapse", is_open=False)])
+                        html.Div(dbc.RadioItems(
+                            options=[
+                                    {"label": "K-Means", "value": "K-Means", "label_id":"tooltip-kmeans"},
+                                    {"label": "Hierarchical", "value": "Hierarchical", "label_id":"tooltip-hierarchical"},
+                                    {"label": "Mean-Shift", "value": 'Mean-Shift', "label_id":"tooltip-meanshift"},
+                                    {"label": "Affinity-Propagation", "value":"AffinityPropagation", "label_id":"tooltip-affinity"}, 
+                                    {'label':'DBscan', 'value':'DBscan', "label_id":"tooltip-dbscan"}
+                                ], value="K-Means", id="clustering-method-selection")),
+                        #exlanations for the different clustering methods
+                        dbc.Tooltip(explanation_texts.kmeans_explanation, target="tooltip-kmeans", placement='right'),
+                        dbc.Tooltip(explanation_texts.hierarchical_explanation, target="tooltip-hierarchical", placement='right'),
+                        dbc.Tooltip(explanation_texts.meanshift_explanation, target="tooltip-meanshift", placement='right'),
+                        dbc.Tooltip(explanation_texts.affinity_explanation, target="tooltip-affinity", placement='right'),
+                        dbc.Tooltip(explanation_texts.dbscan_explanation, target="tooltip-dbscan", placement='right'),
                         ]),
                 html.Br(),
                 dbc.Row([dbc.Col([html.H5("Modify Clustering Embedding Parameters:")])]),
@@ -165,7 +172,7 @@ layout = dbc.Tabs([
                         dbc.Col([html.Img(id='dbscan-evaluation')])
                         ]),
                         ], id='cluster-evaluation-result', hidden=True),
-                ], label='Cluster Evaluation', tab_id='cluster-eval'),
+                ], label='Cluster Evaluation', tab_id='cluster-eval', label_style={'background-color': '#8D6E63'}),
         dbc.Tab([
                 html.Br(),
                 dbc.Row([
@@ -177,7 +184,7 @@ layout = dbc.Tabs([
                 dbc.Row([html.Div(feature_table, id="pe-feature-table")]),
                 html.Hr(),
                 dbc.Row([html.Div(id='process-execution-graph')]),
-                ], label="Process Executions", tab_id='process-executions-tab'),
+                ], label="Process Executions", tab_id='process-executions-tab', label_style={'background-color': '#85929E'}),
         ], id='configuration-tabs',active_tab='features-tab')
 
 
@@ -197,7 +204,7 @@ def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_metho
             X = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
             X = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
-        elif embedding_method == 'AttributedGraph2Vec':
+        elif embedding_method == 'CFGE':
             X = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
 
         try:
@@ -262,11 +269,11 @@ def on_embedding_parameters_parsed(embedding_data):
         return False, True
 
 # show parameter form for selected graph embedding method
-@app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-attributedgraph2vec", "style"), Output("embedding-params-div-featherg", "style")], Input("graph-embedding-selection", "value"))
+@app.callback([Output("embedding-params-div-graph2vec", "style"), Output("embedding-params-div-cfge", "style"), Output("embedding-params-div-featherg", "style")], Input("graph-embedding-selection", "value"))
 def on_embedding_selection(embedding_method):
     if embedding_method == 'Graph2Vec':
         return {'display':'block'}, {'display':'none'}, {'display':'none'}
-    elif embedding_method == 'AttributedGraph2Vec':
+    elif embedding_method == 'CFGE':
         return {'display':'none'}, {'display':'block'}, {'display':'none'}
     elif embedding_method == "Feather-G":
         return {'display':'none'}, {'display':'none'}, {'display':'block'}
@@ -296,7 +303,7 @@ def on_clustering_selection(clustering_method):
                 Input("parse-embedding-params", "n_clicks"), prevent_initial_call=True)
 def on_click_parse_params(svd_dimension, svd_iterations, theta_max, eval_points, order, wl_iterations, dimensions, epochs, learning_rate, embedding_method, theta_max_g, eval_points_g, order_g, n_click):
     if n_click > 0:
-        if embedding_method =='AttributedGraph2Vec':
+        if embedding_method =='CFGE':
             embedding_params_dict = {"svd_dimensions":int(svd_dimension), "svd_iterations":int(svd_iterations), "theta_max":float(theta_max), "eval_points":int(eval_points), "order":int(order)}
             return embedding_params_dict, {'display':'block'}
         elif embedding_method == 'Graph2Vec':
@@ -354,7 +361,7 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
-        if embedding_method == 'AttributedGraph2Vec':
+        if embedding_method == 'CFGE':
             embedding = graph_embedding.perform_attrgraph2vec(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         elif embedding_method == 'Graph2Vec':
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
@@ -456,74 +463,5 @@ def show_explanation(silhouette_n, dbindex_n, dbscan_n, is_open):
         return open_status, explanation_text
     return is_open, []
 
-# collapse clustering explanation
-@app.callback(
-    [Output("clustering-collapse", "is_open"), Output("clustering-explanations","children")],
-    [Input("collapse-kmeans", "n_clicks"), Input("collapse-dbscan-expl", "n_clicks"), Input("collapse-affinity", "n_clicks"), Input("collapse-meanshift", "n_clicks"), Input("collapse-hierarchical", "n_clicks")],
-    [State("clustering-collapse", "is_open")], prevent_initial_call=True
-)
-def show_explanation(kmeans_n, dbscan_n, affinity_n, meanshift_n, hierarchical_n, is_open):
-    triggered_id = ctx.triggered_id
-    if (kmeans_n > 0) or (dbscan_n > 0) or (affinity_n > 0) or (meanshift_n > 0) or (hierarchical_n > 0):
-        if triggered_id == "collapse-kmeans":
-            explanation_text = explanation_texts.kmeans_explanation
-            if kmeans_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        elif triggered_id == "collapse-dbscan-expl":
-            explanation_text = explanation_texts.dbscan_explanation
-            if dbscan_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        elif triggered_id == "collapse-affinity":
-            explanation_text = explanation_texts.affinity_explanation
-            if affinity_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        elif triggered_id == "collapse-meanshift":
-            explanation_text = explanation_texts.meanshift_explanation
-            if meanshift_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        elif triggered_id == "collapse-hierarchical":
-            explanation_text = explanation_texts.hierarchical_explanation
-            if hierarchical_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        return open_status, explanation_text
-    return is_open, []
 
-# collapse embedding explanation
-@app.callback(
-    [Output("embedding-collapse", "is_open"), Output("embedding-explanations","children")],
-    [Input("collapse-attr-graph-vec", "n_clicks"), Input("collapse-graph-vec", "n_clicks"), Input("collapse-feather-g", "n_clicks")],
-    [State("embedding-collapse", "is_open")], prevent_initial_call=True
-)
-def show_explanation(attr_graph_vec_n, graph_vec_n, featherg_n, is_open):
-    triggered_id = ctx.triggered_id
-    if (attr_graph_vec_n > 0) or (graph_vec_n > 0) or (featherg_n > 0):
-        if triggered_id == "collapse-attr-graph-vec":
-            explanation_text = explanation_texts.attributedgraphvec_explanation
-            if attr_graph_vec_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        elif triggered_id == "collapse-graph-vec":
-            explanation_text = explanation_texts.graphvec_explanation
-            if graph_vec_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        elif triggered_id == "collapse-feather-g":
-            explanation_text = explanation_texts.featherg_explanation
-            if featherg_n % 2 != 0:
-                open_status = True 
-            else:
-                open_status = False 
-        return open_status, explanation_text
-    return is_open, []
+
