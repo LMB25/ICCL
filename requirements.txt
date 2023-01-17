@@ -11,3 +11,8 @@ pandas==1.2.4
 plotly==5.7.0
 clusteval==2.1.3
 ocpa==1.2
+
+#needed for long callbacks
+diskcache 
+multiprocess 
+psutil

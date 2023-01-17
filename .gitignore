@@ -4,3 +4,4 @@
 .python-version
 launch.json
 requirements.in
+cache.*

@@ -127,11 +127,18 @@ layout = dbc.Tabs([
                         ]),
                 html.Br(),
                 dbc.Row([
-                        dbc.Col([dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0)], width=4)
+                        dbc.Col([
+                            dbc.Button("Start Clustering", color="warning", className="me-1", id='start-clustering', n_clicks=0),
+                            dbc.Button("Cancel", className="me-2", id='cancel-auto-clustering', n_clicks=0),
+                            dbc.Row(html.Progress(id="progress-bar", value="0")),
+                            dbc.Row(html.Div(id="progress-message")),
+                            dbc.Row(html.Div(id="optimal-params")),
+                            ], width=7)
                         ]),
-                html.Div(id='clustering-success'),
                 html.Br(),
                 html.Div(id="cluster-summary-component"),
+                html.Br(),
+                html.Div(dbc.Button("Discover Process Models", className="me-2", n_clicks=0, id="discover-auto-button"), hidden=True, id='discover-auto'),
                 html.Br(),
                 ], label="Clustering", tab_id='clustering-tab', label_style={'background-color': '#f5b553'}),
         dbc.Tab([
@@ -356,19 +363,41 @@ def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, 
 
 
 # perform clustering and return dataframe with process execution ids and cluster labels
-@app.callback([ServersideOutput("clustered-ocels", "data"), ServersideOutput("extracted-pe-features-cluster-store", "data"), Output("clustering-success", "children"), Output("cluster-summary-component", "children")], 
-                [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State('clustering-method-selection', 'value'), State('num-clusters-slider', 'value'), State("embedding-parameters", "data"), State('clustering-parameters', 'data')], 
-                Trigger("start-clustering", "n_clicks"), memoize=True)
-def on_click(ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, clustering_params_dict, n_clicks):
-    time.sleep(1)
+@app.long_callback(prevent_initial_call=True, output=(
+    ServersideOutput("clustered-ocels", "data"), 
+    ServersideOutput("extracted-pe-features-cluster-store", "data"), 
+    Output("cluster-summary-component", "children"),
+    Output("discover-auto", "hidden")
+    ), inputs=(
+        State("ocel_obj", "data"), 
+        State("event-feature-set", "data"), 
+        State("graph-embedding-selection", "value"), 
+        State('clustering-method-selection', 'value'), 
+        State('num-clusters-slider', 'value'), 
+        State("embedding-parameters", "data"), 
+        State('clustering-parameters', 'data'),
+        Trigger("start-clustering", "n_clicks")), 
+    running=[
+        (Output("start-clustering", "disabled"), True, False),
+        (Output("cancel-auto-clustering", "disabled"), False, True),
+        (Output("progress-bar", "style"),{"visibility": "visible"},{"visibility": "hidden"}),
+    ],
+    cancel=[Input("cancel-auto-clustering", "n_clicks")],
+    progress=[Output("progress-bar", "value"), Output("progress-bar", "max"), Output("progress-message","children"), Output("optimal-params","children")],
+    memoize=True)
+def on_click(set_progress, ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, clustering_params_dict, n_clicks):
+    time.sleep(1)   #TODO is this timer needed for something?
     if n_clicks > 0:
         # load ocel
+        set_progress(("0","10","... Loading OCEL",""))
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # extract features, get feature graphs
+        set_progress(("1","10","... Extracting Features",""))
         feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, 'graph')
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
+        set_progress(("3","10","... Embedding Features", ""))   
         if embedding_method == 'AutoEmbed':
             pass
             #TODO
@@ -378,8 +407,10 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
             embedding = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
             embedding = graph_embedding.perform_feather_g(feature_nx_graphs, embedding_params_dict)
-        print("Embedding worked.")
-        # cluster embedding
+        
+        
+        # clustering
+        set_progress(("6","10","... Perform Clustering", ""))   
         if clustering_method == 'AutoCluster':
             pass
             #TODO
@@ -393,6 +424,8 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
             labels = clustering.perform_AffinityPropagation(embedding, clustering_params_dict)
         elif clustering_method == "DBscan":
             labels = clustering.perform_DBSCAN(embedding, clustering_params_dict)
+            
+        set_progress(("8","10","... Partition OCEL", ""))   
         # create Dataframe with process execution id and cluster labels
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # get summary of clusters
@@ -403,9 +436,18 @@ def on_click(ocel_log, selected_event_features, embedding_method, clustering_met
         average_pe_features = feature_extraction.create_cluster_feature_summary(sub_ocels)
         # encoding/ storing of sub ocels
         sub_ocels_encoded = [codecs.encode(pickle.dumps(ocel), "base64").decode() for ocel in sub_ocels]
+        set_progress(("10","10","Clustering successfully performed.",""))  
     else:
         raise PreventUpdate
-    return sub_ocels_encoded, average_pe_features, "Clustering successfully performed.", dbc.Table.from_dataframe(cluster_summary_df, striped=True, bordered=True, hover=True, id="cluster-summary-table")
+    return sub_ocels_encoded, average_pe_features, dbc.Table.from_dataframe(cluster_summary_df, striped=True, bordered=True, hover=True, id="cluster-summary-table"), False
+
+#after clustering has been performed, user can directly be forwarded to discovery page
+@app.callback(Output('url', 'pathname'), Input("discover-auto-button","n_clicks"))  
+def forward_to_discovery(n_clicks):
+    if n_clicks>0:
+        return "/page-3/2"
+    else:
+        raise PreventUpdate
 
 @app.callback([Output("process-executions-summary", "children"), Output("executions_dropdown", "options")], [Input("execution-store", "data")])
 def on_extraction(executions):
