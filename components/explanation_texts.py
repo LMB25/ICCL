@@ -36,7 +36,7 @@ affinity_explanation = "creates clusters by sending messages between pairs of sa
 autoembed_explanation = "tries to find an optimal embedding with optimal number of dimensions with respect to the fitness/accurady of the later discovered model"
 
 # Custom Feature Graph Embedding
-cfge_explanation = "focus on features: creates TENE node embedding for each attributed node in feature graph and averages over these to get embedding for whole graph (structure only considered implicetely)"
+cfge_explanation = "focus on features: creates FeatherNode embedding for each attributed node in feature graph and averages over these to get embedding for whole graph (structure only considered implicetely)"
 #"The algorithm first creates a node embedding via FeatherNode which uses characteristic functions of node features with random walk weights to describe node neighborhoods. In the second step, the node embeddings are averaged over each dimension, resulting in a vectorized embedding of the graph."
 
 # Graph2Vec explanation
