@@ -75,7 +75,10 @@ def perform_KMeans(X, n_clusters, parameters):
 
 def perform_auto_KMeans(X):
     best_score = None
-    for n_clusters, n_init in itertools.product(range(2,20,1), range(5,20,3)): 
+    max_clusters = 20
+    if len(X) < 20:
+        max_clusters = len(X)
+    for n_clusters, n_init in itertools.product(range(2,max_clusters,1), range(5,20,3)): 
         clustering_params_dict = {"n_init":int(n_init), "max_iter":300} #default max_iter=300
         labels = perform_KMeans(X, n_clusters, clustering_params_dict)
         score = silhouette_score(X, labels)
