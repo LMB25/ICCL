@@ -53,8 +53,8 @@ layout = dbc.Container([
                    ),
         html.Hr(),
         dbc.Row([
-            dbc.Col(html.P("Insert Path to OCEL")), 
-            dbc.Col(dbc.Input(id="path", value=os.path.dirname(os.path.realpath(__file__)), type="text", persistence = False)),
+            dbc.Col(html.P("Insert Path to OCEL"), width=3), 
+            dbc.Col(dbc.Input(id="path", value=os.path.dirname(os.path.realpath(__file__)), type="text", persistence = False), width=7),
             dbc.Col(dbc.Button("Search", id="enable-path", className="me-2", n_clicks=0, disabled=False))
         ]),
         html.Br(),
