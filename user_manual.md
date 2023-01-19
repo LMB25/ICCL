@@ -65,7 +65,7 @@ Introduction here
 ### Export Process Model
 
 ## Algorithms
-Here you can find a short description of the algorithms that are supported by ICCL.
+Here you can find a short description of the algorithms that are used in ICCL.
 ### Process Execution Extraction
 A process execution is a set of events of connected objects and resembles the case notion in traditional Process Mining. You can choose between two different types of extraction methods:
 * **Connected Components**: the technique uses the object graphs and extracts a process execution based on all transitively connected objects. This way, complex event logs might lead to large process executions.
@@ -82,11 +82,12 @@ A process execution is a set of events of connected objects and resembles the ca
  * **DBscan**: Density-Based Spatial Clustering of Applications with Noise is an clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.
 ### Evaluation Measures
 #### Cluster Evaluation
-* **Silhouette Score**:  quantifies the space between different clusters. For each number of clusters, a clustering algorithm is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated.
-* **Davies-Bouldin Index**: measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters.")
+* **Silhouette Score**:  quantifies the space between different clusters. For each number of clusters, a clustering algorithm is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated. The silhouette score for a single datapoint i is calculated as follows:
+ $$ s(i) = \frac{{b(i) - a(i)}}{max(a(i),b(i))} $$ where b(i) is the average dissimilarity of i with all other data points in the next-nearest cluster and a(i) is the average dissimilarity of i to points in the same cluster.
+* **Davies-Bouldin Index**: measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters. The steps of calculation can be found here:  [click](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index)
 #### Model Evaluation
-* **Fitness**:
-* **Precision**:
+* **Fitness**: measures to what extend the observed traces can be replayed by the model.
+* **Precision**: measures the extend of behaviour that is not captured in the event log, but allowed in the model.
 ### Model Discovery
 * **Inductive Miner**:
 
