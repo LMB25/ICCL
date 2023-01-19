@@ -58,6 +58,7 @@ Optional:
 * 5: click the CANCEL button to stop the uploading process.
 
 After successfully uploading the OCEL, the first five rows are displayed in the table 6.
+
 Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
 
