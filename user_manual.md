@@ -38,7 +38,7 @@ Introduction here
 
 ## Data Management
 ### Import OCEL
-![plot](./assets/data_import.png)
+![plot](./assets/import_data.png)
 
 You have two options to import your OCEL:
 * 1a: click on the drag and drop field and select a file from the file browser
