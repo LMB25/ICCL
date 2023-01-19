@@ -38,7 +38,27 @@ Introduction here
 
 ## Data Management
 ### Import OCEL
+![plot](./assets/data_import.png)
 
+You have two options to import your OCEL:
+* 1a: click on the drag and drop field and select a file from the file browser
+* 1b.1: insert the path in which the OCEL is located
+* 1b.2: click the SEARCH button
+* 1b.3: select the OCEL from the list. Note: only files with .csv, .jsonocel or .xmlocel extensions are listed
+
+If you have selected an OCEL with .csv format, the first rows of the .csv are displayed in table 6 and you have to fill out the form 2:
+* 2a: specify the OCEL parameters by selecting the column names in the dropdown lists. Select the object types in the last dropdown list.
+* 2b: parse the parameters by clicking the PARSE CSV PARAMETERS button
+
+After selecting a file, proceed as follows: 
+* 3: specify the type of process execution extraction. If leading object type is selected, the possible object types are loaded into the list. Select one of the object types.
+* 4: click the UPLOAD button. Note: a progress bar will be displayed, showing you the progress of uploading the OCEL
+
+Optional:
+* 5: click the CANCEL button to stop the uploading process.
+
+After successfully uploading the OCEL, the first five rows are displayed in the table 6.
+Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
 
 
