@@ -257,7 +257,7 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, dr
         elif filename.endswith("csv"):
             ocel_df = pd.read_csv(os.path.join(selected_dir, filename))
             ocel_df = dataimport.remove_prefix_csv(ocel_df)
-            ocel_df_head = ocel_df.head(10)
+            ocel_df_head = ocel_df.head(5)
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
         else:
             return ocel_table
@@ -271,7 +271,7 @@ def on_upload_ocel_head(selected_dir, ocel_log, filename, drag_drop_filename, dr
             decoded = base64.b64decode(content_string)
             ocel_df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
             ocel_df = dataimport.remove_prefix_csv(ocel_df)
-            ocel_df_head = ocel_df.head(10)
+            ocel_df_head = ocel_df.head(5)
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
         else:
             return ocel_table    
