@@ -18,6 +18,8 @@ Introduction here
 	* [Process Executions](#process-executions)
 5. [Process Discovery](#process-discovery)
 	* [Discover Process Model](#discover-process-model)
+		* [Comprehensive Process Model](#comprehensive-process-model)
+		* [Cluster Process Models](#cluster-process-models)
 	* [Conformance Checking](#conformance-checking)
 	* [Export Process Model](#export-process-model)
 6. [Algorithms](#algorithms)
@@ -80,6 +82,31 @@ Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ## Process Discovery
 
 ### Discover Process Model
+You can discover the Process Model for the original OCEL as well as for the sub-logs that are created by clustering the OCEL. Before discovering the latter Process Models, you have to go through the ICCL pipeline, so that clusters are already created. You can discover the comprehensive Process Model at any point after uploading the OCEL.
+#### Comprehensive Process Model
+![plot](./assets/original_model_discovery.png)
+
+Conducting the process discovery:
+1. click on the 'Original OCEL' page
+2. click the 'START PROCESS DISCOVERY' button
+
+After the process discovery is performed, the resulting model is displayed below. 
+You can manipulate the view of the process model:
+* to move the view of the model,  click on the model and pull it to the desired location
+* to zoom in and out, locate the cursor on the model and use the scroll wheel of your mouse
+
+#### Cluster Process Models
+![plot](./assets/cluster_model_discovery.png)
+
+Conducting the process discovery:
+1. click on the 'Clustered OCEL' page
+2. click the 'START PROCESS DISCOVERY' button
+3. select the process model of a specific cluster by selecting the cluster's number in the dropdown list
+4. the table displays the average feature values of the process executions that belong to the model
+
+You can manipulate the view of the process model:
+* to move the view of the model,  click on the model and pull it to the desired location
+* to zoom in and out, locate the cursor on the model and use the scroll wheel of your mouse
 
 ### Conformance Checking
 
