@@ -109,8 +109,20 @@ You can manipulate the view of the process model:
 * to zoom in and out, locate the cursor on the model and use the scroll wheel of your mouse
 
 ### Conformance Checking
+To compare the process model with the OCEL, you can apply two conformance checking methods: fitness and precision. Before checking the conformance of the clustered Process Models, you have to go through the ICCL pipeline, so that clusters are already created. You can check the conformance of the comprehensive Process Model at any point after uploading the OCEL.
+![plot](./assets/conformance_checking.png)
+1. select a measure: fitness or precision
+2. click the CALCULATE button
+3. result of the measure (in case of conformance checking on the clustered OCEL, a table is displayed, showing the result for each cluster)
 
 ### Export Process Model
+After discovering a process model for the original OCEL or for the clustered sub-logs (and a cluster is selected), this segment shows up:
+![plot](./assets/export_model.png)
+To save the displayed process model, follow these steps:
+1. insert the path to the location at which the image should be saved
+2. enter a name for the image
+3. select the file extension: png or svg
+4. click the SAVE button
 
 ## Algorithms
 
