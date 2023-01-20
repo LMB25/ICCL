@@ -118,6 +118,7 @@ To compare the process model with the OCEL, you can apply two conformance checki
 ### Export Process Model
 After discovering a process model for the original OCEL or for the clustered sub-logs (and a cluster is selected), this segment shows up:
 ![plot](./assets/export_model.png)
+
 To save the displayed process model, follow these steps:
 1. insert the path to the location at which the image should be saved
 2. enter a name for the image
