@@ -159,7 +159,12 @@ layout = dbc.Tabs([
                           dbc.Col([dbc.Alert([html.I(className="fa-solid fa-triangle-exclamation"),"You have to parse embedding parameters first."],color="warning", className="d-flex align-items-center")], width=4)
                          ], id='alert-params-evaluation', hidden=False),
                 dbc.Row([
-                        dbc.Col([dbc.Button("Analyze Clustering Techniques", className="me-1", id='evaluation-button', n_clicks=0, disabled=True)])
+                        dbc.Col([
+                                dbc.Button("Analyze Clustering Techniques", className="me-1", id='evaluation-button', n_clicks=0, disabled=True),
+                                dbc.Button("Cancel", className="me-2", id='cancel-cluster-analysis', n_clicks=0),
+                                dbc.Row(html.Progress(id="progress-bar-cluster-analysis", value="0")),
+                                dbc.Row(html.Div(id="progress-message-cluster-analysis")),
+                                ])
                         ]),
                 html.Br(),
                 html.Div([
@@ -200,17 +205,24 @@ layout = dbc.Tabs([
 
 
 
-@app.callback([Output('ward-evaluation', 'src'), Output('average-evaluation', 'src'), Output('kmeans-evaluation', 'src'), Output('dbscan-evaluation', 'src'), Output('cluster-evaluation-result', 'hidden')], 
-               Input('evaluation-button', 'n_clicks'), [State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State("embedding-parameters", "data") ], prevent_initial_call=True)
-def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_method, embedding_params_dict):
+@app.long_callback(prevent_initial_call=True, output=(Output('ward-evaluation', 'src'), Output('average-evaluation', 'src'), Output('kmeans-evaluation', 'src'), Output('dbscan-evaluation', 'src'), Output('cluster-evaluation-result', 'hidden')), 
+                    inputs=(State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State("embedding-parameters", "data"), Trigger('evaluation-button', 'n_clicks')), 
+                    running=[(Output("cancel-cluster-analysis", "disabled"), False, True),(Output("progress-bar-cluster-analysis", "style"),{"visibility": "visible"},{"visibility": "hidden"}),],
+                    cancel=[Input("cancel-cluster-analysis", "n_clicks")],
+                    progress=[Output("progress-bar-cluster-analysis", "value"), Output("progress-bar-cluster-analysis", "max"), Output("progress-message-cluster-analysis","children")],
+                    )
+def on_button_click(set_progress, ocel_log, selected_event_features, embedding_method, embedding_params_dict, n_clicks):
     if n_clicks > 0:
         # load ocel
+        set_progress(("0","10","... Loading OCEL",""))
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # extract features, get feature graphs
+        set_progress(("1","10","... Extracting Features",""))
         feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, 'graph')
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
         # embedd feature graphs
+        set_progress(("3","10","... Embedding Features", ""))   
         if embedding_method == 'AutoEmbed':
             #TODO
             pass
@@ -222,22 +234,27 @@ def on_button_click(n_clicks, ocel_log, selected_event_features, embedding_metho
             X = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
 
         try:
+            set_progress(("6","10","... Analyze hierarchical clustering 1/2", ""))   
             hierarchical_ward = clustering.cluster_evaluation_hierarchical(X, "ward")
         except: 
             hierarchical_ward = None 
         try:
+            set_progress(("7","10","... Analyze hierarchical clustering 2/2", ""))
             hierarchical_average = clustering.cluster_evaluation_hierarchical(X, "average")
         except:    
             hierarchical_average = None
         try:
+            set_progress(("8","10","... Analyze k-means", ""))
             kmeans = clustering.cluster_evaluation_kmeans(X)
         except:
             kmeans = None
         try:
+            set_progress(("9","10","... Analyze dbscan", ""))
             dbscan = clustering.cluster_evaluation_dbscan(X)
         except:
             dbscan = None
 
+        set_progress(("10","10","Cluster analysis successfully performed.",""))  
         return hierarchical_ward, hierarchical_average, kmeans, dbscan, False
 
 
