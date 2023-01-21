@@ -82,7 +82,11 @@ After successfully uploading the OCEL, the first five rows are displayed in the 
 Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
 ![View_OCEL.png](assets%2FView_OCEL.png)
-
+To view the statistics and more rows of the OCEL you can visit the View OCEL page. 
+The page can be accessed via the sidebar clicking on "View OCEL" (1).
+At (2) we see the summary of the OCEL, providing information such as the number of events (2.c) or the different 
+activities (2.d) in the process.
+On the lower section of the page showing detailed view of the OCEL (3).
 ## Configuration Pipeline
 
 ### Feature Selection
