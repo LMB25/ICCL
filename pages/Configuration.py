@@ -160,7 +160,7 @@ layout = dbc.Tabs([
                          ], id='alert-params-evaluation', hidden=False),
                 dbc.Row([
                         dbc.Col([
-                                dbc.Button("Analyze Clustering Techniques", className="me-1", id='evaluation-button', n_clicks=0, disabled=True),
+                                dbc.Button("Analyze Clustering Techniques", color="warning", className="me-1", id='evaluation-button', n_clicks=0, disabled=True),
                                 dbc.Button("Cancel", className="me-2", id='cancel-cluster-analysis', n_clicks=0),
                                 dbc.Row(html.Progress(id="progress-bar-cluster-analysis", value="0")),
                                 dbc.Row(html.Div(id="progress-message-cluster-analysis")),
