@@ -81,7 +81,7 @@ After successfully uploading the OCEL, the first five rows are displayed in the 
 
 Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
-
+![View_OCEL.png](assets%2FView_OCEL.png)
 
 ## Configuration Pipeline
 
