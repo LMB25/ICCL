@@ -52,7 +52,7 @@ docker run -p 8050:8050 docker-iccl
 ## Application Layout
 * shortly describe our pages
 * how can you access help page
-
+![Application_Layout_Start.png](assets%2FApplication_Layout_Start.png)
 ## Data Management
 ### Import OCEL
 ![plot](./assets/import_data.png)
