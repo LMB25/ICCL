@@ -38,7 +38,7 @@ layout = dbc.Container([
 @app.callback(Output("ocel_table_full", "children"), Input("ocel_obj", "data"))
 def on_upload_ocel_full(ocel_log):
     if ocel_log is None:
-        raise PreventUpdate
+        return dummy_df
     else:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
@@ -59,3 +59,5 @@ def on_upload_params(params):
             html.H6("Number of Events: "), str(params['num_events']), html.H6("Number of Activities: "), str(params['num_activities']), html.H6("Number of Objects: "), str(params['num_objects']),
             ])
         return ocel_summary_text
+    else:
+        return []
