@@ -38,7 +38,7 @@ layout = dbc.Container([
 @app.callback(Output("ocel_table_full", "children"), Input("ocel_obj", "data"))
 def on_upload_ocel_full(ocel_log):
     if ocel_log is None:
-        return dummy_df
+        return dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, hover=True)
     else:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
