@@ -32,7 +32,7 @@ def load_ocel_csv(path, parameters):
     return ocel_file
 
 # load ocel from csv format (given the file content itself)
-def load_ocel_csv_drag_droph(content, parameters):
+def load_ocel_csv_drag_drop(content, parameters):
     content_type, content_string = content.split(",")
     
     decoded = base64.b64decode(content_string)

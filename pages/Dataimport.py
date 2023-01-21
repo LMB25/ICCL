@@ -147,20 +147,25 @@ def on_upload_csv(obj_name, act_name, start_time_name, time_name, id_name, filen
         return {}, {'display':'none'}
 
 # load possible leading object types into dropdown
-@app.callback(Output("leading-object", "options"), [Input("csv-params","data"), Input("process-extraction-type", "value")], [State("path", "value"), State("file-dropdown", "value")], prevent_initial_call=True)
-def on_parse_params(csv_params, process_ex_type, path, filename):
-    if (filename.endswith("csv")) and (csv_params != None):
+@app.callback(Output("leading-object", "options"), [Input("csv-params","data"), Input("process-extraction-type", "value")], [State("path", "value"), State("file-dropdown", "value"), State("drag-drop-field", "contents")], prevent_initial_call=True)
+def on_parse_params(csv_params, process_ex_type, path, filename, drag_drop_content):
+    #if (filename.endswith("csv")) and (csv_params != None):
+    if csv_params != None:
         options = csv_params['obj_names']
         return options 
-    elif (not filename.endswith("csv")):
+    #elif (not filename.endswith("csv")):
+    else:
         if process_ex_type == "CONN_COMP":
             return [] 
         else: 
-            ocel_log = dataimport.load_ocel_json_xml(os.path.join(path, filename), parameters=None)
+            # load OCEL either from path and filename combination or drag and drop field
+            if filename != None:
+                ocel_log = dataimport.load_ocel_json_xml(os.path.join(path, filename), parameters=None)
+            else: 
+                ocel_log = dataimport.load_ocel_drag_drop(drag_drop_content)
+            # extract object types from OCEL
             object_types = dataimport.get_ocel_object_types(ocel_log)
             return object_types
-    else:
-        return []
 
 
 # enable upload button
@@ -216,7 +221,7 @@ def on_upload_ocel_path(set_progress, selected_file, selected_dir, csv_params, d
                 csv_params["leading_type"] = leading_obj
                 ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
         elif drag_drop_filename!=None and drag_drop_filename.endswith("csv"):
-            ocel_log = dataimport.load_ocel_csv_drag_droph(drag_drop_content, csv_params)
+            ocel_log = dataimport.load_ocel_csv_drag_drop(drag_drop_content, csv_params)
         else:
             if drag_drop_content!=None and drag_drop_filename.endswith("jsonocel"):
                 ocel_log = dataimport.load_ocel_drag_drop(drag_drop_content)
