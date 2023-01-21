@@ -5,9 +5,7 @@ import plotly.graph_objects as go
 from ocpa.algo.predictive_monitoring.event_based_features.extraction_functions import event_activity
 import dash_cytoscape as cyto
 
-
-
-
+# process execution displayed as Plotly scatterplot
 def create_graph_figure(G, ocel):
     pos = nx.layout.spectral_layout(G)#spring_layout(G)
     for node in G.nodes:
@@ -59,6 +57,7 @@ def create_graph_figure(G, ocel):
 
     return fig
 
+# process execution displayed as cytoscape figure
 def create_interactive_graph(G, ocel):
     pos = nx.layout.spectral_layout(G,scale=200)
     for node in G.nodes:
@@ -66,14 +65,14 @@ def create_interactive_graph(G, ocel):
     
     nodes = [
         {
-            'data': {'id': node, 'label': ocel.get_value(node, "event_activity")},
+            'data': {'id': str(node), 'label': ocel.get_value(node, "event_activity")},
             'position': {'x': 5 * G.nodes[node]['pos'][0], 'y': G.nodes[node]['pos'][1]}
         }
         for node in G.nodes()
     ]
 
     edges = [
-        {'data': {'source': edge[0], 'target': edge[1]}}
+        {'data': {'source': str(edge[0]), 'target': str(edge[1])}}
         for edge in G.edges()
     ]
 
