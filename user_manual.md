@@ -88,12 +88,12 @@ At (2) we see the summary of the OCEL, providing information such as the number 
 activities (2.d).
 On the lower section of the page showing detailed view of the OCEL (3) providing up to 1000 rows.
 ## Configuration Pipeline
-
 ### Feature Selection
-
+![Feature_Selection.png](assets%2FFeature_Selection.png)
 ### Graph Embedding
-
+![Graph_Embedding.png](assets%2FGraph_Embedding.png)
 ### Clustering
+![Clustering_Configuration.png](assets%2FClustering_Configuration.png)
 
 ### Automatic Clustering
 
