@@ -88,8 +88,25 @@ At (2) we see the summary of the OCEL, providing information such as the number 
 activities (2.d).
 On the lower section of the page showing detailed view of the OCEL (3) providing up to 1000 rows.
 ## Configuration Pipeline
+To configure the clustering of the process execution you have following option:
+* 1: Choose the option Clustering from the sidebar
+* 2: You can to select your features by choosing the option features
+* 3: You can choose graph embedding techniques by choosing the option Embedding
+* 4: You chan choose your clustering technique and paramters by choosing the option Clustering
+* 5: 
+* 6:
 ### Feature Selection
 ![Feature_Selection.png](assets%2FFeature_Selection.png)
+To conduct the feature selection you can do it the following way:
+* 1: Choose the option Clustering from the sidebar
+* 2: You can to select your features by choosing the option features
+* 2.a: In the upper section you have a summary of the control perspective features
+* 2.a1: Next to the summary you can select the control perspective features
+* 2.b: In the middle section of the page you have a summary of the performance perspective features
+* 2.b1: Next to the summary you can select the performance perspective features 
+* 2.c: In the lower section of the page you have a summary of the object perspective features
+* 2.c1: Next to the summary you can select the object perspective features
+* 2.d: After you selected the features you can set the selected features by clicking on the button `Set Selected Features
 ### Graph Embedding
 ![Graph_Embedding.png](assets%2FGraph_Embedding.png)
 ### Clustering
