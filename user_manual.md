@@ -109,6 +109,14 @@ To conduct the feature selection you can do it the following way:
 * 2.d: After you selected the features you can set the selected features by clicking on the button `Set Selected Features
 ### Graph Embedding
 ![Graph_Embedding.png](assets%2FGraph_Embedding.png)
+To conduct the grpah embedding you can choose the following path:
+* 1: You have chosen the option Clustering from the sidebar
+* 3: You select Embedding from the horizontal bar
+* 3.a: You can select a graph embedding method
+Here you have to opportunity to do the graph embedding automatically, otherwise you can choose a graph embedding method where you choose your parameter.
+#### Custom Feature Graph Embedding
+#### Graph2Vec
+#### Feather-G
 ### Clustering
 ![Clustering_Configuration.png](assets%2FClustering_Configuration.png)
 
