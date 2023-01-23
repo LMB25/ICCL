@@ -128,6 +128,7 @@ If you want to cluster the process executions using K-Means or Hierarchical Clus
 Note: before launching the cluster evaluation, you have to parse the features and graph embedding parameters.
 
 ![plot](./assets/cluster_evaluation.png)
+
 Execute the cluster evaluation:
 1. click on the Clustering page
 2. click on the Cluster Evaluation tab
