@@ -129,11 +129,28 @@ To specify the graph embedding technique, follow those steps:
 3. select one of the embedding techniques
 4. depending on your selection in 3., a set of adjustable parameters is displayed - you can insert custom parameter values or leave it at the default settings
 5. click the PARSE EMBEDDING PARAMETERS button
-#### Custom Feature Graph Embedding
-#### Graph2Vec
-#### Feather-G
+
 ### Clustering
+After the graph embedding is created, you can cluster the process executions. To do so, you have to specify a clustering technique. Furthermore, you can adjust the algorithm's parameters or use the automatic clustering mode. 
+
 ![Clustering_Configuration.png](assets%2FClustering_Configuration.png)
+
+Here's how you can execute the clustering:
+1. click on the Clustering page
+2. click on the Clustering tab
+3. choose a clustering technique
+4. depending on your selection 3., a set of adjustable parameters is displayed - if you have chosen K-Means or Hierarchical, you can change the number of clusters by manipulating the slider
+5. click the PARSE CLUSTERING PARAMETERS button
+6. click the START CLUSTERING button
+
+After clicking the START CLUSTERING button, a progress bar is displayed, informing you about how far the process of clustering has progressed. 
+If you want to cancel the process, click the CANCEL button 7.
+
+After the clustering was successfully executed, the following shows up:
+
+![Clustering_Configuration.png](assets%2FClustering_Configuration_1.png)
+
+In the table 1, you can see the resulting clusters and the number of process executions that belong to the cluster ID. If you click the button 2, you get forwarded to the process discovery page.
 
 ### Automatic Clustering
 
