@@ -82,6 +82,7 @@ After successfully uploading the OCEL, the first five rows are displayed in the 
 Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
 ![View_OCEL.png](assets%2FView_OCEL.png)
+
 To view the statistics and gain insight into your OCEL you can visit the 'View OCEL' page.
 The page can be accessed via the sidebar clicking on 'View OCEL' (1).
 Inside 2 you can see the summary statistics of your OCEL, providing information such as the object types 2.a or the activity count for each activity 2.b.
@@ -114,16 +115,20 @@ Conduct the feature selection:
 1. click on the Clustering page
 2. click on the Features tab
 3. list of the different features with short explanations, grouped by perspective
-4. select the desired features in the dropdown lists
-Note: you don't have to select features for each perspective
+4. select the desired features in the dropdown lists - note: you don't have to select features for each perspective
 5. click the SET SELECTED FEATURES button
 ### Graph Embedding
+The process execution graphs get enriched with features and are then embedded, so that a clustering algorithm can handle them. In the graph embedding tab, you can specify which kind of embedding technique you want to use. Please see [Graph Embedding Methods](#graph-embedding-methods) for more information about the embedding algorithms.
+
 ![Graph_Embedding.png](assets%2FGraph_Embedding.png)
-To conduct the grpah embedding you can choose the following path:
-* 1: You have chosen the option Clustering from the sidebar
-* 3: You select Embedding from the horizontal bar
-* 3.a: You can select a graph embedding method
-Here you have to opportunity to do the graph embedding automatically, otherwise you can choose a graph embedding method where you choose your parameter.
+
+To specify the graph embedding technique, follow those steps:
+
+1. click on the Clustering page
+2. click on the Embedding tab
+3. select one of the embedding techniques
+4. depending on your selection in 3., a set of adjustable parameters is displayed - you can insert custom parameter values or leave it at the default settings
+5. click the PARSE EMBEDDING PARAMETERS button
 #### Custom Feature Graph Embedding
 #### Graph2Vec
 #### Feather-G
