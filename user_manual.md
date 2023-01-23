@@ -1,12 +1,12 @@
 # ICCL
 
-Welcome! This manual contains instructions how to use the ICCL tool. The aim of this project was to provide a process discovery tool that enhances the comprehensibility of discovered object-centric Petri nets by clustering.
+Welcome! This manual contains instructions how to use the ICCL tool. The aim of this project is to provide a process discovery tool that enhances the comprehensibility of discovered object-centric Petri nets by clustering.
 The prerequisites to apply this tool are knowledge in Process Mining, object-centric Process Mining and unsupervised learning techniques such as clustering.
 The main pipeline of the application works the following way:
-1. After the installation and successfull start of the server, the user can open the application. By default, the user gets on the data import page.
-2. On the import page the user can upload an object-centric event log or a csv file from their local machine. The user can load several files and can select from the directory.
-3. The user then sets the configuration. This includes configuring the set of selected features, the graph embedding method, the clustering method and number of clusters as well as cluster evaluation.
-4. The user applies the process discovery algorithms and receives several process models based on the clustering before. The user now have the possibility to have a more comprehensible representation of the original process model.
+1. After the installation and successfull start of the server, you can open the application. By default, you start on the data import page.
+2. On the import page you can upload an object-centric event log from your local machine. 
+3. You then run through the clustering pipeline. This includes configuring the set of selected features, the graph embedding method, the clustering method as well as additional tools such as cluster evaluation.
+4. You apply process discovery and access the process models based on the clustering before. You now have a more comprehensible representation of the original process model.
 
 ## Table of Content
 
@@ -19,7 +19,6 @@ The main pipeline of the application works the following way:
 	* [Feature Selection](#feature-selection)
 	* [Graph Embedding](#graph-embedding)
 	* [Clustering](#clustering)
-	* [Automatic Clustering](#automatic-clustering)
 	* [Cluster Evaluation](#cluster-evaluation)
 	* [Process Executions](#process-executions)
 5. [Process Discovery](#process-discovery)
@@ -53,9 +52,10 @@ docker run -p 8050:8050 docker-iccl
 
 ![Application_Layout_Start.png](assets%2FApplication_Layout_Start.png)
 The application layout is structured the following way:
-1. The sidebar, to navigate through the application pipeline. The sidebar is visible throughout the whole workflow. The user can navigate back-and-forth using these tabs.
-2. The navigation bar with the linked help page which provides the manual for this tool.
-3. In the middle the content of the page which can be chosen via the sidebar. By default, the user starts his ICCL journey with the data import page.
+1. The sidebar, to navigate through the application pipeline. The sidebar is visible throughout the whole workflow. You can navigate back-and-forth using these clickable page tabs.
+2. The linked help page which provides the manual for this tool. Click on the question mark to access the manual.
+3. In the middle the content of the page is located. By default, you start your ICCL journey with the data import page.
+
 ## Data Management
 ### Import OCEL
 ![plot](./assets/import_data.png)
@@ -82,54 +82,132 @@ After successfully uploading the OCEL, the first five rows are displayed in the 
 Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
 ![View_OCEL.png](assets%2FView_OCEL.png)
-To view the statistics and more rows of the OCEL you can visit the 'View OCEL' page. 
-The page can be accessed via the sidebar clicking on 'View OCEL' (1).
-At (2) we see the summary of the OCEL, providing information such as the number of events (2.c) or the different 
-activities (2.d).
-On the lower section of the page showing detailed view of the OCEL (3) providing up to 1000 rows.
-## Configuration Pipeline
-To configure the clustering of the process execution you have following option:
-* 1: Choose the option Clustering from the sidebar
-* 2: You can to select your features by choosing the option features
-* 3: You can choose graph embedding techniques by choosing the option Embedding
-* 4: You chan choose your clustering technique and paramters by choosing the option Clustering
-* 5: 
-* 6:
-### Feature Selection
-![Feature_Selection.png](assets%2FFeature_Selection.png)
-To conduct the feature selection you can do it the following way:
-* 1: Choose the option Clustering from the sidebar
-* 2: You can to select your features by choosing the option features
-* 2.a: In the upper section you have a summary of the control perspective features
-* 2.a1: Next to the summary you can select the control perspective features
-* 2.b: In the middle section of the page you have a summary of the performance perspective features
-* 2.b1: Next to the summary you can select the performance perspective features 
-* 2.c: In the lower section of the page you have a summary of the object perspective features
-* 2.c1: Next to the summary you can select the object perspective features
-* 2.d: After you selected the features you can set the selected features by clicking on the button `Set Selected Features
-### Graph Embedding
-![Graph_Embedding.png](assets%2FGraph_Embedding.png)
-To conduct the grpah embedding you can choose the following path:
-* 1: You have chosen the option Clustering from the sidebar
-* 3: You select Embedding from the horizontal bar
-* 3.a: You can select a graph embedding method
-Here you have to opportunity to do the graph embedding automatically, otherwise you can choose a graph embedding method where you choose your parameter.
-#### Auto Mode
-In the automatic mode, we try to find the best graph embedding method with corresponding parameters for the imported OCEL. Experimentally we have found out, that the Custom Feature Graph Embedding method that uses FeatherNode Embeddings and aggregates them for the representation of a graph. The most crucial parameter for this method is the number of dimensions. Hereby, we have to have enough dimensions for express the complexity of the graphs. On the other hand, we want to reduce the number of dimensions as much as possible to improve the computation effort. Especially, the following clustering runs significantly faster on smaller dimensions. 
-We first set the number of dimensions equal to the number of nodes of the largest subgraph and then we try to reduce it by comparing the normalized embedding loss (https://doi.org/10.1038/s41467-021-23795-5).
 
-#### Custom Feature Graph Embedding
-#### Graph2Vec
-#### Feather-G
+To view the statistics and gain insight into your OCEL you can visit the 'View OCEL' page.
+The page can be accessed via the sidebar clicking on 'View OCEL' (1).
+Inside 2 you can see the summary statistics of your OCEL, providing information such as the object types 2.a or the activity count for each activity 2.b.
+The table 3 shows the entries of the OCEL, whereas the number of rows is limited to the first 1000 rows.
+
+## Configuration Pipeline
+The configuration pipeline to cluster your process executions is as follows:
+
+* 1: Choose the option Clustering from the sidebar
+* 2: Select your features within the tab Features
+* 3: Choose the graph embedding technique within the tab Embedding
+* 4: Choose the clustering technique and parameters within the tab Clustering
+
+Optional:
+
+* 5: evaluate the clustering techniques in the Cluster Evaluation tab
+* 6: visualize the process execution graphs in the Process Executions tab
+
+### Feature Selection
+The starting point of the pipeline is the feature selection. Each process execution is represented as a graph, and each node (=event) can carry different features.
+
+We provide several possible features from different perspectives from which you can choose. Note that you don't have to choose any features at all and can choose as many features as you like.
+
+However, you must click the SET SELECTED FEATURES button so that the chosen selection is parsed.
+
+![plot](./assets/Feature_Selection.png)  
+
+Conduct the feature selection:
+
+1. click on the Clustering page
+2. click on the Features tab
+3. list of the different features with short explanations, grouped by perspective
+4. select the desired features in the dropdown lists - note: you don't have to select features for each perspective
+5. click the SET SELECTED FEATURES button
+### Graph Embedding
+The process execution graphs get enriched with features and are then embedded, so that a clustering algorithm can handle them. In the graph embedding tab, you can specify which kind of embedding technique you want to use. Please see [Graph Embedding Methods](#graph-embedding-methods) for more information about the embedding algorithms.
+
+![Graph_Embedding.png](assets%2FGraph_Embedding.png)
+
+To specify the graph embedding technique, follow those steps:
+
+1. click on the Clustering page
+2. click on the Embedding tab
+3. select one of the embedding techniques
+4. depending on your selection in 3, a set of adjustable parameters is displayed - you can insert custom parameter values or leave it at the default settings
+5. click the PARSE EMBEDDING PARAMETERS button
+
 ### Clustering
+After the graph embedding is created, you can cluster the process executions. To do so, you have to specify a clustering technique. Furthermore, you can adjust the algorithm's parameters or use the automatic clustering mode. 
+
 ![Clustering_Configuration.png](assets%2FClustering_Configuration.png)
 
-### Automatic Clustering
+Here's how you can execute the clustering:
+1. click on the Clustering page
+2. click on the Clustering tab
+3. choose a clustering technique
+4. depending on your selection 3., a set of adjustable parameters is displayed - if you have chosen K-Means or Hierarchical, you can change the number of clusters by manipulating the slider
+5. click the PARSE CLUSTERING PARAMETERS button
+6. click the START CLUSTERING button
+
+After clicking the START CLUSTERING button, a progress bar is displayed, informing you about how far the process of clustering has progressed. 
+If you want to cancel the process, click the CANCEL button 7.
+
+After the clustering was successfully executed, the following shows up:
+
+![Clustering_Configuration.png](assets%2FClustering_Configuration_1.png)
+
+In the table 1, you can see the resulting clusters and the number of process executions that belong to the cluster ID. If you click the button 2, you get forwarded to the process discovery page.
 
 ### Cluster Evaluation
+If you want to cluster the process executions using K-Means or Hierarchical Clustering, you might not know which number of clusters is suitable. On the other hand, if you apply DBscan, where you don't have to specify the number of clusters, you must specify the epsilon parameter. To give you more insight into the effect of changing those parameters, you can try the cluster evaluation analysis that is included in ICCL. 
+
+Note: before launching the cluster evaluation, you have to parse the features and graph embedding parameters.
+
+![plot](./assets/cluster_evaluation.png)
+
+Execute the cluster evaluation:
+1. click on the Clustering page
+2. click on the Cluster Evaluation tab
+3. click the ANALYZE CLUSTERING TECHNIQUES button
+4. look at the progress bar to see how far the process progressed
+5. optional: click the CANCEL button to stop the cluster evaluation
+
+To get more information about the scores that are calculated, you can click on the arrows next to the name (6.)
+After the cluster evaluation was successfully executed, you can see different plots:
+
+* Hierarchical Clustering: silhouette score, Davies-Bouldin index score for average and ward linkage
+* K-Means: silhouette score and Davies-Bouldin index score
+* DBscan: silhouette score for different epsilon
+
+Look at the following plots  by way of example:
+![plot](./assets/cluster_evaluation_result_1.png)
+1. shows the type of clustering algorithm that was used
+2. result for Davies-Bouldin index for different #clusters
+3. result for silhuette score for different #clusters
+
+The red dashed line indicates the best number of cluster, i.e. the number of clusters that eventuated in the optimal score.
+
+The resulting plot for DBscan evaluation looks a bit different:
+![plot](./assets/cluster_evaluation_result_2.png)
+1. indicates the optimal value for epsilon
+2. shows the resulting number of clusters 
 
 ### Process Executions
+One of the key aspects in ICCL is the process execution. If you want to gain more insights into the process executions of your OCEL, you can do so on the Process Executions  page.
 
+Note: you can visualize the process executions and inspect its features at any point after uploading the OCEL.
+
+To visualize the graph of one process execution and see its features, perform the following steps:
+![plot](./assets/process_executions.png)
+
+1. click on the Clustering page
+2. click on the Process Executions tab
+3. click on the START PROCESS EXECUTION FEATURE EXTRACTION button
+4. select a process execution in the dropdown list
+
+The results are the following:
+
+5. feature table with the features that were extracted from the process execution
+6. graph of the process execution: 
+* to move the position of a node,  click on the node and pull it to the desired location
+* to move the whole graph, click on an edge and pull it to the desired location
+* to zoom in and out, locate the cursor on the graph and use the scroll wheel of your mouse
+
+At any point after uploading the OCEL, you can see the number of process executions in 7.
 ## Process Discovery
 
 ### Discover Process Model
