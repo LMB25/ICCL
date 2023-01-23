@@ -82,31 +82,41 @@ After successfully uploading the OCEL, the first five rows are displayed in the 
 Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
 ![View_OCEL.png](assets%2FView_OCEL.png)
-To view the statistics and more rows of the OCEL you can visit the 'View OCEL' page. 
+To view the statistics and gain insight into your OCEL you can visit the 'View OCEL' page.
 The page can be accessed via the sidebar clicking on 'View OCEL' (1).
-At (2) we see the summary of the OCEL, providing information such as the number of events (2.c) or the different 
-activities (2.d).
-On the lower section of the page showing detailed view of the OCEL (3) providing up to 1000 rows.
+Inside 2 you can see the summary statistics of your OCEL, providing information such as the object types 2.a or the activity count for each activity 2.b.
+The table 3 shows the entries of the OCEL, whereas the number of rows is limited to the first 1000 rows.
+
 ## Configuration Pipeline
-To configure the clustering of the process execution you have following option:
+The configuration pipeline to cluster your process executions is as follows:
+
 * 1: Choose the option Clustering from the sidebar
-* 2: You can to select your features by choosing the option features
-* 3: You can choose graph embedding techniques by choosing the option Embedding
-* 4: You chan choose your clustering technique and paramters by choosing the option Clustering
-* 5: 
-* 6:
+* 2: Select your features within the tab Features
+* 3: Choose the graph embedding technique within the tab Embedding
+* 4: Choose the clustering technique and parameters within the tab Clustering
+
+Optional:
+
+* 5: evaluate the clustering techniques in the Cluster Evaluation tab
+* 6: visualize the process execution graphs in the Process Executions tab
+
 ### Feature Selection
-![Feature_Selection.png](assets%2FFeature_Selection.png)
-To conduct the feature selection you can do it the following way:
-* 1: Choose the option Clustering from the sidebar
-* 2: You can to select your features by choosing the option features
-* 2.a: In the upper section you have a summary of the control perspective features
-* 2.a1: Next to the summary you can select the control perspective features
-* 2.b: In the middle section of the page you have a summary of the performance perspective features
-* 2.b1: Next to the summary you can select the performance perspective features 
-* 2.c: In the lower section of the page you have a summary of the object perspective features
-* 2.c1: Next to the summary you can select the object perspective features
-* 2.d: After you selected the features you can set the selected features by clicking on the button `Set Selected Features
+The starting point of the pipeline is the feature selection. Each process execution is represented as a graph, and each node (=event) can carry different features.
+
+We provide several possible features from different perspectives from which you can choose. Note that you don't have to choose any features at all and can choose as many features as you like.
+
+However, you must click the SET SELECTED FEATURES button so that the chosen selection is parsed.
+
+![plot](./assets/Feature_Selection.png)  
+
+Conduct the feature selection:
+
+1. click on the Clustering page
+2. click on the Features tab
+3. list of the different features with short explanations, grouped by perspective
+4. select the desired features in the dropdown lists
+Note: you don't have to select features for each perspective
+5. click the SET SELECTED FEATURES button
 ### Graph Embedding
 ![Graph_Embedding.png](assets%2FGraph_Embedding.png)
 To conduct the grpah embedding you can choose the following path:
