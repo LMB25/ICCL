@@ -158,7 +158,9 @@ The resulting plot for DBscan evaluation looks a bit different:
 
 ### Process Executions
 One of the key aspects in ICCL is the process execution. If you want to gain more insights into the process executions of your OCEL, you can do so on the Process Executions  page.
+
 Note: you can visualize the process executions and inspect its features at any point after uploading the OCEL.
+
 To visualize the graph of one process execution and see its features, perform the following steps:
 ![plot](./assets/process_executions.png)
 
