@@ -123,6 +123,37 @@ Here you have to opportunity to do the graph embedding automatically, otherwise 
 ### Automatic Clustering
 
 ### Cluster Evaluation
+If you want to cluster the process executions using K-Means or Hierarchical Clustering, you might not know which number of clusters is suitable. On the other hand, if you apply DBscan, where you don't have to specify the number of clusters, you must specify the epsilon parameter. To give you more insight into the effect of changing those parameters, you can try the cluster evaluation analysis that is included in ICCL. 
+
+Note: before launching the cluster evaluation, you have to parse the features and graph embedding parameters.
+
+![plot](./assets/cluster_evaluation.png)
+Execute the cluster evaluation:
+1. click on the Clustering page
+2. click on the Cluster Evaluation tab
+3. click the ANALYZE CLUSTERING TECHNIQUES button
+4. look at the progress bar to see how far the process progressed
+5. optional: click the CANCEL button to stop the cluster evaluation
+
+To get more information about the scores that are calculated, you can click on the arrows next to the name (6.)
+After the cluster evaluation was successfully executed, you can see different plots:
+
+* Hierarchical Clustering: silhouette score, Davies-Bouldin index score for average and ward linkage
+* K-Means: silhouette score and Davies-Bouldin index score
+* DBscan: silhouette score for different epsilon
+
+Look at the following plots  by way of example:
+![plot](./assets/cluster_evaluation_result_1.png)
+1. shows the type of clustering algorithm that was used
+2. result for Davies-Bouldin index for different #clusters
+3. result for silhuette score for different #clusters
+
+The red dashed line indicates the best number of cluster, i.e. the number of clusters that eventuated in the optimal score.
+
+The resulting plot for DBscan evaluation looks a bit different:
+![plot](./assets/cluster_evaluation_result_2.png)
+1. indicates the optimal value for epsilon
+2. shows the resulting number of clusters 
 
 ### Process Executions
 
