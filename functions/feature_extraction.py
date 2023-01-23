@@ -73,5 +73,5 @@ def create_cluster_feature_summary(ocels):
         extraction_values = create_extraction_features(ocel)
         average_values = [np.round(float(sum(feature))/len(feature), 2) for feature in zip(*extraction_values)]
         average_feature_values.append(average_values)
-        print(average_values)
+        #print(average_values)
     return average_feature_values

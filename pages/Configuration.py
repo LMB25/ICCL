@@ -419,7 +419,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         if embedding_method == 'AutoEmbed':
             #make dimensions dependant on size of the input graphs !!   
                 
-            opt_dim = graph_embedding.find_optimal_dim(feature_nx_graphs, attr_matrix_list)
+            opt_dim = graph_embedding.find_optimal_dim_feathernode(feature_nx_graphs, attr_matrix_list)
              
             embedding_params_dict = {"svd_dimensions":int(opt_dim), "svd_iterations":int(20), "theta_max":float(2.5), "eval_points":int(25), "order":int(5)}
             embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
