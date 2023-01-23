@@ -439,6 +439,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         if clustering_method == 'AutoCluster':
             #TODO
             labels, best_params = clustering.perform_auto_clustering(embedding)
+            optimal_params = [f'optimal parameters: {optimal_params}', html.Br(), ''.join(f"{i}={s},   " for i,s in best_params.items())]
         if clustering_method == 'Mean-Shift':
             labels = clustering.perform_MeanShift(embedding, clustering_params_dict)
         elif clustering_method == 'K-Means':
