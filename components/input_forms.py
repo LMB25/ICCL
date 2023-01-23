@@ -34,8 +34,9 @@ csv_import = html.Div([
 embedding_params_form_attributed = html.Div([
         html.H5("Modify Graph Embedding Parameters:"),
         dbc.Row([
-            dbc.Col(html.P("SVD Reduction Dimensions: ")),
-            dbc.Col(dbc.Input(id='svd-dimensions', value=64))
+            dbc.Col(html.P("SVD Reduction Dimensions: *"), id="tooltip-reduct-dims"),
+            dbc.Col(dbc.Input(id='svd-dimensions', value=64)),
+            dbc.Tooltip("number of dimensions must not be smaller than number of features", target="tooltip-reduct-dims", placement='right'),
         ]),
         dbc.Row([
             dbc.Col(html.P("SVD Iterations: ")),
