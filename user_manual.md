@@ -1,12 +1,12 @@
 # ICCL
 
-Welcome! This manual contains instructions how to use the ICCL tool. The aim of this project was to provide a process discovery tool that enhances the comprehensibility of discovered object-centric Petri nets by clustering.
+Welcome! This manual contains instructions how to use the ICCL tool. The aim of this project is to provide a process discovery tool that enhances the comprehensibility of discovered object-centric Petri nets by clustering.
 The prerequisites to apply this tool are knowledge in Process Mining, object-centric Process Mining and unsupervised learning techniques such as clustering.
 The main pipeline of the application works the following way:
-1. After the installation and successfull start of the server, the user can open the application. By default, the user gets on the data import page.
-2. On the import page the user can upload an object-centric event log or a csv file from their local machine. The user can load several files and can select from the directory.
-3. The user then sets the configuration. This includes configuring the set of selected features, the graph embedding method, the clustering method and number of clusters as well as cluster evaluation.
-4. The user applies the process discovery algorithms and receives several process models based on the clustering before. The user now have the possibility to have a more comprehensible representation of the original process model.
+1. After the installation and successfull start of the server, you can open the application. By default, you start on the data import page.
+2. On the import page you can upload an object-centric event log from your local machine. 
+3. You then run through the clustering pipeline. This includes configuring the set of selected features, the graph embedding method, the clustering method as well as additional tools such as cluster evaluation.
+4. You apply process discovery and access the process models based on the clustering before. You now have a more comprehensible representation of the original process model.
 
 ## Table of Content
 
@@ -19,7 +19,6 @@ The main pipeline of the application works the following way:
 	* [Feature Selection](#feature-selection)
 	* [Graph Embedding](#graph-embedding)
 	* [Clustering](#clustering)
-	* [Automatic Clustering](#automatic-clustering)
 	* [Cluster Evaluation](#cluster-evaluation)
 	* [Process Executions](#process-executions)
 5. [Process Discovery](#process-discovery)
@@ -53,9 +52,10 @@ docker run -p 8050:8050 docker-iccl
 
 ![Application_Layout_Start.png](assets%2FApplication_Layout_Start.png)
 The application layout is structured the following way:
-1. The sidebar, to navigate through the application pipeline. The sidebar is visible throughout the whole workflow. The user can navigate back-and-forth using these tabs.
-2. The navigation bar with the linked help page which provides the manual for this tool.
-3. In the middle the content of the page which can be chosen via the sidebar. By default, the user starts his ICCL journey with the data import page.
+1. The sidebar, to navigate through the application pipeline. The sidebar is visible throughout the whole workflow. You can navigate back-and-forth using these clickable page tabs.
+2. The linked help page which provides the manual for this tool. Click on the question mark to access the manual.
+3. In the middle the content of the page is located. By default, you start your ICCL journey with the data import page.
+
 ## Data Management
 ### Import OCEL
 ![plot](./assets/import_data.png)
@@ -127,7 +127,7 @@ To specify the graph embedding technique, follow those steps:
 1. click on the Clustering page
 2. click on the Embedding tab
 3. select one of the embedding techniques
-4. depending on your selection in 3., a set of adjustable parameters is displayed - you can insert custom parameter values or leave it at the default settings
+4. depending on your selection in 3, a set of adjustable parameters is displayed - you can insert custom parameter values or leave it at the default settings
 5. click the PARSE EMBEDDING PARAMETERS button
 
 ### Clustering
@@ -151,8 +151,6 @@ After the clustering was successfully executed, the following shows up:
 ![Clustering_Configuration.png](assets%2FClustering_Configuration_1.png)
 
 In the table 1, you can see the resulting clusters and the number of process executions that belong to the cluster ID. If you click the button 2, you get forwarded to the process discovery page.
-
-### Automatic Clustering
 
 ### Cluster Evaluation
 If you want to cluster the process executions using K-Means or Hierarchical Clustering, you might not know which number of clusters is suitable. On the other hand, if you apply DBscan, where you don't have to specify the number of clusters, you must specify the epsilon parameter. To give you more insight into the effect of changing those parameters, you can try the cluster evaluation analysis that is included in ICCL. 
