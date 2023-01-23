@@ -16,3 +16,6 @@ ocpa==1.2
 diskcache 
 multiprocess 
 psutil
+
+#for graph embedding optimization
+kneed

@@ -405,6 +405,7 @@ def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, 
 def on_click(set_progress, ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, clustering_params_dict, n_clicks):
     time.sleep(1)   #TODO is this timer needed for something?
     if n_clicks > 0:
+        optimal_params = ""
         # load ocel
         set_progress(("0","10","... Loading OCEL",""))
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
@@ -416,9 +417,15 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         # embedd feature graphs
         set_progress(("3","10","... Embedding Features", ""))   
         if embedding_method == 'AutoEmbed':
-            #TODO make dimensions dependant on size of the input and number of features !!!
-            embedding_params_dict = {"svd_dimensions":int(64), "svd_iterations":int(20), "theta_max":float(2.5), "eval_points":int(25), "order":int(5)}
+            #make dimensions dependant on size of the input graphs !!   
+                
+            opt_dim = graph_embedding.find_optimal_dim(feature_nx_graphs, attr_matrix_list)
+             
+            embedding_params_dict = {"svd_dimensions":int(opt_dim), "svd_iterations":int(20), "theta_max":float(2.5), "eval_points":int(25), "order":int(5)}
             embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
+            
+            optimal_params = f"svd_dimension={opt_dim}"
+            
         elif embedding_method == 'CFGE':
             embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         elif embedding_method == 'Graph2Vec':
@@ -428,7 +435,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         
         
         # clustering
-        set_progress(("6","10","... Perform Clustering", ""))   
+        set_progress(("6","10","... Perform Clustering", optimal_params))   
         if clustering_method == 'AutoCluster':
             #TODO
             labels, best_params = clustering.perform_auto_clustering(embedding)
@@ -443,7 +450,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         elif clustering_method == "DBscan":
             labels = clustering.perform_DBSCAN(embedding, clustering_params_dict)
             
-        set_progress(("8","10","... Partition OCEL", ""))   
+        set_progress(("8","10","... Partition OCEL", optimal_params))   
         # create Dataframe with process execution id and cluster labels
         clustered_df = clustering.create_clustered_df(ocel_log.process_executions, labels)
         # get summary of clusters
@@ -454,7 +461,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         average_pe_features = feature_extraction.create_cluster_feature_summary(sub_ocels)
         # encoding/ storing of sub ocels
         sub_ocels_encoded = [codecs.encode(pickle.dumps(ocel), "base64").decode() for ocel in sub_ocels]
-        set_progress(("10","10","Clustering successfully performed.",""))  
+        set_progress(("10","10","Clustering successfully performed.",optimal_params))  
     else:
         raise PreventUpdate
     return sub_ocels_encoded, average_pe_features, dbc.Table.from_dataframe(cluster_summary_df, striped=True, bordered=True, hover=True, id="cluster-summary-table"), False

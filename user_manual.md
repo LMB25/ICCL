@@ -114,6 +114,10 @@ To conduct the grpah embedding you can choose the following path:
 * 3: You select Embedding from the horizontal bar
 * 3.a: You can select a graph embedding method
 Here you have to opportunity to do the graph embedding automatically, otherwise you can choose a graph embedding method where you choose your parameter.
+#### Auto Mode
+In the automatic mode, we try to find the best graph embedding method with corresponding parameters for the imported OCEL. Experimentally we have found out, that the Custom Feature Graph Embedding method that uses FeatherNode Embeddings and aggregates them for the representation of a graph. The most crucial parameter for this method is the number of dimensions. Hereby, we have to have enough dimensions for express the complexity of the graphs. On the other hand, we want to reduce the number of dimensions as much as possible to improve the computation effort. Especially, the following clustering runs significantly faster on smaller dimensions. 
+We first set the number of dimensions equal to the number of nodes of the largest subgraph and then we try to reduce it by comparing the normalized embedding loss (https://doi.org/10.1038/s41467-021-23795-5).
+
 #### Custom Feature Graph Embedding
 #### Graph2Vec
 #### Feather-G
