@@ -157,7 +157,24 @@ The resulting plot for DBscan evaluation looks a bit different:
 2. shows the resulting number of clusters 
 
 ### Process Executions
+One of the key aspects in ICCL is the process execution. If you want to gain more insights into the process executions of your OCEL, you can do so on the Process Executions  page.
+Note: you can visualize the process executions and inspect its features at any point after uploading the OCEL.
+To visualize the graph of one process execution and see its features, perform the following steps:
+![plot](./assets/process_executions.png)
 
+1. click on the Clustering page
+2. click on the Process Executions tab
+3. click on the START PROCESS EXECUTION FEATURE EXTRACTION button
+4. select a process execution in the dropdown list
+
+The results are the following:
+5. feature table with the features that were extracted from the process execution
+6. graph of the process execution: 
+* to move the position of a node,  click on the node and pull it to the desired location
+* to move the whole graph, click on an edge and pull it to the desired location
+* to zoom in and out, locate the cursor on the graph and use the scroll wheel of your mouse
+
+At any point after uploading the OCEL, you can see the number of process executions in 7.
 ## Process Discovery
 
 ### Discover Process Model
