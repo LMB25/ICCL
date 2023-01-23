@@ -74,7 +74,7 @@ layout = dbc.Tabs([
                 dbc.Row(html.H5("Select Graph Embedding Method")),
                 dbc.Row([
                     html.Div(dbc.RadioItems(options=[
-                                {"label": "Auto Mode", "value": "AutoEmbed", "label_id":"tooltip-autoembed"},
+                                {"label": "Auto Embed", "value": "AutoEmbed", "label_id":"tooltip-autoembed"},
                                 {"label": "Custom Feature Graph Embedding", "value": "CFGE", "label_id":"tooltip-cfge"},
                                 {"label": "Graph2Vec", "value": 'Graph2Vec', "label_id":"tooltip-graph2vec"},
                                 {"label": "Feather-G", "value": "Feather-G", "label_id":"tooltip-featherg"}
