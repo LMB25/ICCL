@@ -168,6 +168,7 @@ To visualize the graph of one process execution and see its features, perform th
 4. select a process execution in the dropdown list
 
 The results are the following:
+
 5. feature table with the features that were extracted from the process execution
 6. graph of the process execution: 
 * to move the position of a node,  click on the node and pull it to the desired location
