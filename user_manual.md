@@ -32,8 +32,8 @@ The main pipeline of the application works the following way:
 	* [Graph Embedding Methods](#graph-embedding-methods)
 	* [Clustering Techniques](#clustering-techniques)
 	* [Evaluation Measures](#evaluation-measures)
-		* [Cluster Evaluation](#cluster-evaluation)
-		* [Model Evaluation](#model-evaluation)
+		* [Cluster Evaluation Measures](#cluster-evaluation-measures)
+		* [Model Evaluation Measures](#model-evaluation-measures)
 	* [Model Discovery](#model-discovery)
 	
 
@@ -131,7 +131,7 @@ To specify the graph embedding technique, follow those steps:
 5. click the PARSE EMBEDDING PARAMETERS button
 
 ### Clustering
-After the graph embedding is created, you can cluster the process executions. To do so, you have to specify a clustering technique. Furthermore, you can adjust the algorithm's parameters or use the automatic clustering mode. 
+After the graph embedding is created, you can cluster the process executions. To do so, you have to specify a clustering technique. Furthermore, you can adjust the algorithm's parameters or use the automatic clustering mode. Please see [Clustering Techniques](#clustering-techniques) for more information about the clustering algorithms.
 
 ![Clustering_Configuration.png](assets%2FClustering_Configuration.png)
 
@@ -153,7 +153,7 @@ After the clustering was successfully executed, the following shows up:
 In the table 1, you can see the resulting clusters and the number of process executions that belong to the cluster ID. If you click the button 2, you get forwarded to the process discovery page.
 
 ### Cluster Evaluation
-If you want to cluster the process executions using K-Means or Hierarchical Clustering, you might not know which number of clusters is suitable. On the other hand, if you apply DBscan, where you don't have to specify the number of clusters, you must specify the epsilon parameter. To give you more insight into the effect of changing those parameters, you can try the cluster evaluation analysis that is included in ICCL. 
+If you want to cluster the process executions using K-Means or Hierarchical Clustering, you might not know which number of clusters is suitable. On the other hand, if you apply DBscan, where you don't have to specify the number of clusters, you must specify the epsilon parameter. To give you more insight into the effect of changing those parameters, you can try the cluster evaluation analysis that is included in ICCL. You can get more information about the scores that are used in [Cluster Evaluation](#cluster-evaluation).
 
 Note: before launching the cluster evaluation, you have to parse the features and graph embedding parameters.
 
@@ -268,12 +268,12 @@ A process execution is a set of events of connected objects and resembles the ca
 
 ### Graph Embedding Methods
 
-* **Auto Embed**: In the automatic mode, we try to find the best graph embedding method with corresponding parameters for the imported OCEL. Experimentally we have found out, that the Custom Feature Graph Embedding method that uses FeatherNode Embeddings and aggregates them for the representation of a graph, works the best. Note that it is also the only method that is able to embed an arbitrary amount of features. The most crucial parameter for this method is the number of dimensions. Hereby, we have to have enough dimensions to express the complexity of the graphs and features. On the other hand, we want to reduce the number of dimensions as much as possible to improve the computation effort. Especially, the following clustering runs significantly faster on smaller dimensions. 
+* **Auto Embed**: In the automatic mode, we try to find the best graph embedding method with corresponding parameters for the imported OCEL. Experimentally we have found out that the Custom Feature Graph Embedding method that uses FeatherNode Embeddings and aggregates them for the representation of a graph works the best. Note that it is also the only method that is able to embed an arbitrary amount of features. The most crucial parameter for this method is the number of dimensions. Hereby, we have to have enough dimensions to express the complexity of the graphs and features. On the other hand, we want to reduce the number of dimensions as much as possible to improve the computation effort. Especially, the clustering that follows runs significantly faster on smaller dimensions. 
 We start with an initial value of 500 and then try to reduce it by comparing the normalized embedding loss (https://doi.org/10.1038/s41467-021-23795-5). However, note that we cannot have less dimensions than features. This is required by FeatherNode.
 
 *  **Custom Feature Graph Embedding**: especially designed for ICCL. The algorithm first creates a node embedding via FeatherNode which uses characteristic functions of node features with random walk weights to describe node neighborhoods. In the second step, the node embeddings are averaged over each dimension, resulting in a vectorized embedding of the graph. Focusses **features**, the structure of the process execution graphs is only implicitly considered. Check out the [karateclub documentation](https://karateclub.readthedocs.io/en/latest/_modules/karateclub/node_embedding/attributed/feathernode.html) for more information about the FeatherNode parameters that can be configured. 
 
-Note: We cannot run the algorithm when we have less dimensions than features for each node. 
+	Note: We cannot run the algorithm when we have less dimensions than features for each node. 
 
 *  **Graph2Vec**: first identifies subgraphs sourrounding each node in the feature graphs. By means of the Weisfeiler-Lehman’s algorithm, the subgraphs are considered as the vocabulary for a doc2vec SkipGram model. Since the graph’s structure is captured within the algorithm, feature graphs that are similar in structure will be close in the embedding space. Focusses the **graph structure** and additionally allows one feature per node. Check out the [karateclub documentation](https://karateclub.readthedocs.io/en/latest/_modules/karateclub/graph_embedding/graph2vec.html) for more information about the parameters that can be configured. 
 
@@ -295,13 +295,13 @@ ICCL makes use of the sklearn.cluster module to apply different clustering algor
 
 ### Evaluation Measures
 
-#### Cluster Evaluation
+#### Cluster Evaluation Measures
 
 *  **Silhouette Score**: quantifies the space between different clusters. For each number of clusters, a clustering algorithm is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated. Generally, the silhouette score is calculated for each datapoint and then averaged over the whole dataspace. You can find the calculation steps here: [click](https://en.wikipedia.org/wiki/Silhouette_(clustering))
 
 *  **Davies-Bouldin Index**: measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters. The steps of calculation can be found here: [click](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index)
 
-#### Model Evaluation
+#### Model Evaluation Measures
 
 *  **Fitness**: measures to what extend the observed traces can be replayed by the model.
 
