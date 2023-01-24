@@ -32,8 +32,8 @@ The main pipeline of the application works the following way:
 	* [Graph Embedding Methods](#graph-embedding-methods)
 	* [Clustering Techniques](#clustering-techniques)
 	* [Evaluation Measures](#evaluation-measures)
-		* [Cluster Evaluation](#cluster-evaluation)
-		* [Model Evaluation](#model-evaluation)
+		* [Cluster Evaluation Measures](#cluster-evaluation-measures)
+		* [Model Evaluation Measures](#model-evaluation-measures)
 	* [Model Discovery](#model-discovery)
 	
 
@@ -295,13 +295,13 @@ ICCL makes use of the sklearn.cluster module to apply different clustering algor
 
 ### Evaluation Measures
 
-#### Cluster Evaluation
+#### Cluster Evaluation Measures
 
 *  **Silhouette Score**: quantifies the space between different clusters. For each number of clusters, a clustering algorithm is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated. Generally, the silhouette score is calculated for each datapoint and then averaged over the whole dataspace. You can find the calculation steps here: [click](https://en.wikipedia.org/wiki/Silhouette_(clustering))
 
 *  **Davies-Bouldin Index**: measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters. The steps of calculation can be found here: [click](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index)
 
-#### Model Evaluation
+#### Model Evaluation Measures
 
 *  **Fitness**: measures to what extend the observed traces can be replayed by the model.
 
