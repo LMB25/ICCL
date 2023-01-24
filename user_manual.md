@@ -291,7 +291,7 @@ ICCL makes use of the sklearn.cluster module to apply different clustering algor
 
 *  **DBscan**: Density-Based Spatial Clustering of Applications with Noise is an clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.
 
-* **Auto Cluster**: This techniques tries to find the best clustering technique automatically and optimizes their hyperparameters. Currently, we compare MeanShift and KMeans with different cluster sizes and our goal is to find a setting which maximizes the silhouette score.
+* **Auto Cluster**: This techniques tries to find the best clustering technique automatically and optimizes their hyperparameters. Currently, we compare MeanShift, DBscan and KMeans with different parameter settings and our goal is to find a setting which maximizes the silhouette score.
 
 ### Evaluation Measures
 
