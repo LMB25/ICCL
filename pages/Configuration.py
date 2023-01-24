@@ -424,7 +424,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
             embedding_params_dict = {"svd_dimensions":int(opt_dim), "svd_iterations":int(20), "theta_max":float(2.5), "eval_points":int(25), "order":int(5)}
             embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
             
-            optimal_params = f"svd_dimension={opt_dim}"
+            optimal_params = f"embedding parameters: svd_dimension={opt_dim}"
             
         elif embedding_method == 'CFGE':
             embedding = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
@@ -439,7 +439,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         if clustering_method == 'AutoCluster':
             #TODO
             labels, best_params = clustering.perform_auto_clustering(embedding)
-            optimal_params = [f'optimal parameters: {optimal_params}', html.Br(), ''.join(f"{i}={s},   " for i,s in best_params.items())]
+            optimal_params = [optimal_params, html.Br(), "clustering parameters: ", ''.join(f"{i}={s},   " for i,s in best_params.items())]
         if clustering_method == 'Mean-Shift':
             labels = clustering.perform_MeanShift(embedding, clustering_params_dict)
         elif clustering_method == 'K-Means':
