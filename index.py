@@ -28,17 +28,17 @@ CONTENT_STYLE = {
 }
 
 # Define Store object for OCEL object
-ocel_obj = dcc.Store(id='ocel_obj')
+ocel_obj = dcc.Store(id='ocel_obj', storage_type='memory')
 # Define Store object for directory files
 file_store = dcc.Store(id='folder-selection', storage_type='local')
 # Define Store object for OCEL params
 ocel_params = dcc.Store(id='param-store', storage_type='local')
 # Define Store object for Process Executions
-ocel_executions = dcc.Store(id='execution-store')
+ocel_executions = dcc.Store(id='execution-store', storage_type='memory')
 # Define Store object for clustered OCELs
-clustered_ocel_store = dcc.Store(id='clustered-ocels')
+clustered_ocel_store = dcc.Store(id='clustered-ocels', storage_type='memory')
 # Define Store object for List of list of average Process Execution Features per cluster
-extracted_pe_features_cluster = dcc.Store(id='extracted-pe-features-cluster-store')
+extracted_pe_features_cluster = dcc.Store(id='extracted-pe-features-cluster-store', storage_type='memory')
 
 # Define the index page layout
 app.layout = html.Div([
@@ -77,7 +77,9 @@ def render_page_content(pathname):
 
 # Run the app on localhost:8050
 if __name__ == '__main__':
-    app.run_server(debug=True, use_reloader = True)
+    #host and port must be specified in order for docker to work
+    app.run_server(debug=True, host='0.0.0.0', port=8050, use_reloader=True)
+    #app.run_server(debug=True, use_reloader = True)
 
 
 
