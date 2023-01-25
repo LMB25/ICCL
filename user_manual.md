@@ -43,10 +43,11 @@ The code comes with a Dockerfile to build and run the application inside a docke
 ```
 docker build -t docker-iccl . 
 ```
-After the container is build the webapp can be run using
+After the container is built, the webapp can be run using
 ```
 docker run -p 8050:8050 docker-iccl
 ```
+Open ```http://127.0.0.1:8050/``` to access the running webapp.
 
 ## Application Layout
 
@@ -268,12 +269,14 @@ A process execution is a set of events of connected objects and resembles the ca
 
 ### Graph Embedding Methods
 
-* **Auto Embed**: In the automatic mode, we try to find the best graph embedding method with corresponding parameters for the imported OCEL. Experimentally we have found out that the Custom Feature Graph Embedding method that uses FeatherNode Embeddings and aggregates them for the representation of a graph works the best. Note that it is also the only method that is able to embed an arbitrary amount of features. The most crucial parameter for this method is the number of dimensions. Hereby, we have to have enough dimensions to express the complexity of the graphs and features. On the other hand, we want to reduce the number of dimensions as much as possible to improve the computation effort. Especially, the clustering that follows runs significantly faster on smaller dimensions. 
-We start with an initial value of 500 and then try to reduce it by comparing the normalized embedding loss (https://doi.org/10.1038/s41467-021-23795-5). However, note that we cannot have less dimensions than features. This is required by FeatherNode.
+* **Auto Embed**: uses Custom Feature Graph Embeddings but optimizes the number of dimensions automatically. The method tries to reduce the number of dimensions as far as possible but ensures that there are still enough dimensions to fully express the complexity of the feature graphs. This is done by comparing the normalized embedding loss (https://doi.org/10.1038/s41467-021-23795-5) for different numbers of dimensions.
+The fewer dimensions, the more efficient the clustering can be performed. The final choice of dimensions is displayed to the user. 
+If no features were selected, graph2vec is automatically used, since our Custom Feature Graph Embedding method requires at least one feature.
+
 
 *  **Custom Feature Graph Embedding**: especially designed for ICCL. The algorithm first creates a node embedding via FeatherNode which uses characteristic functions of node features with random walk weights to describe node neighborhoods. In the second step, the node embeddings are averaged over each dimension, resulting in a vectorized embedding of the graph. Focusses **features**, the structure of the process execution graphs is only implicitly considered. Check out the [karateclub documentation](https://karateclub.readthedocs.io/en/latest/_modules/karateclub/node_embedding/attributed/feathernode.html) for more information about the FeatherNode parameters that can be configured. 
 
-	Note: We cannot run the algorithm when we have less dimensions than features for each node. 
+	Note: The algorithm requires that at least one feature was selected.  
 
 *  **Graph2Vec**: first identifies subgraphs sourrounding each node in the feature graphs. By means of the Weisfeiler-Lehman’s algorithm, the subgraphs are considered as the vocabulary for a doc2vec SkipGram model. Since the graph’s structure is captured within the algorithm, feature graphs that are similar in structure will be close in the embedding space. Focusses the **graph structure** and additionally allows one feature per node. Check out the [karateclub documentation](https://karateclub.readthedocs.io/en/latest/_modules/karateclub/graph_embedding/graph2vec.html) for more information about the parameters that can be configured. 
 
@@ -281,6 +284,8 @@ We start with an initial value of 500 and then try to reduce it by comparing the
 
 ### Clustering Techniques
 ICCL makes use of the sklearn.cluster module to apply different clustering algorithms to the embedding. Please refer to the [sklearn.cluster documentation](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.cluster) to gather more information about the clustering parameters that can be configured in ICCL. 
+* **Auto Cluster**: This techniques tries to find the best clustering technique automatically and optimizes their hyperparameters. Currently, we compare MeanShift, DBscan and KMeans with different parameter settings and our goal is to find a setting which maximizes the silhouette score. After the clustering has been performed, the final selected method as well as its parameters are displayed to the user. 
+
 *  **K-Means**: clusters data by trying to separate samples in k groups of equal variance. It aims to choose centroids that minimize the within-cluster sum-of-squares. The number of clusters (k) has to be specified beforehand.
 
 *  **Hierarchical Clustering**: builds nested clusters by merging or splitting them successively. This hierarchy of clusters is represented as a tree, whereas the root is the unique cluster gathering all samples and the leaves are clusters containing only one sample. In ICCL, you have to specify the number of clusters beforehand.
@@ -289,9 +294,7 @@ ICCL makes use of the sklearn.cluster module to apply different clustering algor
 
 *  **Affinity-Propagation**: Affinity-Propagation creates clusters by sending messages between pairs of samples until convergence. The algorithm finds members of the data points that are representatives of the clusters.
 
-*  **DBscan**: Density-Based Spatial Clustering of Applications with Noise is an clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.
-
-* **Auto Cluster**: This techniques tries to find the best clustering technique automatically and optimizes their hyperparameters. Currently, we compare MeanShift, DBscan and KMeans with different parameter settings and our goal is to find a setting which maximizes the silhouette score.
+*  **DBscan**: Density-Based Spatial Clustering of Applications with Noise is a clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.
 
 ### Evaluation Measures
 
