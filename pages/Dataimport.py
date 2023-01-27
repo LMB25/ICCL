@@ -122,7 +122,7 @@ def on_parse_params(csv_params, process_ex_type, uploaded_file):
             if process_ex_type == "CONN_COMP":
                 return [] 
             else: 
-                ocel_log = dataimport.load_ocel_json_xml("assets\\uploaded_logs\\" + uploaded_file, parameters=None)
+                ocel_log = dataimport.load_ocel_json_xml("assets/uploaded_logs/" + uploaded_file, parameters=None)
                 object_types = dataimport.get_ocel_object_types(ocel_log)
                 return object_types
     else:
@@ -168,7 +168,7 @@ def on_upload_ocel_path(set_progress, uploaded_file, csv_params, process_extr_ty
         else:
             # use different load function w.r.t file extension
             if uploaded_file!=None and uploaded_file.endswith("csv"):
-                ocel_df = pd.read_csv("assets\\uploaded_logs\\" + uploaded_file)
+                ocel_df = pd.read_csv("assets/uploaded_logs/" + uploaded_file)
                 ocel_df = dataimport.remove_prefix_csv(ocel_df)
                 if process_extr_type == "CONN_COMP":
                     ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
@@ -179,9 +179,9 @@ def on_upload_ocel_path(set_progress, uploaded_file, csv_params, process_extr_ty
                     ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
             else:
                 if process_extr_type == "CONN_COMP":    
-                    ocel_log = dataimport.load_ocel_json_xml("assets\\uploaded_logs\\" + uploaded_file, parameters={"execution_extraction":"connected_components"})
+                    ocel_log = dataimport.load_ocel_json_xml("assets/uploaded_logs/" + uploaded_file, parameters={"execution_extraction":"connected_components"})
                 else:
-                    ocel_log = dataimport.load_ocel_json_xml("assets\\uploaded_logs\\" + uploaded_file, parameters={"execution_extraction":"leading_type", "leading_type":leading_obj})
+                    ocel_log = dataimport.load_ocel_json_xml("assets/uploaded_logs/" + uploaded_file, parameters={"execution_extraction":"leading_type", "leading_type":leading_obj})
             set_progress(("3","10"))
             # remove any existing discovered nets, if exist
             [f.unlink() for f in Path("/imgs").glob("*") if f.is_file()] 
@@ -214,7 +214,7 @@ def on_upload_ocel_head(ocel_log, filename):
         if filename is None:
             return dash.no_update
         elif filename.endswith("csv"):
-            ocel_df = pd.read_csv("assets\\uploaded_logs\\" + filename)
+            ocel_df = pd.read_csv("assets/uploaded_logs/" + filename)
             ocel_df = dataimport.remove_prefix_csv(ocel_df)
             ocel_df_head = ocel_df.head(5)
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
@@ -236,7 +236,7 @@ def on_upload_ocel_head(ocel_log, filename):
 def on_selection_file(filename):
     if filename != None:
         if filename.endswith("csv"):
-            ocel_csv = pd.read_csv("assets\\uploaded_logs\\" + filename, nrows=5)
+            ocel_csv = pd.read_csv("assets/uploaded_logs/" + filename, nrows=5)
             ocel_csv = dataimport.remove_prefix_csv(ocel_csv)
             column_names = ocel_csv.columns
             id_names_options = column_names
