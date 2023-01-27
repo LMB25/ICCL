@@ -13,9 +13,6 @@ import ocpa.objects.log.variants.util.table as table_utils
 import ocpa.objects.log.util.misc as import_helper
 from typing import Dict
 
-# to intermediately store the uploaded ocel file from the drag and drop field
-UPLOAD_DIRECTORY = "assets"
-
 # remove prefix from csv OCEL
 def remove_prefix_csv(df):
     columns = df.columns
@@ -31,17 +28,6 @@ def load_ocel_csv(path, parameters):
     ocel_file = ocel_import_factory_csv.apply(file_path=path, variant="to_ocel", parameters = parameters)
     return ocel_file
 
-# load ocel from csv format (given the file content itself)
-def load_ocel_csv_drag_drop(content, parameters):
-    content_type, content_string = content.split(",")
-    
-    decoded = base64.b64decode(content_string)
-    
-    with open(os.path.join(UPLOAD_DIRECTORY, "temp.csv"), "wb") as fp:
-        fp.write(decoded)    
-    ocel_file = ocel_import_factory_csv.apply(file_path=os.path.join(UPLOAD_DIRECTORY, "temp.csv"), parameters = parameters)
-    return ocel_file
-
 # load ocel from jsnocel or xmlocel format
 def load_ocel_json_xml(path, parameters):
     if path.endswith("jsonocel"):
@@ -52,17 +38,6 @@ def load_ocel_json_xml(path, parameters):
         error_msg = "not a valid extension"
         return error_msg
     return ocel_file
-
-def load_ocel_drag_drop(content):
-    content_type, content_string = content.split(",")
-    
-    decoded = base64.b64decode(content_string)
-    
-    with open(os.path.join(UPLOAD_DIRECTORY, "temp.jsonocel"), "wb") as fp:
-        fp.write(decoded)
-    ocel = ocel_import_factory.apply(os.path.join(UPLOAD_DIRECTORY, "temp.jsonocel"))
-    
-    return ocel
 
 # preprocess df of OCEL csv
 def preprocess_csv(df, parameters=None):
