@@ -90,6 +90,7 @@ def callback_on_completion(status: du.UploadStatus):
         return dash.no_update
 '''
 
+# read files from uploaded_logs directory if refresh button is clicked
 @app.callback(Output("uploaded-logs", "options"), Input('refresh-list', 'n_clicks'), prevent_initial_call=True)
 def on_refresh_files(n):
     if n>0:
@@ -98,10 +99,12 @@ def on_refresh_files(n):
     else:
         return dash.no_update
 
-# load csv parameters into store
+# load csv parameters into store, if parse button is clicked
 @app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("act_name", "value"), State("start_time_name", "value"), State("time_name", "value"), State("id_name", "value"),], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
 def on_upload_csv(obj_name, act_name, start_time_name, time_name, id_name, n):
+    # default seperator
     sep = ","
+    # case distinction on existence of start timestamp
     if start_time_name != None: 
         params = {
             "obj_names":obj_name,
@@ -125,6 +128,7 @@ def on_upload_csv(obj_name, act_name, start_time_name, time_name, id_name, n):
 @app.callback(Output("leading-object", "options"), [Input("csv-params","data"), Input("process-extraction-type", "value"), Input("uploaded-logs", "value")], prevent_initial_call=True)
 def on_parse_params(csv_params, process_ex_type, uploaded_file):
     if uploaded_file != None:
+        # read object types from parameter input form in case of OCEL in csv format
         if (csv_params != None) and (uploaded_file.endswith('csv')):
             options = csv_params['obj_names']
             return options 
@@ -132,6 +136,7 @@ def on_parse_params(csv_params, process_ex_type, uploaded_file):
             if process_ex_type == "CONN_COMP":
                 return [] 
             else: 
+                # process OCEL and extract object types
                 ocel_log = dataimport.load_ocel_json_xml("assets/uploaded_logs/" + uploaded_file, parameters=None)
                 object_types = dataimport.get_ocel_object_types(ocel_log)
                 return object_types
@@ -139,7 +144,7 @@ def on_parse_params(csv_params, process_ex_type, uploaded_file):
         return []
 
 
-# enable upload button
+# enable upload button if file is selected and parameters are parsed in case of OCEL in csv format
 @app.callback(Output("upload-button", "disabled"), [Input("success-parse-csv", "style"), Input("uploaded-logs", "value")], prevent_initial_call = True)
 def on_file_selection(csv_params_parsed, selected_file):
     if selected_file.endswith("csv") == False:
@@ -172,12 +177,11 @@ def on_file_selection(csv_params_parsed, selected_file):
 def on_upload_ocel_path(set_progress, uploaded_file, csv_params, process_extr_type, leading_obj, n):
     if n > 0:
         set_progress(("0","10"))
-        time.sleep(1)
         if uploaded_file is None:
             raise PreventUpdate
         else:
             # use different load function w.r.t file extension
-            if uploaded_file!=None and uploaded_file.endswith("csv"):
+            if uploaded_file.endswith("csv"):
                 ocel_df = pd.read_csv("assets/uploaded_logs/" + uploaded_file)
                 ocel_df = dataimport.remove_prefix_csv(ocel_df)
                 if process_extr_type == "CONN_COMP":
@@ -187,14 +191,13 @@ def on_upload_ocel_path(set_progress, uploaded_file, csv_params, process_extr_ty
                     csv_params["execution_extraction"] = "leading_type"
                     csv_params["leading_type"] = leading_obj
                     ocel_log = dataimport.df_to_ocel(ocel_df, csv_params)
+            # case OCEL in xmlocel or jsonocel format
             else:
                 if process_extr_type == "CONN_COMP":    
                     ocel_log = dataimport.load_ocel_json_xml("assets/uploaded_logs/" + uploaded_file, parameters={"execution_extraction":"connected_components"})
                 else:
                     ocel_log = dataimport.load_ocel_json_xml("assets/uploaded_logs/" + uploaded_file, parameters={"execution_extraction":"leading_type", "leading_type":leading_obj})
             set_progress(("3","10"))
-            # remove any existing discovered nets, if exist
-            [f.unlink() for f in Path("/imgs").glob("*") if f.is_file()] 
 
             # extract and store process executions as list, i.e. list of event ids within process execution
             ocel_process_executions = process_executions.get_process_executions(ocel_log)
@@ -245,6 +248,7 @@ def on_upload_ocel_head(ocel_log, filename):
 @app.callback([Output("csv-import", "style"), Output("id_name", "options"), Output("obj_names", "options"), Output("act_name", "options"), Output("time_name", "options"), Output("start_time_name", "options"), Output("id_name", "value"), Output("obj_names", "value"), Output("act_name", "value"), Output("time_name", "value")],Input("uploaded-logs", "value"), prevent_initial_call = True)
 def on_selection_file(filename):
     if filename != None:
+        # read head of csv and extract possible values for parameters, i.e. df column names
         if filename.endswith("csv"):
             ocel_csv = pd.read_csv("assets/uploaded_logs/" + filename, nrows=5)
             ocel_csv = dataimport.remove_prefix_csv(ocel_csv)
