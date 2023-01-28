@@ -32,7 +32,11 @@ def perform_auto_clustering(X):
     best_score = None
     for method in [perform_auto_DBSCAN, perform_auto_KMeans, perform_auto_MeanShift]:#, perform_KMeans, perform_DBSCAN, perform_HierarchicalClustering]:
         labels, params = method(X)
-        score = silhouette_score(X, labels)
+        if len(np.unique(labels)) > 1:
+            score = silhouette_score(X, labels)
+        # case that only one cluster is discovered
+        else:
+            score = 0
         if best_score is None or score>best_score:
             best_score = score
             best_labels = labels
@@ -54,7 +58,11 @@ def perform_auto_DBSCAN(X):
     for eps in eps_range:
         clustering_params_dict = {"eps": eps, "min_samples": 5}
         labels = perform_DBSCAN(X, clustering_params_dict)
-        score = silhouette_score(X, labels)
+        if len(np.unique(labels)) > 1:
+            score = silhouette_score(X, labels)
+        # case that only one cluster is discovered
+        else:
+            score = 0
         #print(f"score for DBScan with eps={eps}: {score}")
         if best_score is None or score>best_score:
             best_score = score
@@ -64,7 +72,11 @@ def perform_auto_DBSCAN(X):
     for min_samples in range(1,11):
         clustering_params_dict = {"eps": best_eps, "min_samples": min_samples}
         labels = perform_DBSCAN(X, clustering_params_dict)
-        score = silhouette_score(X, labels)
+        if len(np.unique(labels)) > 1:
+            score = silhouette_score(X, labels)
+        # case that only one cluster is discovered
+        else:
+            score = 0
         #print(f"score for DBScan with eps={best_eps} & min_samples={min_samples}: {score}")
         if best_score is None or score>best_score:
             best_score = score
@@ -92,7 +104,11 @@ def perform_auto_MeanShift(X):
     for max_iter in range(100,500,50): 
         clustering_params_dict = {"max_iter":int(max_iter)} #default max_iter=300
         labels = perform_MeanShift(X, clustering_params_dict)
-        score = silhouette_score(X, labels)
+        if len(np.unique(labels)) > 1:
+            score = silhouette_score(X, labels)
+        # case that only one cluster is discovered
+        else:
+            score = 0
         #print(f"score for Mean Shift with max_iter={max_iter}: {score}")
         if best_score is None or score>best_score:
             best_score = score
