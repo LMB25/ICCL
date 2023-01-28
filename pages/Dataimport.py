@@ -21,7 +21,7 @@ from components import explanation_texts, input_forms
 import dash_uploader as du
 UPLOAD_FOLDER_ROOT = "assets/"
 du.configure_upload(app, UPLOAD_FOLDER_ROOT, use_upload_id=True)
-my_upload = du.Upload(id='dash-uploader', text='Drag & Drop here to upload a file', text_completed = 'File is now available: ', filetypes=['jsonocel', 'xmlocel', 'csv'], upload_id="uploaded_logs")
+my_upload = du.Upload(id='dash-uploader', text='Drag & Drop here to upload a file', text_completed = 'File is now available (click REFRESH): ', filetypes=['jsonocel', 'xmlocel', 'csv'], upload_id="uploaded_logs")
 # Define Dropdown for available logs
 my_uploaded_files = dcc.Dropdown(placeholder='Select an OCEL', id='uploaded-logs', options=[{'label':file, 'value':file} for file in os.listdir("assets/uploaded_logs")])
 
@@ -55,7 +55,7 @@ layout = dbc.Container([
         my_upload,
         html.Hr(),
         html.H5("Select an OCEL for import:"),
-        my_uploaded_files,
+        dbc.Row([dbc.Col([my_uploaded_files], width=8), dbc.Col([dbc.Button("Refresh", className="me-2", color='warning', id='refresh-list', n_clicks=0)])]),
         html.Br(),
         input_forms.csv_import,
         html.Div("Parameters successfully parsed.", style={'display':'none'}, id='success-parse-csv'),
@@ -76,6 +76,7 @@ layout = dbc.Container([
             ], id='ocel-table', style={"overflow": "scroll"})
     ])
 
+'''
 # update file dropdown on upload
 @du.callback(
     output=Output("uploaded-logs", "options"),
@@ -83,6 +84,15 @@ layout = dbc.Container([
 )
 def callback_on_completion(status: du.UploadStatus):
     if status.is_completed == True: 
+        updated_options = [{'label':file, 'value':file} for file in os.listdir("assets/uploaded_logs/")]
+        return updated_options
+    else:
+        return dash.no_update
+'''
+
+@app.callback(Output("uploaded-logs", "options"), Input('refresh-list', 'n_clicks'), prevent_initial_call=True)
+def on_refresh_files(n):
+    if n>0:
         updated_options = [{'label':file, 'value':file} for file in os.listdir("assets/uploaded_logs/")]
         return updated_options
     else:
