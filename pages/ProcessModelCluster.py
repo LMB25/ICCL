@@ -53,14 +53,13 @@ layout = dbc.Container([
             ], id='avg-pe-features', style={'display': 'block'}),
         html.Div([
             html.Hr(),
-            dbc.Row([html.H5("Save Petri Net")]),
             dbc.Row([
-                dbc.Col([html.Div("Filepath: ")], align='center'),
-                dbc.Col([dbc.Input(id="path-save-clustered-model", value=os.path.dirname(os.path.realpath(__file__)))], width=5),
+                dbc.Col([html.H5("Save Petri Net")], align='center'),
                 dbc.Col([html.Div("Filename: ")], align='center'),
                 dbc.Col([dbc.Input(id='filename-clustered-model', placeholder='cluster_model')], width=3),
                 dbc.Col([dcc.Dropdown(id='img-format-cluster', options=['png', 'svg'], multi=False, value='png')], align='center'),
                 dbc.Col([dbc.Button("Save", id="save-img-clustered-model", className="me-2", n_clicks=0)]),
+                dcc.Download(id="download-image-cluster")
             ]), 
             ], id='download-model-clustered', style={'display': 'none'}),
         html.Div("Petri Net successfully saved.", id='download-success-cluster', style={'display':'none'}),
@@ -121,16 +120,16 @@ def on_selection(clustered_ocel, avg_pe_features_list, selected_cluster):
         return dash.no_update
 
 # to-do: don't load and discover again -> store discovered ocpn beforehand
-@app.callback(Output("download-success-cluster", "style"), [State("cluster-selection", "value"), State("clustered-ocels", "data"), State("path-save-clustered-model", "value"), State("filename-clustered-model", "value"), State("img-format-cluster", "value")], Input("save-img-clustered-model", "n_clicks"), prevent_initial_call=True)
-def on_download_click(selected_cluster, clustered_ocel, path, filename, format, n):
+@app.callback([Output("download-success-cluster", "style"), Output("download-image-cluster", "data")], [State("cluster-selection", "value"), State("clustered-ocels", "data"), State("filename-clustered-model", "value"), State("img-format-cluster", "value")], Input("save-img-clustered-model", "n_clicks"), prevent_initial_call=True)
+def on_download_click(selected_cluster, clustered_ocel, filename, format, n):
     if n > 0:
         selected_cluster_ocel = clustered_ocel[int(selected_cluster)]
         clustered_ocel_obj = pickle.loads(codecs.decode(selected_cluster_ocel.encode(), "base64"))
         # discover petri net
         ocpn = process_discovery.process_discovery_ocel_to_ocpn(clustered_ocel_obj)
         # save petri net
-        process_discovery.save_ocpn(ocpn, path, filename, format)
-        return {'display':'block'}
+        process_discovery.save_ocpn(ocpn, 'assets/process_models/', filename, format)
+        return {'display':'block'}, dcc.send_file('assets/process_models/' + filename + '.' + format)
     else:
         dash.no_update
 

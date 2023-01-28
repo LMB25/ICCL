@@ -33,14 +33,13 @@ layout = dbc.Container([
         html.Div(id="pm-model"),     
         html.Div([
             html.Hr(),
-            dbc.Row([html.H5("Save Petri Net")]),
             dbc.Row([
-                dbc.Col([html.Div("Filepath: ")], align='center'),
-                dbc.Col([dbc.Input(id="path-save-original-model", value=os.path.dirname(os.path.realpath(__file__)))], width=5),
+                dbc.Col([html.H5("Save Petri Net")], align='center'),
                 dbc.Col([html.Div("Filename: ")], align='center'),
                 dbc.Col([dbc.Input(id='filename-original-model', placeholder='original_model')], width=3),
                 dbc.Col([dcc.Dropdown(id='img-format', options=['png', 'svg'], multi=False, value='svg')], align='center'),
                 dbc.Col([dbc.Button("Save", id="save-img-original-model", className="me-2", n_clicks=0)]),
+                dcc.Download(id="download-image")
             ]), 
             ], id='download-model', style={'display': 'none'}),
         html.Div("Petri Net successfully saved.", id='download-success', style={'display':'none'}),
@@ -87,16 +86,17 @@ def on_button_click(ocel_obj, n):
 
 
 # to-do: don't load and discover again -> store discovered ocpn beforehand
-@app.callback(Output("download-success", "style"), [State("ocel_obj", "data"), State("path-save-original-model", "value"), State("filename-original-model", "value"), State("img-format", "value")], Input("save-img-original-model", "n_clicks"), prevent_initial_call=True)
-def on_download_click(ocel_obj, path, filename, format, n):
+@app.callback([Output("download-success", "style"), Output("download-image", "data")], [State("ocel_obj", "data"), State("filename-original-model", "value"), State("img-format", "value")], 
+              Input("save-img-original-model", "n_clicks"), prevent_initial_call=True)
+def on_download_click(ocel_obj, filename, format, n):
     if n > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_obj.encode(), "base64"))
         # discover petri net
         ocpn = process_discovery.process_discovery_ocel_to_ocpn(ocel_log)
         # save petri net
-        process_discovery.save_ocpn(ocpn, path, filename, format)
-        return {'display':'block'}
+        process_discovery.save_ocpn(ocpn, 'assets/process_models/', filename, format)
+        return {'display':'block'}, dcc.send_file('assets/process_models/' + filename + '.' + format)
     else:
         dash.no_update
 
