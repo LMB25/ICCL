@@ -1,7 +1,6 @@
 # Import necessary libraries 
 from dash import html
 import dash_bootstrap_components as dbc
-from dash.exceptions import PreventUpdate
 import pandas as pd
 from app import app
 from dash.dependencies import Input, Output
@@ -35,6 +34,7 @@ layout = dbc.Container([
     ])
 ])
 
+# load OCEL into DataTable on upload
 @app.callback(Output("ocel_table_full", "children"), Input("ocel_obj", "data"))
 def on_upload_ocel_full(ocel_log):
     if ocel_log is None:
@@ -50,6 +50,7 @@ def on_upload_ocel_full(ocel_log):
         return dbc.Table.from_dataframe(ocel_df, striped=True, bordered=True, hover=True)
 
 
+# display summary statistics of OCEL on upload
 @app.callback(Output("ocel-summary-text", "children"), [Input("param-store", "data")])
 def on_upload_params(params):
     if params != None:

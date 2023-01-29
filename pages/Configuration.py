@@ -6,21 +6,21 @@ import dash
 import time
 from app import app
 from dash.exceptions import PreventUpdate
-from dash_extensions.enrich import Dash, Trigger, ServersideOutput
-from functions import process_executions, feature_extraction, graph_embedding, clustering, dataimport
-from components import nxgraph_figure, silhouette_figure, input_forms, explanation_texts, collapse_buttons
+from dash_extensions.enrich import Trigger, ServersideOutput
+from functions import process_executions, feature_extraction, graph_embedding, clustering
+from components import nxgraph_figure, input_forms, explanation_texts, collapse_buttons
 import pickle
 import codecs
 import pandas as pd
 
 
-# event feature set store
+# create store for selected event features
 event_store = dcc.Store('event-feature-set', storage_type='local')
-# graph embedding parameters store
+# create store for graph embedding parameters 
 embedding_params_store = dcc.Store('embedding-parameters', storage_type='local')
-# Define Store object for List of list of Process Execution Features
+# create store object for list of lists of process execution features
 extracted_pe_features = dcc.Store(id='extracted-pe-features-store')
-# clustering parameters store
+# create store for clustering parameters 
 clustering_params_store = dcc.Store('clustering-parameters', storage_type='local')
 
 # options for event based feature selection
@@ -35,16 +35,15 @@ performance_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-perfo
 # object perspective feature selection dropdown
 object_feature_selection_dropdown= dcc.Dropdown(id='feature-selection-object', options=[{'label': i, 'value': i} for i in feature_options_object], multi=True, value=[])
 
-# empty DataTable for Process Execution Features
+# empty DataTable for Process Execution Features with placeholder DataFrame
 feature_options_extraction_renamed = ["Number of Events", "Number of Ending Events", "Throughput Duration", "Number of Objects", "Unique Activities", "Number of Starting Events", "Duration of Last Event"]
 dummy_df = pd.DataFrame(columns=feature_options_extraction_renamed)
 feature_table = dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, hover=True)
 
-
-# create empty div for embedding param form
+# create div for embedding parameter input form
 embedding_param_form = html.Div([input_forms.embedding_params_form_attributed, input_forms.embedding_params_form_graph2vec, input_forms.embedding_params_form_featherg], id='embedding-params-div', style={'display': 'block'})
 
-# create empty div for clustering param form
+# create div for clustering parameter input form
 clustering_param_form = html.Div([input_forms.clustering_params_form_kmeans, input_forms.clustering_params_form_hierarchical, input_forms.clustering_params_form_meanshift, input_forms.clustering_params_form_affinity, input_forms.clustering_params_form_dbscan], id='clustering-params-div', style={'display':'block'})
 
 # Define the page layout
@@ -204,7 +203,7 @@ layout = dbc.Tabs([
         ], id='configuration-tabs',active_tab='features-tab')
 
 
-
+# perform cluster evaluation and display plots for different methods
 @app.long_callback(prevent_initial_call=True, output=(Output('ward-evaluation', 'src'), Output('average-evaluation', 'src'), Output('kmeans-evaluation', 'src'), Output('dbscan-evaluation', 'src'), Output('cluster-evaluation-result', 'hidden')), 
                     inputs=(State("ocel_obj", "data"), State("event-feature-set", "data"), State("graph-embedding-selection", "value"), State("embedding-parameters", "data"), Trigger('evaluation-button', 'n_clicks')), 
                     running=[(Output("cancel-cluster-analysis", "disabled"), False, True),(Output("progress-bar-cluster-analysis", "style"),{"visibility": "visible"},{"visibility": "hidden"}),],
@@ -258,7 +257,7 @@ def on_button_click(set_progress, ocel_log, selected_event_features, embedding_m
         return hierarchical_ward, hierarchical_average, kmeans, dbscan, False
 
 
-# switch between active tabs
+# automatically switch between active tabs of ICCL pipeline
 @app.callback(Output('configuration-tabs', 'active_tab'), [Input("feature-sucess", "children"), Input("success-parse-embedding-params", "style")], prevent_initial_call=True)
 def on_configuration(features_set, embedding_parsed):
     if features_set != None and embedding_parsed == {'display':'none'}:
@@ -470,7 +469,7 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         raise PreventUpdate
     return sub_ocels_encoded, average_pe_features, dbc.Table.from_dataframe(cluster_summary_df, striped=True, bordered=True, hover=True, id="cluster-summary-table"), False
 
-#after clustering has been performed, user can directly be forwarded to discovery page
+# after clustering has been performed, user is directly forwarded to discovery page on button click
 @app.callback(Output('url', 'pathname'), Input("discover-auto-button","n_clicks"))  
 def forward_to_discovery(n_clicks):
     if n_clicks>0:
@@ -478,6 +477,7 @@ def forward_to_discovery(n_clicks):
     else:
         raise PreventUpdate
 
+# show number of process executions and load possible process executions into dropdown
 @app.callback([Output("process-executions-summary", "children"), Output("executions_dropdown", "options")], [Input("execution-store", "data")])
 def on_extraction(executions):
     if executions is None: 
@@ -489,7 +489,7 @@ def on_extraction(executions):
         options = [{"label":str(i+1),"value":str(i+1)} for i in range(0,len(executions))]
         return executions_summary_text, options
 
-
+# show graph of process execution and extracted features
 @app.callback([Output("process-execution-graph", "children"), Output("pe-feature-table", "children")], [State("ocel_obj", "data"), State("extracted-pe-features-store", "data")], [Input("executions_dropdown", "value")], prevent_initial_call=True)
 def on_extraction(ocel_log, extraction_features_list, execution_id):
     if execution_id != None:
@@ -500,7 +500,6 @@ def on_extraction(ocel_log, extraction_features_list, execution_id):
         
         # convert nx graph to dash figure 
         cyto = nxgraph_figure.create_interactive_graph(ocel_executions_graph, ocel_log)
-        #fig = nxgraph_figure.create_graph_figure(ocel_executions_graph, ocel_log)
 
         # get DataFrame of Process Execution Features 
         if extraction_features_list != None:
@@ -511,14 +510,14 @@ def on_extraction(ocel_log, extraction_features_list, execution_id):
             df_transposed = df_extr.T
             df_transposed.columns = df_transposed.iloc[0]
             df_transposed = df_transposed[1:]
+            # transform DataFrame to DataTable
             datatable = dbc.Table.from_dataframe(df_transposed, striped=True, bordered=True, hover=True)
         else:
             datatable = feature_table
         return  cyto, datatable
-        #return dcc.Graph(id='pe-graph',figure=fig)
 
 
-# collapse evaluation explanation
+# collapse explanation texts for cluster evaluation methods
 @app.callback(
     [Output("evaluation-collapse", "is_open"), Output("evaluation-explanations","children")],
     [Input("collapse-silhouette", "n_clicks"), Input("collapse-dbindex", "n_clicks"), Input("collapse-dbscan", "n_clicks")],

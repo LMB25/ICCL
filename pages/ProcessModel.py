@@ -2,16 +2,13 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
-from dash.exceptions import PreventUpdate
 from app import app
 from functions import process_discovery, conformance_checking
 import dash_interactive_graphviz
-import base64
 import dash
 import pickle, codecs
-import os
 
-# conformance measure dropdown
+# create Dropdown for conformance measure selection
 conformance_dropdown = dcc.Dropdown(id='conformance-measure', options=['Fitness', 'Precision'], multi=False, value='Fitness')
 
 # Define the page layout
@@ -48,6 +45,7 @@ layout = dbc.Container([
     ])
 ])
 
+# calculate and display selected conformance measure, if button is clicked
 @app.callback(Output("conformance-result", "children"), [State("ocel_obj", "data"), State("conformance-measure", "value")], [Input("calc-conformance", "n_clicks")])
 def on_button_click(ocel_obj, conformance_meas, n):
     if n > 0:
@@ -67,15 +65,15 @@ def on_button_click(ocel_obj, conformance_meas, n):
         return dash.no_update
 
 
+# discover and display process model, if button is clicked
 @app.callback([Output("download-model", "style"), Output("pm-model", "children"), Output("pm-model-display", "children")], State("ocel_obj", "data"), Input("start-pm", "n_clicks"), prevent_initial_call=True)
 def on_button_click(ocel_obj, n):
     if n > 0:
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_obj.encode(), "base64"))
         # discover petri net
-        #process_discovery.process_discovery_ocel_to_img(ocel_log, "oc_petri_net")
         ocpn = process_discovery.process_discovery_ocel_to_ocpn(ocel_log)
-        # convert ocpn to gviz str
+        # convert ocpn to gviz
         gviz_ocpn = process_discovery.ocpn_to_gviz(ocpn)
         # create interactive dash gviz object
         ocpn_vis = dash_interactive_graphviz.DashInteractiveGraphviz(id="ocpn-original-ocel",dot_source=str(gviz_ocpn))
@@ -85,7 +83,7 @@ def on_button_click(ocel_obj, n):
 
 
 
-# to-do: don't load and discover again -> store discovered ocpn beforehand
+# download image of process model, if save button is clicked
 @app.callback([Output("download-success", "style"), Output("download-image", "data")], [State("ocel_obj", "data"), State("filename-original-model", "value"), State("img-format", "value")], 
               Input("save-img-original-model", "n_clicks"), prevent_initial_call=True)
 def on_download_click(ocel_obj, filename, format, n):

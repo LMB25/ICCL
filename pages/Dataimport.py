@@ -1,45 +1,39 @@
 # Import necessary libraries 
-from dash import html, dash_table, dcc, ctx
+from dash import html, dcc, ctx
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
 from app import app
 from dash.dependencies import Input, Output, State
-from dash_extensions.enrich import Dash, Trigger, ServersideOutput
+from dash_extensions.enrich import Trigger, ServersideOutput
 from dash.exceptions import PreventUpdate
 import os
 import pickle
 import codecs
-from pathlib import Path
-import ast
-import time
-import base64, io
 
 from functions import dataimport, process_executions
 from components import explanation_texts, input_forms
 
 import dash_uploader as du
+# configure the Dash uploader component
 UPLOAD_FOLDER_ROOT = "assets/"
 du.configure_upload(app, UPLOAD_FOLDER_ROOT, use_upload_id=True)
 my_upload = du.Upload(id='dash-uploader', text='Drag & Drop here to upload a file', text_completed = 'File is now available (click REFRESH): ', filetypes=['jsonocel', 'xmlocel', 'csv'], upload_id="uploaded_logs")
-# Define Dropdown for available logs
+# define Dropdown for available logs
 my_uploaded_files = dcc.Dropdown(placeholder='Select an OCEL', id='uploaded-logs', options=[{'label':file, 'value':file} for file in os.listdir("assets/uploaded_logs")])
 
 # create empty Dataframe to display before any OCEL is uploaded
 dummy_df = pd.DataFrame(columns=['event_id', 'activity', 'timestamp', 'object'])
-
-# create empty DataTable
+# create empty DataTable used as placeholder
 ocel_table = dbc.Table.from_dataframe(dummy_df, striped=True, bordered=True, hover=True, id="ocel_table_head")
 
-# create store for csv params
+# create store for csv parameters
 csv_params = dcc.Store(id='csv-params', storage_type='local')
 
-# create html div for leading object dropdown
-leading_object_div = html.Div([ 
-                                dcc.Dropdown(placeholder='Select leading object type', id='leading-object', style={'display': 'block', 'width':'80%'})
-                                ])
+# create Dropdown used for leading object type selection
+leading_object_div = html.Div([ dcc.Dropdown(placeholder='Select leading object type', id='leading-object', style={'display': 'block', 'width':'80%'})])
 
-# create selection for leading object type oder connected component process execution extraction
+# create radio items selection for leading object type oder connected component process execution extraction
 process_extraction = html.Div([
                                 dbc.Row([
                                     dbc.Col([html.Div("Select Type of Process Execution Extraction: "), dbc.RadioItems(options=[{"label": "Connected Components", "value": "CONN_COMP"},{"label": "Leading Object Type", "value": 'LEAD_TYPE '}], value="CONN_COMP", id="process-extraction-type"), leading_object_div]),
@@ -99,7 +93,7 @@ def on_refresh_files(n):
     else:
         return dash.no_update
 
-# load csv parameters into store, if parse button is clicked
+# load csv parameters into store, if parse button is clicked, uncover successful parsing div
 @app.callback([Output("csv-params", "data"), Output("success-parse-csv", "style")], [State("obj_names", "value"), State("act_name", "value"), State("start_time_name", "value"), State("time_name", "value"), State("id_name", "value"),], Input("parse-csv",  "n_clicks"), prevent_initial_call=True)
 def on_upload_csv(obj_name, act_name, start_time_name, time_name, id_name, n):
     # default seperator
@@ -133,6 +127,7 @@ def on_parse_params(csv_params, process_ex_type, uploaded_file):
             options = csv_params['obj_names']
             return options 
         else:
+            # if connected components is selected, leave list empty
             if process_ex_type == "CONN_COMP":
                 return [] 
             else: 
@@ -176,6 +171,7 @@ def on_file_selection(csv_params_parsed, selected_file):
     prevent_initial_call=True)
 def on_upload_ocel_path(set_progress, uploaded_file, csv_params, process_extr_type, leading_obj, n):
     if n > 0:
+        # start progress bar 
         set_progress(("0","10"))
         if uploaded_file is None:
             raise PreventUpdate
@@ -218,7 +214,7 @@ def on_upload_ocel_path(set_progress, uploaded_file, csv_params, process_extr_ty
     else:
         raise PreventUpdate
 
-# load head of ocel df
+# load head of ocel into DataTable
 @app.callback(Output("ocel-table", "children"), [Input("ocel_obj", "data"), Input("uploaded-logs", "value")], prevent_initial_call = False)
 def on_upload_ocel_head(ocel_log, filename):
     triggered_id = ctx.triggered_id

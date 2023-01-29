@@ -1,17 +1,14 @@
 # Import necessary libraries 
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
-
-
+from dash.dependencies import Input, Output
 
 # Connect to main app.py file
 from app import app
 
-# Connect to your app pages
+# Connect to app pages
 from pages import Dataimport, Dataview, Configuration, ProcessModel, ProcessModelCluster, Manual
 
-# Connect the navbar to the index
+# Connect the navbar/ sidebar to the index
 from components import sidebar, navbar
 
 # Define the navbar
@@ -27,23 +24,22 @@ CONTENT_STYLE = {
     "padding": "2rem 1rem",
 }
 
-# Define Store object for OCEL object
+# Define store objects to keep content while switching pages
+# OCEL 
 ocel_obj = dcc.Store(id='ocel_obj', storage_type='memory')
-# Define Store object for directory files
-file_store = dcc.Store(id='folder-selection', storage_type='local')
-# Define Store object for OCEL params
+# OCEL parameters
 ocel_params = dcc.Store(id='param-store', storage_type='local')
-# Define Store object for Process Executions
+# Process Executions
 ocel_executions = dcc.Store(id='execution-store', storage_type='memory')
-# Define Store object for clustered OCELs
+# OCEL of Clusters
 clustered_ocel_store = dcc.Store(id='clustered-ocels', storage_type='memory')
-# Define Store object for List of list of average Process Execution Features per cluster
+# List of lists of average Process Execution Features for each cluster
 extracted_pe_features_cluster = dcc.Store(id='extracted-pe-features-cluster-store', storage_type='memory')
 
 # Define the index page layout
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    nav, side, file_store, ocel_obj, ocel_params, ocel_executions, clustered_ocel_store, extracted_pe_features_cluster,
+    nav, side, ocel_obj, ocel_params, ocel_executions, clustered_ocel_store, extracted_pe_features_cluster,
     html.Div(id='page-content', children=[], style=CONTENT_STYLE), 
 ])
 
