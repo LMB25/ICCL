@@ -121,7 +121,7 @@ Conduct the feature selection:
 ### Graph Embedding
 The process execution graphs get enriched with features and are then embedded, so that a clustering algorithm can handle them. In the graph embedding tab, you can specify which kind of embedding technique you want to use. Please see [Graph Embedding Methods](#graph-embedding-methods) for more information about the embedding algorithms.
 
-![Graph_Embedding.png](./assets/manual/2FGraph_Embedding.png)
+![Graph_Embedding.png](./assets/manual/FGraph_Embedding.png)
 
 To specify the graph embedding technique, follow those steps:
 
