@@ -51,7 +51,7 @@ Open ```http://127.0.0.1:8050/``` to access the running webapp.
 
 ## Application Layout
 
-![Application_Layout_Start.png](assets%2FApplication_Layout_Start.png)
+![Application_Layout_Start.png]((./assets/manual/Application_Layout_Start.png)
 The application layout is structured the following way:
 1. The sidebar, to navigate through the application pipeline. The sidebar is visible throughout the whole workflow. You can navigate back-and-forth using these clickable page tabs.
 2. The linked help page which provides the manual for this tool. Click on the question mark to access the manual.
@@ -59,7 +59,7 @@ The application layout is structured the following way:
 
 ## Data Management
 ### Import OCEL
-![plot](./assets/import_data.png)
+![plot](./assets/manual/import_data.png)
 
 You have two options to import your OCEL:
 * 1a: click on the drag and drop field and select a file from the file browser
@@ -82,7 +82,7 @@ After successfully uploading the OCEL, the first five rows are displayed in the 
 
 Note: only OCEL files with .csv, .jsonocel or .xmlocel extensions are supported.
 ### View OCEL
-![View_OCEL.png](assets%2FView_OCEL.png)
+![View_OCEL.png](./assets/manual/View_OCEL.png)
 
 To view the statistics and gain insight into your OCEL you can visit the 'View OCEL' page.
 The page can be accessed via the sidebar clicking on 'View OCEL' (1).
@@ -109,7 +109,7 @@ We provide several possible features from different perspectives from which you 
 
 However, you must click the SET SELECTED FEATURES button so that the chosen selection is parsed.
 
-![plot](./assets/Feature_Selection.png)  
+![plot](./assets/manual/Feature_Selection.png)  
 
 Conduct the feature selection:
 
@@ -121,7 +121,7 @@ Conduct the feature selection:
 ### Graph Embedding
 The process execution graphs get enriched with features and are then embedded, so that a clustering algorithm can handle them. In the graph embedding tab, you can specify which kind of embedding technique you want to use. Please see [Graph Embedding Methods](#graph-embedding-methods) for more information about the embedding algorithms.
 
-![Graph_Embedding.png](assets%2FGraph_Embedding.png)
+![Graph_Embedding.png](./assets/manual/2FGraph_Embedding.png)
 
 To specify the graph embedding technique, follow those steps:
 
@@ -134,7 +134,7 @@ To specify the graph embedding technique, follow those steps:
 ### Clustering
 After the graph embedding is created, you can cluster the process executions. To do so, you have to specify a clustering technique. Furthermore, you can adjust the algorithm's parameters or use the automatic clustering mode. Please see [Clustering Techniques](#clustering-techniques) for more information about the clustering algorithms.
 
-![Clustering_Configuration.png](assets%2FClustering_Configuration.png)
+![Clustering_Configuration.png](./assets/manual/Clustering_Configuration.png)
 
 Here's how you can execute the clustering:
 1. click on the Clustering page
@@ -149,7 +149,7 @@ If you want to cancel the process, click the CANCEL button 7.
 
 After the clustering was successfully executed, the following shows up:
 
-![Clustering_Configuration.png](assets%2FClustering_Configuration_1.png)
+![Clustering_Configuration.png](./assets/manual/Clustering_Configuration_1.png)
 
 In the table 1, you can see the resulting clusters and the number of process executions that belong to the cluster ID. If you click the button 2, you get forwarded to the process discovery page.
 
@@ -158,7 +158,7 @@ If you want to cluster the process executions using K-Means or Hierarchical Clus
 
 Note: before launching the cluster evaluation, you have to parse the features and graph embedding parameters.
 
-![plot](./assets/cluster_evaluation.png)
+![plot](./assets/manual/cluster_evaluation.png)
 
 Execute the cluster evaluation:
 1. click on the Clustering page
@@ -175,7 +175,7 @@ After the cluster evaluation was successfully executed, you can see different pl
 * DBscan: silhouette score for different epsilon
 
 Look at the following plots  by way of example:
-![plot](./assets/cluster_evaluation_result_1.png)
+![plot](./assets/manual/cluster_evaluation_result_1.png)
 1. shows the type of clustering algorithm that was used
 2. result for Davies-Bouldin index for different #clusters
 3. result for silhuette score for different #clusters
@@ -183,7 +183,7 @@ Look at the following plots  by way of example:
 The red dashed line indicates the best number of cluster, i.e. the number of clusters that eventuated in the optimal score.
 
 The resulting plot for DBscan evaluation looks a bit different:
-![plot](./assets/cluster_evaluation_result_2.png)
+![plot](./assets/manual/cluster_evaluation_result_2.png)
 1. indicates the optimal value for epsilon
 2. shows the resulting number of clusters 
 
@@ -193,7 +193,7 @@ One of the key aspects in ICCL is the process execution. If you want to gain mor
 Note: you can visualize the process executions and inspect its features at any point after uploading the OCEL.
 
 To visualize the graph of one process execution and see its features, perform the following steps:
-![plot](./assets/process_executions.png)
+![plot](./assets/manual/process_executions.png)
 
 1. click on the Clustering page
 2. click on the Process Executions tab
@@ -214,7 +214,7 @@ At any point after uploading the OCEL, you can see the number of process executi
 ### Discover Process Model
 You can discover the Process Model for the original OCEL as well as for the sub-logs that are created by clustering the OCEL. Before discovering the latter Process Models, you have to go through the ICCL pipeline, so that clusters are already created. You can discover the comprehensive Process Model at any point after uploading the OCEL.
 #### Comprehensive Process Model
-![plot](./assets/original_model_discovery.png)
+![plot](./assets/manual/original_model_discovery.png)
 
 Conducting the process discovery:
 1. click on the 'Original OCEL' page
@@ -226,7 +226,7 @@ You can manipulate the view of the process model:
 * to zoom in and out, locate the cursor on the model and use the scroll wheel of your mouse
 
 #### Cluster Process Models
-![plot](./assets/cluster_model_discovery.png)
+![plot](./assets/manual/cluster_model_discovery.png)
 
 Conducting the process discovery:
 1. click on the 'Clustered OCEL' page
@@ -240,14 +240,14 @@ You can manipulate the view of the process model:
 
 ### Conformance Checking
 To compare the process model with the OCEL, you can apply two conformance checking methods: fitness and precision. Before checking the conformance of the clustered Process Models, you have to go through the ICCL pipeline, so that clusters are already created. You can check the conformance of the comprehensive Process Model at any point after uploading the OCEL.
-![plot](./assets/conformance_checking.png)
+![plot](./assets/manual/conformance_checking.png)
 1. select a measure: fitness or precision
 2. click the CALCULATE button
 3. result of the measure (in case of conformance checking on the clustered OCEL, a table is displayed, showing the result for each cluster)
 
 ### Export Process Model
 After discovering a process model for the original OCEL or for the clustered sub-logs (and a cluster is selected), this segment shows up:
-![plot](./assets/export_model.png)
+![plot](./assets/manual/export_model.png)
 
 To save the displayed process model, follow these steps:
 1. insert the path to the location at which the image should be saved
