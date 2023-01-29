@@ -2,17 +2,19 @@ from ocpa.algo.conformance.precision_and_fitness import evaluator as quality_mea
 import pandas as pd
 import numpy as np
 
+# calculate fitness of process model, given OCEL
 def calculate_fitness(ocel, ocpn):
     _, fitness = quality_measure_factory.apply(ocel, ocpn)
     fitness = np.round(fitness, 2)
     return fitness
 
+# calculate precision of process model, given OCEL
 def calculate_precision(ocel, ocpn):
     precision, _ = quality_measure_factory.apply(ocel, ocpn)
     precision = np.round(precision, 2)
     return precision
 
-
+# create DataFrame with conformance results for clustered OCEL
 def create_conformance_df(conformance_result, measure):
 
     conformance_df = pd.DataFrame(columns=['Cluster', measure])

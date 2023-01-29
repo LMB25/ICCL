@@ -2,18 +2,11 @@ import pandas as pd
 from ocpa.objects.log.importer.csv import factory as ocel_import_factory_csv
 from ocpa.objects.log.importer.ocel import factory as ocel_import_factory
 from ocpa.objects.log.converter.versions import jsonocel_to_csv
-import os, base64
 from ast import literal_eval
 import math
-from ocpa.objects.log.ocel import OCEL
-from ocpa.objects.log.variants.table import Table
-from ocpa.objects.log.variants.graph import EventGraph
-import ocpa.objects.log.importer.csv.versions.to_obj as csv_to_ocel
-import ocpa.objects.log.variants.util.table as table_utils
 import ocpa.objects.log.util.misc as import_helper
-from typing import Dict
 
-# remove prefix from csv OCEL
+# remove prefix from csv OCEL columns
 def remove_prefix_csv(df):
     columns = df.columns
     new_columns = []
@@ -23,7 +16,7 @@ def remove_prefix_csv(df):
     df.columns = new_columns
     return df
 
-# load ocel from csv format (given a path)
+# load ocel from csv format (given a path and parameters)
 def load_ocel_csv(path, parameters):
     ocel_file = ocel_import_factory_csv.apply(file_path=path, variant="to_ocel", parameters = parameters)
     return ocel_file
@@ -101,6 +94,7 @@ def preprocess_csv(df, parameters=None):
 
     return df, parameters
 
+# construct ocel from DataFrame
 def df_to_ocel(df, parameters):
     
     df, parameters = preprocess_csv(df, parameters)
@@ -108,8 +102,8 @@ def df_to_ocel(df, parameters):
     
     return ocel
 
-
-def ocel_to_df_params(ocel, return_obj_df=False, parameters=None):
+# convert ocel to DataFrame
+def ocel_to_df(ocel, return_obj_df=False, parameters=None):
     if parameters is None:
         parameters = {}
     if 'return_obj_df' in parameters:
@@ -165,25 +159,21 @@ def ocel_to_df_params(ocel, return_obj_df=False, parameters=None):
         return eve_df, obj_df
     return eve_df, []
 
-
-# convert ocel to df
-def ocel_to_df(ocel, return_obj_df=False, parameters=None):
-    eve_df = jsonocel_to_csv.apply(ocel)
-    return eve_df
-
+# get object types of OCEL
 def get_ocel_object_types(ocel):
     object_types = ocel.object_types
     return object_types
 
-# get summary of ocel
+# extract summary of OCEL
 def get_summary(ocel, ocel_df):
-    object_types = ocel.object_types
+    object_types = get_ocel_object_types(ocel)
     num_events = len(ocel_df)
     num_activities = len(ocel_df['event_activity'].unique())
     activity_count = ocel_df['event_activity'].value_counts().to_dict()
     object_types_occurences = dict.fromkeys(object_types, 0)
 
     num_obj = 0
+    # find number of objects for each object type
     for obj in object_types:
         df_obj = ocel_df[[obj]]
         df_obj = df_obj.explode(obj)

@@ -13,21 +13,7 @@ import io
 import base64
 import clusteval
 
-def perform_silhouette_analysis(X, max_clusters, method):
-    silhouette = []
-    for i in range(2,max_clusters+1):
-        if method == 'K-Means':
-            kmeans = KMeans(n_clusters = i)
-            kmeans.fit(X)
-            labels = kmeans.labels_
-            silhouette.append(silhouette_score(X, labels))
-        elif method == 'Hierarchical':
-            hierarchical_cluster = AgglomerativeClustering(n_clusters=i, affinity='euclidean', linkage='ward')
-            labels = hierarchical_cluster.fit_predict(X)
-            silhouette.append(silhouette_score(X, labels))
-
-    return silhouette 
-
+# automatic clustering, evaluates resulting clusters for DBScan, K-Means and Mean Shift, returns best parameters and resulting labels
 def perform_auto_clustering(X):
     best_score = None
     for method in [perform_auto_DBSCAN, perform_auto_KMeans, perform_auto_MeanShift]:#, perform_KMeans, perform_DBSCAN, perform_HierarchicalClustering]:
@@ -44,11 +30,13 @@ def perform_auto_clustering(X):
     
     return best_labels, best_params
 
+# DBScan clustering
 def perform_DBSCAN(X, parameters):
     labels = DBSCAN(eps=parameters['eps'], min_samples=parameters['min_samples']).fit_predict(X)
 
     return labels
 
+# Automatic DBscan clustering, finds optimal parameter eps and min_samples value
 # we first try to find the optimal value for eps and with this value we try to optimize min_samples
 def perform_auto_DBSCAN(X):
     best_score = None
@@ -87,18 +75,19 @@ def perform_auto_DBSCAN(X):
         
         
         
-
+# Affinity Propagation clustering
 def perform_AffinityPropagation(X, parameters):
     labels = AffinityPropagation(max_iter=parameters['max_iter'],convergence_iter=parameters['convergence_iter']).fit_predict(X)
 
     return labels
 
-
+# Mean Shift clustering
 def perform_MeanShift(X, parameters):
     clustering = MeanShift(max_iter=parameters['max_iter']).fit(X)
 
     return clustering.labels_
 
+# Automatic mean shift clustering, finds optimal number of iterations
 def perform_auto_MeanShift(X):
     best_score = None
     for max_iter in range(100,500,50): 
@@ -117,10 +106,12 @@ def perform_auto_MeanShift(X):
                 
     return best_labels, best_params
 
+# K-Means clustering
 def perform_KMeans(X, n_clusters, parameters={"n_init":int(10), "max_iter":300}):
     clustering = KMeans(n_clusters, n_init=parameters['n_init'], max_iter=parameters['max_iter']).fit(X)
     return clustering.labels_
 
+# Automatic K-Means clustering, finds optimal number of clusters
 # currently we only explore the parameter n_clusters
 # n_init and max_iter had no effect on clustering results if chosen large enough (default values normally suffice)
 def perform_auto_KMeans(X):
@@ -144,12 +135,14 @@ def perform_auto_KMeans(X):
         
     return best_labels, best_params
 
+# Hierarchical clustering
 def perform_HierarchicalClustering(X, n_clusters, parameters):
     hierarchical_cluster = AgglomerativeClustering(n_clusters=n_clusters, linkage=parameters['linkage'])
     labels = hierarchical_cluster.fit_predict(X)
     
     return labels
 
+# create DataFrame consisting of process execution id and cluster label
 def create_clustered_df(process_executions, labels):
     clustered_df = pd.DataFrame(columns=['id', 'cluster'])
     num_process_executions = len(process_executions)
@@ -158,31 +151,36 @@ def create_clustered_df(process_executions, labels):
 
     return clustered_df
 
+# partition original OCEL into clustered OCELs
 def partition_ocel(ocel, clustered_df):
     sub_ocels = [] 
     
-    for cluster in np.sort(clustered_df['cluster'].unique()):   #sort because .unique() otherwise sorts after first occurences
+    for cluster in np.sort(clustered_df['cluster'].unique()):  
         event_ids = []
         cluster_df = clustered_df[clustered_df['cluster'] == cluster]
+        # get ids of process execution belonging to cluster
         cluster_process_ex = list(cluster_df.index.values)
+        # find event ids belonging to cluster
         for i, process_ex in enumerate(ocel.process_executions):
             if i in cluster_process_ex:
                 event_ids.append(list(process_ex))
+        # filter OCEL by cluster process execution's event ids
         new_log = case_filtering.filter_process_executions(ocel, event_ids)
         sub_ocels.append(new_log)
     
     return sub_ocels
 
+# create DataFrame with cluster labels and aggregated number of process executions
 def get_cluster_summary(clustered_df):
 
     summary_df = pd.DataFrame(columns=['Cluster ID', 'Number of Process Executions'])
     summary_df['Cluster ID'] = np.sort(clustered_df['cluster'].unique())    #sort cluster df ascending
     summary_df['Number of Process Executions'] = clustered_df['cluster'].value_counts().sort_index()    #sort by index (by cluster) to match with summary_df
-    #summary_df['Number of Process Executions'] = clustered_df['cluster'].map(clustered_df['cluster'].value_counts())   #returns the number of process executions in first cluster for all clusters in summary
 
     return summary_df
 
 
+# cluster evaluation for hierarchical clustering, returns silhouette and dbindex plot
 def cluster_evaluation_hierarchical(X, linkage):
 
     buf = io.BytesIO()
@@ -209,6 +207,7 @@ def cluster_evaluation_hierarchical(X, linkage):
 
     return "data:image/png;base64,{}".format(data)
 
+# cluster evaluation for k-means clustering, returns silhouette and dbindex plot
 def cluster_evaluation_kmeans(X):
 
     buf = io.BytesIO()
@@ -236,6 +235,7 @@ def cluster_evaluation_kmeans(X):
 
     return "data:image/png;base64,{}".format(data)
 
+# cluster evaluation for DBScan clustering, returns silhouette plot
 def cluster_evaluation_dbscan(X):
 
     buf = io.BytesIO()

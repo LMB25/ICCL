@@ -117,7 +117,7 @@ layout = dbc.Tabs([
                 html.Br(),
                 dbc.Row([dbc.Col([html.H5("Modify Clustering Embedding Parameters:")])]),
                 dbc.Row([
-                        dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(1,14,1, value=2, id='num-clusters-slider', disabled=False)), clustering_param_form], width=7),
+                        dbc.Col([html.Div("Select Number of Clusters"), html.Div(dcc.Slider(2,20,1, value=2, id='num-clusters-slider', disabled=False)), clustering_param_form], width=7),
                         ]),
                 html.Br(),
                 dbc.Row([

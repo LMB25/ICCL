@@ -43,7 +43,7 @@ def on_upload_ocel_full(ocel_log):
         # load ocel
         ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
         # convert ocel object to dataframe and return as DataTable
-        ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
+        ocel_df, _ = dataimport.ocel_to_df(ocel_log)
         # cut ocel if too large
         if len(ocel_df) > 1000:
             ocel_df = ocel_df.head(1000)

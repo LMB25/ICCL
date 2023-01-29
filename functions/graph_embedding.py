@@ -1,21 +1,22 @@
 import networkx as nx
 from karateclub.graph_embedding import graph2vec, feathergraph
-from karateclub import DeepWalk, Walklets, TENE, FeatherNode
+from karateclub import DeepWalk, Walklets, FeatherNode
 import node2vec 
 import numpy as np
 
 from sklearn.preprocessing import normalize
 from kneed import KneeLocator
 
+# relabel nodes for each graph, so that nodes start from 0
 def remap_nodes(graph):
     node_mapping = dict((node.event_id, i) for i, node in enumerate(graph.nodes))
     return node_mapping
 
+# convert feature graphs to networkx graphs
 def feature_graphs_to_nx_graphs(feature_graphs):
     graph_list = []
     attr_matrix_list = []
     for feature_graph in feature_graphs:
-        #G = nx.DiGraph()
         G = nx.Graph()
 
         node_dict = remap_nodes(feature_graph)
@@ -119,11 +120,13 @@ def find_optimal_dim_feathernode(feature_nx_graphs, attr_matrix_list, loss_thres
             return d
     return min_dim
 
+# Feather Node embedding
 def perform_feather_node(graph, attr_matrix, num_dim):
     model = FeatherNode(reduction_dimensions=num_dim)
     model.fit(graph, attr_matrix)
     return model.get_embedding()
 
+# Attributed Graph Embedding
 def perform_cfge(graph_list, attr_matrix_list, embedding_params):
     X_graphs = []
     model = FeatherNode(reduction_dimensions=embedding_params['svd_dimensions'], svd_iterations=embedding_params['svd_iterations'], theta_max=embedding_params['theta_max'], eval_points=embedding_params['eval_points'], order=embedding_params['order'])
@@ -151,6 +154,7 @@ def perform_cfge(graph_list, attr_matrix_list, embedding_params):
        
     return X_graphs#perform_graph2vec(graph_list, attributed=True) 
 
+# Graph2Vec embedding
 def perform_graph2vec(graph_list, attributed, embedding_params):
     model = graph2vec.Graph2Vec(attributed=attributed, wl_iterations=embedding_params['wl_iterations'], dimensions=embedding_params['dimensions'],epochs=embedding_params['epochs'],learning_rate=embedding_params['learning_rate'], min_count=1)
     model.fit(graph_list)
@@ -158,29 +162,10 @@ def perform_graph2vec(graph_list, attributed, embedding_params):
 
     return X
 
+# Feather-G graph embedding
 def perform_feather_g(graph_list, embedding_params={"order":5, "eval_points":25, "theta_max":2.5}):
     model = feathergraph.FeatherGraph(order=embedding_params['order'], eval_points=embedding_params['eval_points'], theta_max=embedding_params['theta_max'])
     model.fit(graph_list)
     X = model.get_embedding()
 
     return X
-
-def perform_node2vec(graph):
-    # Generate walks
-    model = node2vec.Node2Vec(graph, dimensions=2, walk_length=20, num_walks=10,workers=4)
-    # Learn embeddings 
-    model = model.fit(window=10, min_count=1)
-    #model.wv.most_similar('1')
-    model.wv.save_word2vec_format("embedding.emb") #save the embedding in file embedding.emb
-
-def perform_deepwalk(graph):
-    model = DeepWalk()
-    model.fit(graph)
-    embedding = model.get_embedding()
-    return embedding
-
-def perform_walklet(graph):
-    model = Walklets()
-    model.fit(graph)
-    embedding = model.get_embedding()
-    return embedding

@@ -201,7 +201,7 @@ def on_upload_ocel_path(set_progress, uploaded_file, csv_params, process_extr_ty
             
             set_progress(("5","10"))
             # extract and store ocel parameters
-            ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
+            ocel_df, _ = dataimport.ocel_to_df(ocel_log)
             object_types, num_events, num_activities, num_obj, activity_count, object_types_occurences = dataimport.get_summary(ocel_log, ocel_df)
             dict_params = {'object_types': object_types, 'num_events': num_events, 'num_activities':num_activities, 'num_objects':num_obj, 'activity_count':activity_count, 'object_type_occurences':object_types_occurences}
             
@@ -234,7 +234,7 @@ def on_upload_ocel_head(ocel_log, filename):
     elif triggered_id == 'ocel_obj':
         if ocel_log != None:
             ocel_log = pickle.loads(codecs.decode(ocel_log.encode(), "base64"))
-            ocel_df, _ = dataimport.ocel_to_df_params(ocel_log)
+            ocel_df, _ = dataimport.ocel_to_df(ocel_log)
             ocel_df_head = ocel_df.head(5)
             return dbc.Table.from_dataframe(ocel_df_head, striped=True, bordered=True, hover=True)
         else:

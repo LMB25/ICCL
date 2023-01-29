@@ -2,14 +2,15 @@ from ocpa.algo.predictive_monitoring import factory as predictive_monitoring
 import ocpa.algo.predictive_monitoring.event_based_features.extraction_functions as event_features
 import ocpa.algo.predictive_monitoring.execution_based_features.extraction_functions as execution_features
 from ocpa.algo.predictive_monitoring import tabular, sequential
-import pandas as pd
 import numpy as np
 
-
+# create event feature set based on selection of user
 def create_event_feature_set(ocel, event_feature_list):
     feature_set_event = []
+    # list of all activities
     activities = list(set(ocel.log.log["event_activity"].tolist()))
     objects = ocel.object_types
+    # define tuple of event feature and parameters
     if "EVENT_ACTIVITY" in event_feature_list:
         feature_set_event += [(predictive_monitoring.EVENT_ACTIVITY, (act,)) for act in activities]
         event_feature_list.remove("EVENT_ACTIVITY")
@@ -22,6 +23,7 @@ def create_event_feature_set(ocel, event_feature_list):
     if "EVENT_PRECEDING_ACTIVITES" in event_feature_list:
         feature_set_event += [(predictive_monitoring.EVENT_PRECEDING_ACTIVITES, (act,)) for act in activities]
         event_feature_list.remove("EVENT_PRECEDING_ACTIVITES") 
+    # check if OCEL contains start timestamp, else feature is dropped from list
     if "EVENT_DURATION" in event_feature_list:
         if "event_start_timestamp" in ocel.log.log.columns:
             if ocel.log.log["event_start_timestamp"].dtypes != np.object:
@@ -42,6 +44,7 @@ def create_event_feature_set(ocel, event_feature_list):
     
     return feature_set_event
 
+# extract event features
 def extract_features(ocel_log, feature_set_event, repr):
     feature_set_event = create_event_feature_set(ocel_log, feature_set_event)
     feature_storage = predictive_monitoring.apply(ocel_log, feature_set_event, [])
@@ -53,7 +56,7 @@ def extract_features(ocel_log, feature_set_event, repr):
         extraction = sequential.construct_sequence(feature_storage)
     return extraction
 
-
+# create extraction feature set
 def create_extraction_features(ocel):
     feature_options_extraction = ['EXECUTION_NUM_OF_EVENTS', 'EXECUTION_NUM_OF_END_EVENTS', 'EXECUTION_THROUGHPUT', 'EXECUTION_NUM_OBJECT', 'EXECUTION_UNIQUE_ACTIVITIES', 'EXECUTION_NUM_OF_STARTING_EVENTS', 'EXECUTION_LAST_EVENT_TIME_BEFORE']
     extraction_feature_list = [getattr(predictive_monitoring,key) for key in feature_options_extraction]
@@ -67,11 +70,11 @@ def create_extraction_features(ocel):
         extraction_value_list.append(values)
     return extraction_value_list
 
+# calculate average extraction feature results for set of clustered OCEL
 def create_cluster_feature_summary(ocels):
     average_feature_values = []
     for ocel in ocels: 
         extraction_values = create_extraction_features(ocel)
         average_values = [np.round(float(sum(feature))/len(feature), 2) for feature in zip(*extraction_values)]
         average_feature_values.append(average_values)
-        #print(average_values)
     return average_feature_values
