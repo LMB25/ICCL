@@ -33,7 +33,7 @@ meanshift_explanation = "centroid based algorithm, discovers blobs in smooth den
 affinity_explanation = "creates clusters by sending messages between pairs of samples until convergence, members of the data points are found that are representatives of the clusters."
 
 # Auto Embed 
-autoembed_explanation = "tries to find an optimal embedding with optimal number of dimensions with respect to the fitness/accurady of the later discovered model"
+autoembed_explanation = "tries to find an optimal embedding with optimal number of dimensions with respect to the normalized embedding loss"
 
 # Custom Feature Graph Embedding
 cfge_explanation = "focus on features: creates FeatherNode embedding for each attributed node in feature graph and averages over these to get embedding for whole graph (structure only considered implicitly)"
