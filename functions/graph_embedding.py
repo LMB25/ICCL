@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.preprocessing import normalize
 from kneed import KneeLocator
 
-# relabel nodes for each graph, so that nodes start from 0
+# relabel nodes for each graph, so that node labeling starts from 0
 def remap_nodes(graph):
     node_mapping = dict((node.event_id, i) for i, node in enumerate(graph.nodes))
     return node_mapping

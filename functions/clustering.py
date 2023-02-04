@@ -187,11 +187,13 @@ def cluster_evaluation_hierarchical(X, linkage):
     plt.figure()
     fig, axs = plt.subplots(1,2, figsize=(10,4))
 
+    # limit maximum number of clusters to 15 or less (if #process ex. < 15)
     if len(X) < 15:
         max_clust = len(X)
     else:
         max_clust = 15
 
+    # clusteval repeats clustering for different #clusters, while leaving other parameters constant
     # dbindex
     results = clusteval.dbindex.fit(X, linkage=linkage, max_clust=max_clust)
     _ = clusteval.dbindex.plot(results, title='Davies-Bouldin index', ax=axs[0], visible=False)
@@ -215,11 +217,13 @@ def cluster_evaluation_kmeans(X):
     plt.figure()
     fig, axs = plt.subplots(1,2, figsize=(10,4))
 
+    # limit maximum number of clusters to 15 or less (if #process ex. < 15)
     if len(X) < 15:
         max_clust = len(X)
     else:
         max_clust = 15
 
+    # clusteval repeats clustering for different #clusters, while leaving other parameters constant
     # dbindex
     results = clusteval.dbindex.fit(X, cluster='kmeans', max_clust=max_clust)
     _ = clusteval.dbindex.plot(results, title='Davies-Bouldin index', ax=axs[0], visible=False)
@@ -243,6 +247,7 @@ def cluster_evaluation_dbscan(X):
     plt.figure()
     fig, ax = plt.subplots(figsize=(7, 4))
 
+    # clusteval tries different epsilon from 0.1 to 5, min_samples is 0.01*#samples
     # dbscan
     results = clusteval.dbscan.fit(X)
     _ = clusteval.dbscan.plot(results, title='DBscan', ax=ax, visible=False)
