@@ -220,11 +220,15 @@ def on_button_click(set_progress, ocel_log, selected_event_features, embedding_m
         feature_storage = feature_extraction.extract_features(ocel_log, selected_event_features, 'graph')
         # remap nodes of feature graphs
         feature_nx_graphs, attr_matrix_list = graph_embedding.feature_graphs_to_nx_graphs(feature_storage.feature_graphs)
-        # embedd feature graphs
+        # embed feature graphs
         set_progress(("3","10","... Embedding Features", ""))   
         if embedding_method == 'AutoEmbed':
-            #TODO
-            pass
+            if attr_matrix_list[0].shape[1]==0:
+                X = graph_embedding.perform_feather_g(feature_nx_graphs)
+            else: 
+                opt_dim = graph_embedding.find_optimal_dim_feathernode(feature_nx_graphs, attr_matrix_list)
+                embedding_params_dict = {"svd_dimensions":int(opt_dim), "svd_iterations":int(20), "theta_max":float(2.5), "eval_points":int(25), "order":int(5)}
+                X = graph_embedding.perform_cfge(feature_nx_graphs, attr_matrix_list, embedding_params_dict)
         elif embedding_method == 'Graph2Vec':
             X = graph_embedding.perform_graph2vec(feature_nx_graphs, False, embedding_params_dict)
         elif embedding_method == 'Feather-G':
