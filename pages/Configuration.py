@@ -55,7 +55,7 @@ layout = dbc.Tabs([
                         dbc.Col(explanation_texts.feature_selection_explanation)
                         ]),
                 html.H5("Control Perspective:"),
-                dbc.Row([dbc.Col([explanation_texts.control_features_explanation], width=7),
+                dbc.Row([dbc.Col([explanation_texts.control_features_explanation, dbc.Alert([html.I(className="fa-solid fa-triangle-exclamation"),"Choosing EVENT_CURRENT_ACTIVITIES can heavily increase the runtime."],color="warning", className="d-flex align-items-center")], width=7),
                          dbc.Col([html.Div("Select Control Perspective Features for Clustering:"), html.Div(control_feature_selection_dropdown)])]),
                 html.Br(),
                 html.H5("Performance Perspective:"),
