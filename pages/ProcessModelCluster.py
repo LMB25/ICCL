@@ -32,7 +32,7 @@ layout = dbc.Container([
             dbc.Col([conformance_dropdown], align='center'),
             dbc.Col([dbc.Button("Calculate", id="calc-conformance-cluster", className="me-2", n_clicks=0)], align='center'),
             dbc.Col([html.Div("Result:")], align='center'),
-            dbc.Col([html.Div(id='conformance-result-cluster')], align='center'),
+            dbc.Col([html.Div(id='conformance-result-cluster', style={"maxHeight": "200px", "overflow": "scroll"})], align='center'),
         ]),
         html.Hr(),
         dbc.Row([
