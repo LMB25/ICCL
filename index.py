@@ -74,7 +74,7 @@ def render_page_content(pathname):
 # Run the app on localhost:8050
 if __name__ == '__main__':
     #host and port must be specified in order for docker to work
-    app.run_server(debug=True, host='0.0.0.0', port=8050, use_reloader=False)
+    app.run_server(debug=False, host='0.0.0.0', port=8050, use_reloader=False)
     #app.run_server(debug=True, use_reloader = True)
 
 
