@@ -36,6 +36,7 @@ The main pipeline of the application works the following way:
 		* [Model Evaluation Measures](#model-evaluation-measures)
 	* [Model Discovery](#model-discovery)
 	
+<div class="page"/>
 
 ## Installation
 ### Using Docker
@@ -51,23 +52,25 @@ Open ```http://127.0.0.1:8050/``` to access the running webapp.
 
 ## Application Layout
 
-![Application_Layout_Start.png]((./assets/manual/Application_Layout_Start.png)
+![plot](./assets/manual/Application_Layout_Start.png)
 The application layout is structured the following way:
 1. The sidebar, to navigate through the application pipeline. The sidebar is visible throughout the whole workflow. You can navigate back-and-forth using these clickable page tabs.
 2. The linked help page which provides the manual for this tool. Click on the question mark to access the manual.
 3. In the middle the content of the page is located. By default, you start your ICCL journey with the data import page.
 
+<div class="page"/>
+
 ## Data Management
 ### Import OCEL
 ![plot](./assets/manual/import_data.png)
 
-You have two options to import your OCEL:
+To import and select an OCEL, follow these steps:
 * 1a: click on the drag and drop field and select a file from the file browser
-* 1b.1: insert the path in which the OCEL is located
-* 1b.2: click the SEARCH button
-* 1b.3: select the OCEL from the list. Note: only files with .csv, .jsonocel or .xmlocel extensions are listed
+* 1b.1: click the REFRESH button to update the file list
+* 1b.2: select an OCEL from the list
+If you uploaded an OCEL before, the file is saved and will be available in the list 1b.2
 
-If you have selected an OCEL with .csv format, the first rows of the .csv are displayed in table 6 and you have to fill out the form 2:
+If you have selected an OCEL with .csv format, the first rows of the .csv are displayed in table 6 and you have to fill out the form 2a:
 * 2a: specify the OCEL parameters by selecting the column names in the dropdown lists. Select the object types in the last dropdown list.
 * 2b: parse the parameters by clicking the PARSE CSV PARAMETERS button
 
@@ -88,6 +91,8 @@ To view the statistics and gain insight into your OCEL you can visit the 'View O
 The page can be accessed via the sidebar clicking on 'View OCEL' (1).
 Inside 2 you can see the summary statistics of your OCEL, providing information such as the object types 2.a or the activity count for each activity 2.b.
 The table 3 shows the entries of the OCEL, whereas the number of rows is limited to the first 1000 rows.
+
+<div class="page"/>
 
 ## Configuration Pipeline
 The configuration pipeline to cluster your process executions is as follows:
@@ -118,10 +123,13 @@ Conduct the feature selection:
 3. list of the different features with short explanations, grouped by perspective
 4. select the desired features in the dropdown lists - note: you don't have to select features for each perspective
 5. click the SET SELECTED FEATURES button
+
+<div class="page"/>
+
 ### Graph Embedding
 The process execution graphs get enriched with features and are then embedded, so that a clustering algorithm can handle them. In the graph embedding tab, you can specify which kind of embedding technique you want to use. Please see [Graph Embedding Methods](#graph-embedding-methods) for more information about the embedding algorithms.
 
-![Graph_Embedding.png](./assets/manual/FGraph_Embedding.png)
+![Graph_Embedding.png](./assets/manual/Graph_Embedding.png)
 
 To specify the graph embedding technique, follow those steps:
 
@@ -130,6 +138,8 @@ To specify the graph embedding technique, follow those steps:
 3. select one of the embedding techniques
 4. depending on your selection in 3, a set of adjustable parameters is displayed - you can insert custom parameter values or leave it at the default settings
 5. click the PARSE EMBEDDING PARAMETERS button
+
+<div class="page"/>
 
 ### Clustering
 After the graph embedding is created, you can cluster the process executions. To do so, you have to specify a clustering technique. Furthermore, you can adjust the algorithm's parameters or use the automatic clustering mode. Please see [Clustering Techniques](#clustering-techniques) for more information about the clustering algorithms.
@@ -187,6 +197,8 @@ The resulting plot for DBscan evaluation looks a bit different:
 1. indicates the optimal value for epsilon
 2. shows the resulting number of clusters 
 
+<div class="page"/>
+
 ### Process Executions
 One of the key aspects in ICCL is the process execution. If you want to gain more insights into the process executions of your OCEL, you can do so on the Process Executions  page.
 
@@ -209,6 +221,9 @@ The results are the following:
 * to zoom in and out, locate the cursor on the graph and use the scroll wheel of your mouse
 
 At any point after uploading the OCEL, you can see the number of process executions in 7.
+
+<div class="page"/>
+
 ## Process Discovery
 
 ### Discover Process Model
@@ -250,10 +265,13 @@ After discovering a process model for the original OCEL or for the clustered sub
 ![plot](./assets/manual/export_model.png)
 
 To save the displayed process model, follow these steps:
-1. insert the path to the location at which the image should be saved
-2. enter a name for the image
-3. select the file extension: png or svg
-4. click the SAVE button
+1. enter a name for the image
+2. select the file extension: png or svg
+3. click the SAVE button
+
+After clicking the button, the file will be downloaded in your browser. Additionally, the file is saved within the ICCL folder under assets/process_models/.
+
+<div class="page"/>
 
 ## Algorithms
 
@@ -303,6 +321,8 @@ ICCL makes use of the sklearn.cluster module to apply different clustering algor
 *  **Silhouette Score**: quantifies the space between different clusters. For each number of clusters, a clustering algorithm is performed. Afterwards, it is measured how similar the observation are to the assigned cluster and how dissimilar they are to the observation of the nearest cluster. The measure has the range [-1,+1], whereas a score near +1 indicates that the clusters are well separated and negative scores indicate that the samples might be wrongly separated. Generally, the silhouette score is calculated for each datapoint and then averaged over the whole dataspace. You can find the calculation steps here: [click](https://en.wikipedia.org/wiki/Silhouette_(clustering))
 
 *  **Davies-Bouldin Index**: measure of the ratio between within-cluster distances, and between cluster distances. The score is bounded between [0, 1]. The lower the value, the tighter the clusters and the seperation between clusters. The steps of calculation can be found here: [click](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index)
+
+<div class="page"/>
 
 #### Model Evaluation Measures
 

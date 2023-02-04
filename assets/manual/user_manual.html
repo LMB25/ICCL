@@ -425,9 +425,10 @@ The main pipeline of the application works the following way:</p>
 <p>The code comes with a Dockerfile to build and run the application inside a docker container. To build the container run</p>
 <pre class="hljs"><code><div>docker build -t docker-iccl . 
 </div></code></pre>
-<p>After the container is build the webapp can be run using</p>
+<p>After the container is built, the webapp can be run using</p>
 <pre class="hljs"><code><div>docker run -p 8050:8050 docker-iccl
 </div></code></pre>
+<p>Open <code>http://127.0.0.1:8050/</code> to access the running webapp.</p>
 <h2 id="application-layout">Application Layout</h2>
 <p><img src="Application_Layout_Start.png" alt="Application_Layout_Start.png">
 The application layout is structured the following way:</p>
@@ -439,14 +440,14 @@ The application layout is structured the following way:</p>
 <h2 id="data-management">Data Management</h2>
 <h3 id="import-ocel">Import OCEL</h3>
 <p><img src="import_data.png" alt="plot"></p>
-<p>You have two options to import your OCEL:</p>
+<p>To import and select an OCEL, follow these steps:</p>
 <ul>
 <li>1a: click on the drag and drop field and select a file from the file browser</li>
-<li>1b.1: insert the path in which the OCEL is located</li>
-<li>1b.2: click the SEARCH button</li>
-<li>1b.3: select the OCEL from the list. Note: only files with .csv, .jsonocel or .xmlocel extensions are listed</li>
+<li>1b.1: click the REFRESH button to update the file list</li>
+<li>1b.2: select an OCEL from the list
+If you uploaded an OCEL before, the file is saved and will be available in the list 1b.2</li>
 </ul>
-<p>If you have selected an OCEL with .csv format, the first rows of the .csv are displayed in table 6 and you have to fill out the form 2:</p>
+<p>If you have selected an OCEL with .csv format, the first rows of the .csv are displayed in table 6 and you have to fill out the form 2a:</p>
 <ul>
 <li>2a: specify the OCEL parameters by selecting the column names in the dropdown lists. Select the object types in the last dropdown list.</li>
 <li>2b: parse the parameters by clicking the PARSE CSV PARAMETERS button</li>
@@ -620,11 +621,11 @@ You can manipulate the view of the process model:</p>
 <img src="export_model.png" alt="plot"></p>
 <p>To save the displayed process model, follow these steps:</p>
 <ol>
-<li>insert the path to the location at which the image should be saved</li>
 <li>enter a name for the image</li>
 <li>select the file extension: png or svg</li>
 <li>click the SAVE button</li>
 </ol>
+<p>After clicking the button, the file will be downloaded in your browser. Additionally, the file is saved within the ICCL folder under assets/process_models/.</p>
 <h2 id="algorithms">Algorithms</h2>
 <p>Here you can find a short description of the algorithms that are used in ICCL.</p>
 <h3 id="process-execution-extraction">Process Execution Extraction</h3>
@@ -640,12 +641,13 @@ You can manipulate the view of the process model:</p>
 <h3 id="graph-embedding-methods">Graph Embedding Methods</h3>
 <ul>
 <li>
-<p><strong>Auto Embed</strong>: In the automatic mode, we try to find the best graph embedding method with corresponding parameters for the imported OCEL. Experimentally we have found out that the Custom Feature Graph Embedding method that uses FeatherNode Embeddings and aggregates them for the representation of a graph works the best. Note that it is also the only method that is able to embed an arbitrary amount of features. The most crucial parameter for this method is the number of dimensions. Hereby, we have to have enough dimensions to express the complexity of the graphs and features. On the other hand, we want to reduce the number of dimensions as much as possible to improve the computation effort. Especially, the clustering that follows runs significantly faster on smaller dimensions.
-We start with an initial value of 500 and then try to reduce it by comparing the normalized embedding loss (https://doi.org/10.1038/s41467-021-23795-5). However, note that we cannot have less dimensions than features. This is required by FeatherNode.</p>
+<p><strong>Auto Embed</strong>: uses Custom Feature Graph Embeddings but optimizes the number of dimensions automatically. The method tries to reduce the number of dimensions as far as possible but ensures that there are still enough dimensions to fully express the complexity of the feature graphs. This is done by comparing the normalized embedding loss (https://doi.org/10.1038/s41467-021-23795-5) for different numbers of dimensions.
+The fewer dimensions, the more efficient the clustering can be performed. The final choice of dimensions is displayed to the user.
+If no features were selected, graph2vec is automatically used, since our Custom Feature Graph Embedding method requires at least one feature.</p>
 </li>
 <li>
 <p><strong>Custom Feature Graph Embedding</strong>: especially designed for ICCL. The algorithm first creates a node embedding via FeatherNode which uses characteristic functions of node features with random walk weights to describe node neighborhoods. In the second step, the node embeddings are averaged over each dimension, resulting in a vectorized embedding of the graph. Focusses <strong>features</strong>, the structure of the process execution graphs is only implicitly considered. Check out the <a href="https://karateclub.readthedocs.io/en/latest/_modules/karateclub/node_embedding/attributed/feathernode.html">karateclub documentation</a> for more information about the FeatherNode parameters that can be configured.</p>
-<p>Note: We cannot run the algorithm when we have less dimensions than features for each node.</p>
+<p>Note: The algorithm requires that at least one feature was selected.</p>
 </li>
 <li>
 <p><strong>Graph2Vec</strong>: first identifies subgraphs sourrounding each node in the feature graphs. By means of the Weisfeiler-Lehman’s algorithm, the subgraphs are considered as the vocabulary for a doc2vec SkipGram model. Since the graph’s structure is captured within the algorithm, feature graphs that are similar in structure will be close in the embedding space. Focusses the <strong>graph structure</strong> and additionally allows one feature per node. Check out the <a href="https://karateclub.readthedocs.io/en/latest/_modules/karateclub/graph_embedding/graph2vec.html">karateclub documentation</a> for more information about the parameters that can be configured.</p>
@@ -657,6 +659,9 @@ We start with an initial value of 500 and then try to reduce it by comparing the
 <h3 id="clustering-techniques">Clustering Techniques</h3>
 <p>ICCL makes use of the sklearn.cluster module to apply different clustering algorithms to the embedding. Please refer to the <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.cluster">sklearn.cluster documentation</a> to gather more information about the clustering parameters that can be configured in ICCL.</p>
 <ul>
+<li>
+<p><strong>Auto Cluster</strong>: This techniques tries to find the best clustering technique automatically and optimizes their hyperparameters. Currently, we compare MeanShift, DBscan and KMeans with different parameter settings and our goal is to find a setting which maximizes the silhouette score. After the clustering has been performed, the final selected method as well as its parameters are displayed to the user.</p>
+</li>
 <li>
 <p><strong>K-Means</strong>: clusters data by trying to separate samples in k groups of equal variance. It aims to choose centroids that minimize the within-cluster sum-of-squares. The number of clusters (k) has to be specified beforehand.</p>
 </li>
@@ -670,10 +675,7 @@ We start with an initial value of 500 and then try to reduce it by comparing the
 <p><strong>Affinity-Propagation</strong>: Affinity-Propagation creates clusters by sending messages between pairs of samples until convergence. The algorithm finds members of the data points that are representatives of the clusters.</p>
 </li>
 <li>
-<p><strong>DBscan</strong>: Density-Based Spatial Clustering of Applications with Noise is an clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.</p>
-</li>
-<li>
-<p><strong>Auto Cluster</strong>: This techniques tries to find the best clustering technique automatically and optimizes their hyperparameters. Currently, we compare MeanShift, DBscan and KMeans with different parameter settings and our goal is to find a setting which maximizes the silhouette score.</p>
+<p><strong>DBscan</strong>: Density-Based Spatial Clustering of Applications with Noise is a clustering approach that finds core samples of high density and expands clusters from them. The parameter epsilon is specifying the radius of a neighborhood with respect to some point, in which the number of neighboring points is counted.</p>
 </li>
 </ul>
 <h3 id="evaluation-measures">Evaluation Measures</h3>
