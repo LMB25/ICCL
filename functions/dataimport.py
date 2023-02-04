@@ -1,7 +1,6 @@
 import pandas as pd
 from ocpa.objects.log.importer.csv import factory as ocel_import_factory_csv
 from ocpa.objects.log.importer.ocel import factory as ocel_import_factory
-from ocpa.objects.log.converter.versions import jsonocel_to_csv
 from ast import literal_eval
 import math
 import ocpa.objects.log.util.misc as import_helper
