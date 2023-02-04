@@ -52,7 +52,7 @@ layout = dbc.Container([
         html.Div([
             html.Hr(),
             dbc.Row([
-                dbc.Col([html.H5("Save Petri Net")], align='center'),
+                dbc.Col([html.H5("Download Petri Net")], align='center', width=3),
                 dbc.Col([html.Div("Filename: ")], align='center'),
                 dbc.Col([dbc.Input(id='filename-clustered-model', placeholder='cluster_model')], width=3),
                 dbc.Col([dcc.Dropdown(id='img-format-cluster', options=['png', 'svg'], multi=False, value='png')], align='center'),
