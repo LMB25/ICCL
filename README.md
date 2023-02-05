@@ -1,6 +1,6 @@
 # ICCL
 Improve Comprehensibility With Clustering - Process Discovery Lab WiSe 22/23.
-This repository contains the source coude for our project. The tool offers the implementation of the following pipeline:
+This repository contains the source coude for our project. The tool offers an implementation of the following pipeline:
 ![plot](./assets/manual/iccl_pipeline.png)
 
 # Requirements
@@ -18,4 +18,4 @@ docker run -p 8050:8050 docker-iccl
 Open ```http://127.0.0.1:8050/``` to access the running webapp.
 
 # Usage 
-We offer a detailed User Manual, take a look at the user_manual.pdf.
+We offer a detailed user manual, take a look at the user_manual.pdf.
