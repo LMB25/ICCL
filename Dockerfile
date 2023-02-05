@@ -9,7 +9,9 @@ WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --upgrade pip
+RUN apt-get update && \
+    apt-get -y install graphviz
 RUN pip install -r requirements.txt
- 
+
   
 CMD ["python", "index.py"]
