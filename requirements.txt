@@ -20,5 +20,6 @@ psutil
 #for graph embedding optimization
 kneed
 
+#for data upload
 dash-uploader==0.7.0a1
 packaging==21.3
