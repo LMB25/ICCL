@@ -543,7 +543,7 @@ def show_explanation(silhouette_n, dbindex_n, dbscan_n, is_open):
             else:
                 open_status = False 
         elif triggered_id == "collapse-dbscan":
-            explanation_text = explanation_texts.dbscan_explanation
+            explanation_text = explanation_texts.dbscan_explanation_full
             if dbscan_n % 2 != 0:
                 open_status = True 
             else:

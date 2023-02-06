@@ -17,8 +17,11 @@ dbindex_explanation =  dbc.CardBody("The Davies–Bouldin index can intuitively 
 # Auto cluster explanation
 autocluster_explanation = "tries to find the best clustering method automatically and optimizes their hyperparameters "
 
-# DBscan analysis explanation
+# DBscan explanation short
 dbscan_explanation =  "finds core samples of high density and expands clusters from them (epsilon specifies radius of neighborhood with respect to some point, in which number of neighboring points is counted)"
+
+# DBscan explanation long
+dbscan_explanation_full = "DBscan finds core samples of high density and expands clusters from them. The parameter epsilon specifies the radius of the neighborhood with respect to some point, in which number of neighboring points is counted. Choosing a large epsilon results in fewer, bigger clusters."
 
 # K-Means clustering explanation
 kmeans_explanation = "clusters data by trying to separate samples in n groups of equal variance, centroids are chosen that minimize within-cluster sum-of-squares."
