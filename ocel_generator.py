@@ -1,12 +1,13 @@
 import json
 import re
 from datetime import datetime, timedelta
+import numpy as np
 
 from ocpa.objects.log.importer.ocel import factory as ocel_import_factory
 
 # specify all involved objects and their corresponding object types
-OBJECTS = {0: "o1", 1: "i1", 2: "i2", 3: "o2", 4: "i3"}
-OBJECT_TYPES = {"o1": "order", "i1": "item", "i2": "item", "o2": "order", "i3": "item"}
+OBJECTS = {0: "o1", 1: "i1", 2: "i2", 3: "o2", 4: "i3", 5:"o3",6:"i4",7:"o4",8:"i5"}
+OBJECT_TYPES = {"o1": "order", "i1": "item", "i2": "item", "o2": "order", "i3": "item", "o3":"order", "i4":"item","o4":"order","i5":"item"}
 GENERATED_OBJECTS = {}  # leave empty
 
 # specify each trace as a list of tuples of activity and corresponding object ids (from OBJECTS dict)
@@ -29,6 +30,23 @@ ACTIVITIES = [
         ("send_invoice", [4]),
         ("item_unavailable", [4]),
         ("cancel_order", [3, 4]),
+    ],
+    [
+        ("place_order", [5, 6]),
+        ("send_invoice", [6]),
+        ("pick_item", [6]),
+        ("payment_reminder", [5]),
+        ("cancel_order", [5,6])
+    ],
+     [
+        ("place_order", [7, 8]),
+        ("send_invoice", [8]),
+        ("pick_item", [8]),
+        ("send_delivery", [7,8]),
+        ("delivery_received", [7,8]),
+        ("delivery_returned", [7,8]),
+        ("pay_refund", [7]),
+        ("archive_order", [7])
     ],
 ]
 
@@ -53,7 +71,7 @@ def create_activity_array(number_of_traces):
     for n in range(0, number_of_traces):
         activities = activities + [
             (act[0], [create_object_instance(i, n) for i in act[1]])
-            for act in ACTIVITIES[0] + ACTIVITIES[1]
+            for act in ACTIVITIES[0] + ACTIVITIES[1] + ACTIVITIES[2] + ACTIVITIES[3]
         ]
 
     return activities
@@ -67,7 +85,7 @@ def create_json(path, repeat_trace):
     d = datetime(2022, 1, 1, 12, 0, 0, 0)
     for i in range(0, len(activity_array)):
         times.append(datetime.strftime(d, "%Y-%m-%d %H:%M:%S"))
-        d = d + timedelta(minutes=1)
+        d = d + timedelta(days=np.random.randint(1,3), hours=np.random.randint(1,24),minutes=np.random.randint(1,60))
 
     events = {
         f"{i}": {
@@ -99,8 +117,8 @@ def create_json(path, repeat_trace):
         json.dump(log, f, indent=4)
 
 
-create_json("logs/gen_log.jsonocel", 2)
+create_json("assets/uploaded_logs/order_process.jsonocel", 5)
 
-ocel = ocel_import_factory.apply("logs/gen_log.jsonocel")
+#ocel = ocel_import_factory.apply("assets/uploaded_logs/gen_log.jsonocel")
 
-print(ocel)
+#print(ocel)
