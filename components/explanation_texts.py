@@ -95,29 +95,6 @@ object_features_explanation = dbc.Card(
                             )
 
 
-features_explanation = dbc.Card(
-                                dbc.ListGroup(
-                                    [
-                                        dbc.ListGroupItem("EVENT_REMAINING_TIME: Remaining time from event to end of process execution."),
-                                        dbc.ListGroupItem("EVENT_ELAPSED_TIME: Elapsed time from process execution start to the event."),
-                                        dbc.ListGroupItem("EVENT_ACTIVITY: Activity that is performed in the event."),
-                                        dbc.ListGroupItem("EVENT_NUM_OF_OBJECTS: Number of objects involved in the event."),
-                                        dbc.ListGroupItem("EVENT_PREVIOUS_OBJECT_COUNT: Number of objects involved up to the event."),
-                                        dbc.ListGroupItem("EVENT_PREVIOUS_ACTIVITY_COUNT: Number of activities that took place before the event."),
-                                        dbc.ListGroupItem("EVENT_DURATION: Duration of the event."),
-                                    ],
-                                    flush=True,
-                                ),
-                            )
-
-
-# process executions explanation
-process_executions_explanation = dbc.Card(
-                                dbc.CardBody("Hier sollte eine Erklärung zu den Process Executions stehen. Was zeigt der Plot des Process Execution Graphs an?"),
-                                className="mb-3",
-                                )
-
-
 # explanation for process execution extraction type selection
 extraction_type_explanation = dbc.Card(
                                 dbc.ListGroup(
