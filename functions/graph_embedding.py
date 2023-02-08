@@ -55,7 +55,6 @@ def find_optimal_dim_feathernode(feature_nx_graphs, attr_matrix_list, loss_thres
     N = CVa.shape[0] 
     
     #now we try out smaller dimensions and check the loss (w.r.t. the largest dimension size)
-    #losses = []
     losses = {}
     for dim in range(max_dim, min_dim, -1):
         emb = perform_feather_node(feature_nx_graphs[i_largest_graph], attr_matrix_list[i_largest_graph], dim)
@@ -89,28 +88,13 @@ def perform_cfge(graph_list, attr_matrix_list, embedding_params):
     X_graphs = []
     model = FeatherNode(reduction_dimensions=embedding_params['svd_dimensions'], svd_iterations=embedding_params['svd_iterations'], theta_max=embedding_params['theta_max'], eval_points=embedding_params['eval_points'], order=embedding_params['order'])
     for graph, attr_matrix in zip(graph_list, attr_matrix_list):
-        #model = TENE(dimensions=100)
-        
-        #print(graph)
-        #print(f"dims of feature matrix: {attr_matrix.shape}")
-                
         model.fit(graph, attr_matrix)
         X = model.get_embedding()
-        #print(f"dims of embedding for every node of graph: {X.shape}")
-        
         X_graphs.append(X.mean(axis=0))
-        #print(f"dims of embedding of whole graph: {X.mean(axis=0).shape}")
-        
-        #for each node add the mean of the node embedding (stored in X) as the feature attribute in the original graph
-        # for i, attr in enumerate(X):
-        #     feature_value = np.mean(attr)
-        #     graph.nodes[i]["feature"] = str(feature_value)[0:3]
     
     X_graphs = np.array(X_graphs)         
-         
-    #print(X_graphs)
-       
-    return X_graphs#perform_graph2vec(graph_list, attributed=True) 
+                
+    return X_graphs
 
 # Graph2Vec embedding
 def perform_graph2vec(graph_list, attributed, embedding_params):
