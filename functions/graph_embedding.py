@@ -34,48 +34,6 @@ def feature_graphs_to_nx_graphs(feature_graphs):
     
     return graph_list, attr_matrix_list
 
-#can be used for graph embedding methods without features 
-def find_optimal_dim(feature_nx_graphs, attr_matrix_list):
-    #check for the biggest graph 
-    i_largest_graph = 0
-    for i, graph in enumerate(feature_nx_graphs):
-        if graph.number_of_nodes() > feature_nx_graphs[i_largest_graph].number_of_nodes():
-            i_largest_graph = i
-    
-    #the maximal possible dimension size is the number of nodes of the biggest graph
-    max_dim = feature_nx_graphs[i_largest_graph].number_of_nodes()
-    
-    ref_emb = perform_feather_node(feature_nx_graphs[i_largest_graph], attr_matrix_list[i_largest_graph], max_dim)
-    Va = normalize(np.array(ref_emb))
-    CVa = Va @ (Va.T)
-    N = CVa.shape[0] 
-    
-    #now we try out smaller dimensions and check the loss (w.r.t. the largest dimension size)
-    losses = []
-    for dim in range(max_dim-1, 0, -1):
-        emb = perform_feather_node(feature_nx_graphs[i_largest_graph], attr_matrix_list[i_largest_graph], dim)
-        Vb = normalize(np.array(emb))
-        CVb = Vb @ (Vb.T)
-        
-        #compute normalized embedding loss                
-        Loss = 0
-        for i in range(0,CVa.shape[0]):
-            for j in range(0,CVa.shape[1]):
-                if i<j:
-                    Loss += abs(CVa[j,i] - CVb[j,i])    
-        Loss = (2/(N*(N-1))) * Loss
-                        
-        losses.append(Loss)
-
-    #try to find the ellbow point, i.e. the smallest dimension size that still has good performance
-    #try:
-        #kn = KneeLocator(range(1,max_dim),losses, curve='convex', direction='increasing', interp_method='interp1d')
-        #opt_dim = kn.knee
-    #except:
-    opt_dim = max_dim 
-        
-    return opt_dim
-
 def find_optimal_dim_feathernode(feature_nx_graphs, attr_matrix_list, loss_threshold=0.01):
     #the smallest possible dimension is equal to the number of features in the attr_matrix
     min_dim = attr_matrix_list[0].shape[1]
