@@ -16,7 +16,7 @@ import clusteval
 # automatic clustering, evaluates resulting clusters for DBScan, K-Means and Mean Shift, returns best parameters and resulting labels
 def perform_auto_clustering(X):
     best_score = None
-    for method in [perform_auto_DBSCAN, perform_auto_KMeans, perform_auto_MeanShift]:#, perform_KMeans, perform_DBSCAN, perform_HierarchicalClustering]:
+    for method in [perform_auto_KMeans, perform_auto_MeanShift, perform_auto_DBSCAN]:
         labels, params = method(X)
         if len(np.unique(labels)) > 1:
             score = silhouette_score(X, labels)
