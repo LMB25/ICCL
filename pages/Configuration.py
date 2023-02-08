@@ -406,7 +406,7 @@ def on_click_parse_params(n_init, max_iter_kmeans, max_iter_meanshift, linkage, 
     progress=[Output("progress-bar", "value"), Output("progress-bar", "max"), Output("progress-message","children"), Output("optimal-params","children")],
     memoize=True)
 def on_click(set_progress, ocel_log, selected_event_features, embedding_method, clustering_method, num_clusters, embedding_params_dict, clustering_params_dict, n_clicks):
-    time.sleep(1)   #TODO is this timer needed for something?
+    time.sleep(1)
     if n_clicks > 0:
         optimal_params = ""
         # load ocel
@@ -443,7 +443,6 @@ def on_click(set_progress, ocel_log, selected_event_features, embedding_method, 
         # clustering
         set_progress(("6","10","... Perform Clustering", optimal_params))   
         if clustering_method == 'AutoCluster':
-            #TODO
             labels, best_params = clustering.perform_auto_clustering(embedding)
             optimal_params = [optimal_params, html.Br(), "clustering parameters: ", ''.join(f"{i}={s},   " for i,s in best_params.items())]
         if clustering_method == 'Mean-Shift':

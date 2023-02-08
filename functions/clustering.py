@@ -65,7 +65,6 @@ def perform_auto_DBSCAN(X):
         # case that only one cluster is discovered
         else:
             score = 0
-        #print(f"score for DBScan with eps={best_eps} & min_samples={min_samples}: {score}")
         if best_score is None or score>best_score:
             best_score = score
             best_labels = labels
@@ -98,7 +97,6 @@ def perform_auto_MeanShift(X):
         # case that only one cluster is discovered
         else:
             score = 0
-        #print(f"score for Mean Shift with max_iter={max_iter}: {score}")
         if best_score is None or score>best_score:
             best_score = score
             best_labels = labels
@@ -127,7 +125,6 @@ def perform_auto_KMeans(X):
             except ConvergenceWarning:
                 break
         score = silhouette_score(X, labels)
-        #print(f"score for KMeans with n_clusters={n_clusters}: {score}")
         if best_score is None or score>best_score:
             best_score = score
             best_labels = labels
