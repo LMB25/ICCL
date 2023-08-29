@@ -1,6 +1,6 @@
 # ICCL
-Improve Comprehensibility With Clustering - Process Discovery Lab WiSe 22/23.
-This repository contains the source coude for our project. The tool offers an implementation of the following pipeline:
+Improving Comprehensibility With Clustering - Process Discovery Lab WiSe 22/23.
+This repository contains the source code for our project. The tool offers an implementation of the following pipeline:
 ![plot](./assets/manual/iccl_pipeline.png)
 
 # Requirements
